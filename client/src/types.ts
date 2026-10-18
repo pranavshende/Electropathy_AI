@@ -10,6 +10,7 @@ export interface User {
   userType?: UserType;
   preferredLang: PreferredLang;
   role: UserRole;
+  isActive?: boolean;
 }
 
 export interface AuthResponse {
@@ -61,4 +62,66 @@ export interface PatientCase {
   };
   status: 'draft' | 'submitted' | 'in_review' | 'completed';
   createdAt: string;
+}
+
+export interface Message {
+  id: string;
+  conversationId: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  feedback?: string;
+  createdAt: string;
+}
+
+export interface ConversationSummary {
+  id: string;
+  title: string;
+  language: string;
+  messageCount: number;
+  lastMessage?: { content: string; role: string; createdAt: string } | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ConversationDetail {
+  id: string;
+  userId: string;
+  title: string;
+  language: string;
+  isDeleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  messages: Message[];
+}
+
+export interface AdminOverview {
+  users: {
+    total: number;
+    active: number;
+    inactive: number;
+    newLast7Days: number;
+  };
+  conversations: {
+    totalConversations: number;
+    totalMessages: number;
+  };
+  patientCases: {
+    total: number;
+    byStatus: Record<string, number>;
+  };
+  knowledgeBase: {
+    totalDocuments: number;
+    totalChunks: number;
+  };
+}
+
+export interface AuditLogItem {
+  id: string;
+  adminId: string;
+  action: string;
+  targetId?: string;
+  details?: any;
+  ipAddress?: string;
+  createdAt: string;
+  admin?: { id: string; fullName: string; email: string; mobileNumber: string };
 }

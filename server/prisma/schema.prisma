@@ -18,6 +18,7 @@ model User {
   mobileNumber   String          @unique
   fullName       String?
   email          String?
+  passwordHash   String?         // Used for Admin credentials
   userType       String?         // 'patient', 'practitioner', 'student', 'researcher'
   preferredLang  String          @default("en") // 'en', 'hi', 'mr'
   role           String          @default("patient") // 'patient', 'practitioner', 'admin'
@@ -28,6 +29,7 @@ model User {
   refreshTokens  RefreshToken[]
   patientCases   PatientCase[]
   conversations  Conversation[]
+  auditLogs      AuditLog[]
 
   @@map("users")
 }
@@ -55,6 +57,7 @@ model RefreshToken {
   isRevoked  Boolean   @default(false)
   createdAt  DateTime  @default(now())
 
+  @@index([userId, isRevoked])
   @@map("refresh_tokens")
 }
 
@@ -82,6 +85,8 @@ model PatientCase {
   updatedAt           DateTime           @updatedAt
   documents           PatientDocument[]
 
+  @@index([practitionerId, createdAt(sort: Desc)])
+  @@index([status])
   @@map("patient_cases")
 }
 
@@ -95,6 +100,7 @@ model PatientDocument {
   fileSize    Int?
   uploadedAt  DateTime     @default(now())
 
+  @@index([caseId])
   @@map("patient_documents")
 }
 
@@ -113,6 +119,8 @@ model Conversation {
   updatedAt  DateTime   @updatedAt
   messages   Message[]
 
+  @@index([userId, isDeleted, updatedAt(sort: Desc)])
+  @@index([isDeleted, updatedAt(sort: Desc)])
   @@map("conversations")
 }
 
@@ -126,6 +134,7 @@ model Message {
   metadata       Json?        // {model, tokens, latencyMs}
   createdAt      DateTime     @default(now())
 
+  @@index([conversationId, createdAt(sort: Asc)])
   @@map("messages")
 }
 
@@ -160,5 +169,26 @@ model KnowledgeChunk {
   isEnabled   Boolean            @default(true)
   createdAt   DateTime           @default(now())
 
+  @@index([documentId])
+  @@index([category, isApproved, isEnabled])
   @@map("knowledge_chunks")
+}
+
+// ---------------------------------------------
+// 5. Audit Logging for Administrative Actions
+// ---------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  adminId    String
+  admin      User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  action     String   // 'ADMIN_LOGIN', 'VIEW_USER', 'UPDATE_USER_STATUS', 'VIEW_CONVERSATION', 'VIEW_PATIENT_CASE'
+  targetId   String?  // Target resource ID
+  details    Json?    // Contextual information
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([adminId, createdAt(sort: Desc)])
+  @@index([action, createdAt(sort: Desc)])
+  @@map("audit_logs")
 }

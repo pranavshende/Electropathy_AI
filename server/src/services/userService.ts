@@ -43,6 +43,12 @@ class UserService {
     };
   }
 
+  async findByEmail(email: string) {
+    return prisma.user.findFirst({
+      where: { email: email.toLowerCase().trim() }
+    });
+  }
+
   async createFromMobile(mobileNumber: string): Promise<User> {
     const cleanNumber = mobileNumber.replace(/\D/g, '').slice(-10);
 
@@ -50,7 +56,7 @@ class UserService {
       data: {
         mobileNumber: cleanNumber,
         preferredLang: 'en',
-        role: 'patient',
+        role: 'patient', // Default role is always patient
         isActive: true,
       }
     });
@@ -69,6 +75,9 @@ class UserService {
     };
   }
 
+  /**
+   * Safe profile update: strictly prevents role escalation to admin!
+   */
   async updateProfile(
     userId: string,
     updates: {
@@ -83,8 +92,11 @@ class UserService {
     if (updates.email !== undefined) dataToUpdate.email = updates.email;
     if (updates.userType !== undefined) {
       dataToUpdate.userType = updates.userType;
+      // Strictly prevent escalating to 'admin'
       if (updates.userType === 'practitioner') {
         dataToUpdate.role = 'practitioner';
+      } else if (updates.userType === 'student' || updates.userType === 'researcher' || updates.userType === 'patient') {
+        dataToUpdate.role = 'patient';
       }
     }
     if (updates.preferredLang !== undefined) dataToUpdate.preferredLang = updates.preferredLang;
@@ -106,6 +118,80 @@ class UserService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
+  }
+
+  /**
+   * Paginated user list for Admin Dashboard
+   */
+  async getUsersForAdmin(params: { search?: string; status?: string; role?: string; page?: number; limit?: number }) {
+    const page = params.page || 1;
+    const limit = Math.min(params.limit || 20, 100);
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+
+    if (params.search) {
+      where.OR = [
+        { fullName: { contains: params.search, mode: 'insensitive' } },
+        { mobileNumber: { contains: params.search } },
+        { email: { contains: params.search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (params.status === 'active') where.isActive = true;
+    if (params.status === 'inactive') where.isActive = false;
+    if (params.role) where.role = params.role;
+
+    const [total, users] = await Promise.all([
+      prisma.user.count({ where }),
+      prisma.user.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          mobileNumber: true,
+          fullName: true,
+          email: true,
+          userType: true,
+          role: true,
+          isActive: true,
+          preferredLang: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: {
+            select: {
+              conversations: true,
+              patientCases: true,
+            }
+          }
+        }
+      })
+    ]);
+
+    return {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      users
+    };
+  }
+
+  async setUserActiveStatus(userId: string, isActive: boolean) {
+    return prisma.user.update({
+      where: { id: userId },
+      data: { isActive },
+      select: {
+        id: true,
+        mobileNumber: true,
+        fullName: true,
+        email: true,
+        role: true,
+        isActive: true,
+      }
+    });
   }
 }
 

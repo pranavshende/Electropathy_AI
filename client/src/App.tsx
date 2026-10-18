@@ -3,6 +3,8 @@ import { Navbar } from './components/Navbar';
 import { LoginModal } from './components/LoginModal';
 import { PatientIntakeWizard } from './components/PatientIntakeWizard';
 import { CaseHistoryList } from './components/CaseHistoryList';
+import { ChatHistoryView } from './components/ChatHistoryView';
+import { AdminPortal } from './components/AdminPortal';
 import { MedicalDisclaimer } from './components/MedicalDisclaimer';
 import { api } from './services/api';
 import { User, PatientCase } from './types';
@@ -10,11 +12,11 @@ import { User, PatientCase } from './types';
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [currentLang, setCurrentLang] = useState('en');
-  const [activeTab, setActiveTab] = useState<'intake' | 'records'>('intake');
+  const [activeTab, setActiveTab] = useState<'intake' | 'records' | 'chat' | 'admin'>('intake');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if previously logged in
+    // Check if previously logged in as user
     const checkAuth = async () => {
       const token = localStorage.getItem('electropathy_token');
       if (token) {
@@ -39,15 +41,17 @@ export default function App() {
   const handleLoginSuccess = (authenticatedUser: User) => {
     setUser(authenticatedUser);
     setCurrentLang(authenticatedUser.preferredLang || 'en');
+    setActiveTab('chat'); // Immediately show their saved consultation history upon login!
   };
 
-  const handleLogout = () => {
-    api.logout();
+  const handleLogout = async () => {
+    await api.logout();
     setUser(null);
+    setActiveTab('intake');
   };
 
   const handleCaseSubmitted = (_newCase: PatientCase) => {
-    // Optionally trigger tab or toast
+    setActiveTab('records');
   };
 
   if (loading) {
@@ -70,7 +74,9 @@ export default function App() {
       />
 
       <main style={{ flex: 1, padding: '20px' }}>
-        {!user ? (
+        {activeTab === 'admin' ? (
+          <AdminPortal onBackToApp={() => setActiveTab('intake')} />
+        ) : !user ? (
           <LoginModal onSuccess={handleLoginSuccess} />
         ) : (
           <>
@@ -79,6 +85,9 @@ export default function App() {
             )}
             {activeTab === 'records' && (
               <CaseHistoryList />
+            )}
+            {activeTab === 'chat' && (
+              <ChatHistoryView />
             )}
           </>
         )}

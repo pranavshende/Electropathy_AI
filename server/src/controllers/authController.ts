@@ -106,7 +106,7 @@ export class AuthController {
       }
 
       // Generate tokens
-      const { accessToken, refreshToken } = tokenService.generateTokens(user);
+      const { accessToken, refreshToken } = await tokenService.generateTokens(user);
 
       res.status(200).json({
         success: true,
@@ -194,6 +194,52 @@ export class AuthController {
       success: true,
       user: req.user
     });
+  }
+
+  /**
+   * Refresh session tokens
+   * POST /api/auth/refresh
+   */
+  async refresh(req: Request, res: Response): Promise<void> {
+    try {
+      const { refreshToken } = req.body;
+      if (!refreshToken) {
+        res.status(400).json({ success: false, message: 'Refresh token is required' });
+        return;
+      }
+
+      const result = await tokenService.verifyAndRotateRefreshToken(refreshToken);
+      if (!result) {
+        res.status(401).json({ success: false, message: 'Invalid or expired refresh token' });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        tokens: {
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken
+        },
+        user: result.user
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: 'Error refreshing token' });
+    }
+  }
+
+  /**
+   * Logout user and revoke tokens
+   * POST /api/auth/logout
+   */
+  async logout(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (req.user?.id) {
+        await tokenService.revokeUserTokens(req.user.id);
+      }
+      res.status(200).json({ success: true, message: 'Logged out successfully' });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: 'Logout failed' });
+    }
   }
 }
 

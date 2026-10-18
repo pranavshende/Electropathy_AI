@@ -7,8 +7,8 @@ interface NavbarProps {
   currentLang: string;
   onLanguageChange: (lang: string) => void;
   onLogout: () => void;
-  activeTab: 'intake' | 'records';
-  onTabChange: (tab: 'intake' | 'records') => void;
+  activeTab: 'intake' | 'records' | 'chat' | 'admin';
+  onTabChange: (tab: 'intake' | 'records' | 'chat' | 'admin') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -38,7 +38,10 @@ export const Navbar: React.FC<NavbarProps> = ({
         justifyContent: 'space-between'
       }}>
         {/* Brand Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div 
+          onClick={() => onTabChange('intake')}
+          style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}
+        >
           <div style={{
             width: '42px',
             height: '42px',
@@ -88,7 +91,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 border: activeTab === 'intake' ? '1px solid #CBD5E1' : '1px solid transparent'
               }}
             >
-              + New Patient Intake
+              + New Intake
             </button>
             <button
               onClick={() => onTabChange('records')}
@@ -100,7 +103,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                 border: activeTab === 'records' ? '1px solid #CBD5E1' : '1px solid transparent'
               }}
             >
-              Patient Case Records
+              Patient Cases
+            </button>
+            <button
+              onClick={() => onTabChange('chat')}
+              className="btn"
+              style={{
+                backgroundColor: activeTab === 'chat' ? '#EBF3FA' : 'transparent',
+                color: activeTab === 'chat' ? '#0F4C81' : '#64748B',
+                fontWeight: activeTab === 'chat' ? 700 : 500,
+                border: activeTab === 'chat' ? '1px solid #CBD5E1' : '1px solid transparent'
+              }}
+            >
+              Clinical History & Chat
             </button>
           </nav>
         )}
@@ -180,22 +195,25 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <LogOut size={18} />
               </button>
             </div>
-          ) : (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              color: '#0F4C81',
-              backgroundColor: '#EBF3FA',
+          ) : null}
+
+          {/* Admin Console Switcher */}
+          <button
+            onClick={() => onTabChange(activeTab === 'admin' ? 'intake' : 'admin')}
+            className="btn"
+            style={{
+              backgroundColor: activeTab === 'admin' ? '#0F172A' : '#F1F5F9',
+              color: activeTab === 'admin' ? '#38BDF8' : '#334155',
               padding: '6px 12px',
+              fontSize: '0.8rem',
+              fontWeight: 600,
               borderRadius: '8px',
-              fontSize: '0.85rem',
-              fontWeight: 600
-            }}>
-              <Shield size={16} />
-              Doctor Secure Access
-            </div>
-          )}
+              border: '1px solid #CBD5E1'
+            }}
+          >
+            <Shield size={15} />
+            <span>{activeTab === 'admin' ? 'Exit Admin' : 'Admin Console'}</span>
+          </button>
         </div>
       </div>
     </header>

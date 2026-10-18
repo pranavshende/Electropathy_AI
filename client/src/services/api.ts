@@ -25,6 +25,22 @@ class ApiService {
 
   // --- Auth & Login ---
 
+  async loginWithPassword(mobileNumber: string, password: string): Promise<AuthResponse> {
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mobileNumber, password }),
+    });
+    const data: AuthResponse = await res.json();
+    if (data.success && data.tokens?.accessToken) {
+      localStorage.setItem('electropathy_token', data.tokens.accessToken);
+      if (data.tokens.refreshToken) {
+        localStorage.setItem('electropathy_refresh_token', data.tokens.refreshToken);
+      }
+    }
+    return data;
+  }
+
   async sendOtp(mobileNumber: string): Promise<{ success: boolean; message: string; cooldownSeconds?: number; devOtp?: string }> {
     const res = await fetch(`${API_BASE_URL}/auth/send-otp`, {
       method: 'POST',
@@ -50,11 +66,21 @@ class ApiService {
     return data;
   }
 
+  async resetPassword(mobileNumber: string, otp: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+    const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mobileNumber, otp, newPassword }),
+    });
+    return res.json();
+  }
+
   async updateProfile(profileData: {
     fullName: string;
     email?: string;
     userType: string;
     preferredLang: string;
+    password?: string;
   }): Promise<{ success: boolean; user: User; message: string }> {
     const res = await fetch(`${API_BASE_URL}/auth/profile`, {
       method: 'POST',

@@ -5,9 +5,11 @@ import { otpRequestLimiter, otpVerifyLimiter } from '../middlewares/rateLimiter.
 
 const router = Router();
 
-// Public routes for OTP & Token Refresh
+// Public routes for OTP, Password Login, and Token Refresh
+router.post('/login', (req, res) => authController.loginWithPassword(req, res));
 router.post('/send-otp', otpRequestLimiter, (req, res) => authController.sendOtp(req, res));
 router.post('/verify-otp', otpVerifyLimiter, (req, res) => authController.verifyOtp(req, res));
+router.post('/reset-password', (req, res) => authController.resetPasswordWithOtp(req, res));
 router.post('/refresh', (req, res) => authController.refresh(req, res));
 
 // Protected routes (require JWT)

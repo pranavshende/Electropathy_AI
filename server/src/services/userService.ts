@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import { prisma } from '../db/prisma.js';
 import { User, UserType, PreferredLang } from '../types/index.js';
 
@@ -85,11 +86,13 @@ class UserService {
       email?: string;
       userType?: UserType;
       preferredLang?: PreferredLang;
+      passwordHash?: string;
     }
   ): Promise<User> {
     const dataToUpdate: any = {};
     if (updates.fullName !== undefined) dataToUpdate.fullName = updates.fullName;
     if (updates.email !== undefined) dataToUpdate.email = updates.email;
+    if (updates.passwordHash !== undefined) dataToUpdate.passwordHash = updates.passwordHash;
     if (updates.userType !== undefined) {
       dataToUpdate.userType = updates.userType;
       // Strictly prevent escalating to 'admin'
@@ -191,6 +194,14 @@ class UserService {
         role: true,
         isActive: true,
       }
+    });
+  }
+
+  async setPassword(userId: string, plainPassword: string): Promise<void> {
+    const passwordHash = await bcrypt.hash(plainPassword, 10);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash }
     });
   }
 }

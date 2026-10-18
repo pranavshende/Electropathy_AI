@@ -118,7 +118,7 @@ class ApiService {
   async createPatientCase(data: Partial<PatientCase>): Promise<{ success: boolean; case: PatientCase; message: string }> {
     const res = await fetch(`${API_BASE_URL}/patients`, {
       method: 'POST',
-      headers: this.getHeaders(),
+      headers: this.getAdminHeaders(),
       body: JSON.stringify(data),
     });
     return res.json();

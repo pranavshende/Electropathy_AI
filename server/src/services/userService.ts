@@ -1,14 +1,35 @@
 import bcrypt from 'bcryptjs';
 import { prisma } from '../db/prisma.js';
 import { User, UserType, PreferredLang } from '../types/index.js';
+import { normalizePhoneNumber } from '../utils/phone.js';
 
 class UserService {
   async findByMobile(mobileNumber: string): Promise<User | null> {
-    const cleanNumber = mobileNumber.replace(/\D/g, '').slice(-10);
-    const user = await prisma.user.findUnique({
-      where: { mobileNumber: cleanNumber }
+    const norm = normalizePhoneNumber(mobileNumber);
+    if (!norm.isValid) return null;
+
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { mobileNumber: norm.e164 },
+          { mobileNumber: norm.national10Digit }
+        ]
+      }
     });
+
     if (!user) return null;
+
+    // Seamless migration: If previously stored without E.164 country code, upgrade in place
+    if (user.mobileNumber !== norm.e164) {
+      try {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { mobileNumber: norm.e164 }
+        });
+      } catch {
+        // Keep existing if conflict
+      }
+    }
 
     return {
       id: user.id,
@@ -51,11 +72,20 @@ class UserService {
   }
 
   async createFromMobile(mobileNumber: string): Promise<User> {
-    const cleanNumber = mobileNumber.replace(/\D/g, '').slice(-10);
+    const norm = normalizePhoneNumber(mobileNumber);
+    if (!norm.isValid) {
+      throw new Error(norm.error || 'Invalid mobile number format for account creation.');
+    }
+
+    // Check for existing account to prevent duplicates
+    const existing = await this.findByMobile(norm.e164);
+    if (existing) {
+      return existing;
+    }
 
     const user = await prisma.user.create({
       data: {
-        mobileNumber: cleanNumber,
+        mobileNumber: norm.e164,
         preferredLang: 'en',
         role: 'patient', // Default role is always patient
         isActive: true,

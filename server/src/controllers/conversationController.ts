@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware.js';
 import { conversationService } from '../services/conversationService.js';
+import { auditService } from '../services/auditService.js';
 
 export class ConversationController {
   /**
@@ -42,6 +43,16 @@ export class ConversationController {
         language: language || req.user?.preferredLang || 'en',
         initialMessage
       });
+
+      // Record activity
+      const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
+      await auditService.log(
+        userId,
+        'CONVERSATION_STARTED',
+        conv.id,
+        { title: conv.title, language: conv.language },
+        ip
+      );
 
       res.status(201).json({ success: true, conversation: conv });
     } catch (error: any) {

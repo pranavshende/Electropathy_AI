@@ -84,38 +84,7 @@ class PatientService {
     };
   }
 
-  async getCasesByPractitioner(practitionerId: string): Promise<PatientCase[]> {
-    const list = await prisma.patientCase.findMany({
-      where: { practitionerId },
-      orderBy: { createdAt: 'desc' }
-    });
-
-    return list.map(created => ({
-      id: created.id,
-      practitionerId: created.practitionerId,
-      patientName: created.patientName,
-      age: created.age,
-      gender: created.gender as any,
-      contactNumber: created.contactNumber,
-      city: created.city || '',
-      occupation: created.occupation || undefined,
-      chiefComplaints: (created.chiefComplaints as any) || [],
-      presentIllness: (created.presentIllness as any) || { description: '' },
-      pastMedical: (created.pastMedical as any) || { chronicConditions: [], allergies: [] },
-      lifestyle: (created.lifestyle as any) || { diet: '', sleep: '', appetite: '', stressLevel: '' },
-      electropathyDetails: (created.electropathyDetails as any) || undefined,
-      status: created.status as any,
-      createdAt: created.createdAt,
-      updatedAt: created.updatedAt,
-    }));
-  }
-
-  async getCaseById(id: string): Promise<PatientCase | null> {
-    const created = await prisma.patientCase.findUnique({
-      where: { id }
-    });
-    if (!created) return null;
-
+  private mapCase(created: any): PatientCase {
     return {
       id: created.id,
       practitionerId: created.practitionerId,
@@ -134,6 +103,57 @@ class PatientService {
       createdAt: created.createdAt,
       updatedAt: created.updatedAt,
     };
+  }
+
+  async getCasesByPractitioner(practitionerId: string): Promise<PatientCase[]> {
+    const list = await prisma.patientCase.findMany({
+      where: { practitionerId },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    return list.map(c => this.mapCase(c));
+  }
+
+  /**
+   * Patient Isolation: Retrieve ONLY cases linked to this patient's verified mobile number
+   */
+  async getCasesByPatientContact(mobileNumber: string): Promise<PatientCase[]> {
+    if (!mobileNumber) return [];
+
+    // Check multiple formats (E.164, national 10-digit, raw)
+    const normDigits = mobileNumber.replace(/\D/g, '');
+    const national10 = normDigits.slice(-10);
+    const e164 = `+91${national10}`;
+
+    const searchValues = Array.from(new Set([mobileNumber, national10, e164, normDigits]));
+
+    const list = await prisma.patientCase.findMany({
+      where: {
+        contactNumber: { in: searchValues }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    return list.map(c => this.mapCase(c));
+  }
+
+  /**
+   * Admin: List all clinical cases
+   */
+  async getAllCases(): Promise<PatientCase[]> {
+    const list = await prisma.patientCase.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    return list.map(c => this.mapCase(c));
+  }
+
+  async getCaseById(id: string): Promise<PatientCase | null> {
+    const created = await prisma.patientCase.findUnique({
+      where: { id }
+    });
+    if (!created) return null;
+
+    return this.mapCase(created);
   }
 }
 

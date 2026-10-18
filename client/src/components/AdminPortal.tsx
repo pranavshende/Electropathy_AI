@@ -24,8 +24,16 @@ import {
   BarChart3,
   Sparkles,
   Check,
-  CheckCircle2
+  CheckCircle2,
+  Activity,
+  RefreshCw,
+  Clock,
+  Radio,
+  Database,
+  FilePlus,
+  X
 } from 'lucide-react';
+import { PatientIntakeWizard } from './PatientIntakeWizard';
 
 interface AdminPortalProps {
   onBackToApp: () => void;
@@ -34,6 +42,7 @@ interface AdminPortalProps {
 export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
   const [adminUser, setAdminUser] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'conversations' | 'cases' | 'audit'>('overview');
+  const [showIntakeModal, setShowIntakeModal] = useState(false);
   
   // Login Form State
   const [email, setEmail] = useState('');
@@ -107,6 +116,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
   const handleAdminLogout = () => {
     localStorage.removeItem('electropathy_admin_token');
     setAdminUser(null);
+    onBackToApp();
   };
 
   const loadOverview = async () => {
@@ -176,6 +186,61 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
     }
   };
 
+  const getActionBadge = (action: string) => {
+    switch (action) {
+      case 'USER_LOGIN':
+      case 'USER_LOGIN_OTP':
+        return { label: 'User Login', bg: '#EBF3FA', color: '#0284C7' };
+      case 'USER_REGISTERED':
+        return { label: 'New User Registered', bg: '#DEF7EC', color: '#059669' };
+      case 'PATIENT_CASE_CREATED':
+        return { label: 'Patient Case Created', bg: '#FEF3C7', color: '#D97706' };
+      case 'CONVERSATION_STARTED':
+        return { label: 'Chat Started', bg: '#F3E8FF', color: '#7C3AED' };
+      case 'USER_PROFILE_UPDATED':
+        return { label: 'Profile Updated', bg: '#EEF2FF', color: '#4F46E5' };
+      case 'ADMIN_LOGIN':
+        return { label: 'Admin Login', bg: '#0F172A', color: '#38BDF8' };
+      case 'UPDATE_USER_STATUS':
+        return { label: 'Status Toggled', bg: '#FEE2E2', color: '#DC2626' };
+      case 'VIEW_USER_PROFILE':
+      case 'VIEW_CONVERSATION':
+        return { label: 'Audited View', bg: '#F1F5F9', color: '#475569' };
+      default:
+        return { label: action.replace(/_/g, ' '), bg: '#F1F5F9', color: '#475569' };
+    }
+  };
+
+  const formatActivityDate = (isoStr: string) => {
+    try {
+      const d = new Date(isoStr);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' • ' + d.toLocaleDateString([], { day: '2-digit', month: 'short' });
+    } catch {
+      return isoStr;
+    }
+  };
+
+  const formatActivityDetails = (act: any) => {
+    if (!act.details) return act.targetId ? `Target: ${act.targetId.slice(0, 8)}...` : 'Platform event logged';
+    if (typeof act.details === 'string') return act.details;
+    if (act.details.patientName) {
+      return `Case: ${act.details.patientName} (${act.details.age || ''} yrs, ${act.details.gender || ''}${act.details.city ? ', ' + act.details.city : ''})`;
+    }
+    if (act.details.title) {
+      return `Chat: "${act.details.title}" (${act.details.language || 'en'})`;
+    }
+    if (act.details.mobile) {
+      return `Mobile: +91 ${act.details.mobile} via ${act.details.method || 'auth'}`;
+    }
+    if (act.details.isActive !== undefined) {
+      return `Set active status to: ${act.details.isActive ? 'Active' : 'Deactivated'}`;
+    }
+    if (act.details.email) {
+      return `Admin email: ${act.details.email}`;
+    }
+    return JSON.stringify(act.details);
+  };
+
   // 1. ADMIN LOGIN VIEW
   if (!adminUser) {
     const handleFillAdminCredentials = () => {
@@ -190,48 +255,71 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
         {/* ======================================================== */}
         {/* LEFT COLUMN: HERO, PLATFORM OVERVIEW CARD & FEATURES     */}
         {/* ======================================================== */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {/* Back button to Patient Portal */}
+          <button
+            type="button"
+            onClick={onBackToApp}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              backgroundColor: '#FFFFFF',
+              border: '1px solid #CBD5E1',
+              borderRadius: '8px',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              color: '#475569',
+              cursor: 'pointer',
+              width: 'fit-content',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
+            }}
+          >
+            ← Return to Patient Portal
+          </button>
+
           {/* Eyebrow Badge */}
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '6px 14px',
+            padding: '4px 10px',
             backgroundColor: '#EBF3FA',
             borderRadius: '999px',
             width: 'fit-content'
           }}>
-            <ShieldCheck size={16} color="#0284C7" />
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0284C7', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              Secure Admin Access
+            <ShieldCheck size={14} color="#0284C7" />
+            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#0284C7', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              Authorized Admin Access Only
             </span>
           </div>
 
           {/* Heading */}
           <div>
             <h1 style={{
-              fontSize: '2.6rem',
+              fontSize: '1.95rem',
               lineHeight: 1.15,
               fontWeight: 800,
               color: '#0F172A',
               letterSpacing: '-0.025em',
-              marginBottom: '14px'
+              marginBottom: '6px'
             }}>
               Administrator <br />
               <span style={{ color: '#0284C7' }}>Portal</span>
             </h1>
-            <p style={{ fontSize: '1.025rem', color: '#64748B', lineHeight: 1.6, maxWidth: '500px' }}>
+            <p style={{ fontSize: '0.85rem', color: '#64748B', lineHeight: 1.45, maxWidth: '480px' }}>
               Manage users, monitor platform activity, oversee clinical data, and maintain knowledge resources with secure administrative access.
             </p>
           </div>
 
-          {/* 4 Feature Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '14px' }}>
-            <div className="auth-hero-feature">
+          {/* 4 Feature Cards (2x2 Grid) */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+            <div className="auth-hero-feature" style={{ padding: '8px 10px', gap: '8px' }}>
               <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '10px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
                 backgroundColor: '#EBF3FA',
                 color: '#0284C7',
                 display: 'flex',
@@ -239,23 +327,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
                 justifyContent: 'center',
                 flexShrink: 0
               }}>
-                <Users size={20} />
+                <Users size={16} />
               </div>
               <div>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0F172A', marginBottom: '2px' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.8rem', color: '#0F172A', lineHeight: 1.2 }}>
                   User Management
                 </div>
-                <div style={{ fontSize: '0.8rem', color: '#64748B', lineHeight: 1.4 }}>
-                  View and manage all registered users
+                <div style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.3, marginTop: '2px' }}>
+                  View & manage all registered users
                 </div>
               </div>
             </div>
 
-            <div className="auth-hero-feature">
+            <div className="auth-hero-feature" style={{ padding: '8px 10px', gap: '8px' }}>
               <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '10px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
                 backgroundColor: '#DEF7EC',
                 color: '#059669',
                 display: 'flex',
@@ -263,23 +351,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
                 justifyContent: 'center',
                 flexShrink: 0
               }}>
-                <FileText size={20} />
+                <FileText size={16} />
               </div>
               <div>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0F172A', marginBottom: '2px' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.8rem', color: '#0F172A', lineHeight: 1.2 }}>
                   Clinical Records
                 </div>
-                <div style={{ fontSize: '0.8rem', color: '#64748B', lineHeight: 1.4 }}>
-                  Monitor patient cases and conversations
+                <div style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.3, marginTop: '2px' }}>
+                  Monitor patient cases & consultations
                 </div>
               </div>
             </div>
 
-            <div className="auth-hero-feature">
+            <div className="auth-hero-feature" style={{ padding: '8px 10px', gap: '8px' }}>
               <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '10px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
                 backgroundColor: '#F3E8FF',
                 color: '#7C3AED',
                 display: 'flex',
@@ -287,23 +375,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
                 justifyContent: 'center',
                 flexShrink: 0
               }}>
-                <BarChart3 size={20} />
+                <BarChart3 size={16} />
               </div>
               <div>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0F172A', marginBottom: '2px' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.8rem', color: '#0F172A', lineHeight: 1.2 }}>
                   Platform Analytics
                 </div>
-                <div style={{ fontSize: '0.8rem', color: '#64748B', lineHeight: 1.4 }}>
-                  Track usage, performance and insights
+                <div style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.3, marginTop: '2px' }}>
+                  Track platform usage & performance
                 </div>
               </div>
             </div>
 
-            <div className="auth-hero-feature">
+            <div className="auth-hero-feature" style={{ padding: '8px 10px', gap: '8px' }}>
               <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '10px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
                 backgroundColor: '#FEF3C7',
                 color: '#D97706',
                 display: 'flex',
@@ -311,110 +399,109 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
                 justifyContent: 'center',
                 flexShrink: 0
               }}>
-                <ShieldCheck size={20} />
+                <ShieldCheck size={16} />
               </div>
               <div>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0F172A', marginBottom: '2px' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.8rem', color: '#0F172A', lineHeight: 1.2 }}>
                   Secure & Audited
                 </div>
-                <div style={{ fontSize: '0.8rem', color: '#64748B', lineHeight: 1.4 }}>
-                  Protected by RBAC and audit trails
+                <div style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.3, marginTop: '2px' }}>
+                  RBAC protection & full audit trails
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Interactive 3D Platform Overview Card Preview */}
+          {/* Authentic Governance & Security Architecture Status (No Fake Data) */}
           <div style={{
             background: 'linear-gradient(145deg, #FFFFFF 0%, #F8FAFC 100%)',
-            borderRadius: '20px',
+            borderRadius: '14px',
             border: '1px solid #E2E8F0',
-            boxShadow: '0 16px 36px -10px rgba(15, 23, 42, 0.08)',
-            padding: '22px',
-            position: 'relative',
-            overflow: 'hidden'
+            boxShadow: '0 8px 24px -6px rgba(15, 23, 42, 0.08)',
+            padding: '14px 16px',
+            position: 'relative'
           }}>
             {/* Live Indicator Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Layers size={18} color="#0F172A" />
-                <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#0F172A' }}>Platform Overview</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Layers size={15} color="#0F172A" />
+                <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0F172A' }}>Governance & Architecture Status</span>
               </div>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '4px 10px',
+                gap: '5px',
+                padding: '3px 8px',
                 backgroundColor: '#DEF7EC',
                 borderRadius: '999px',
-                fontSize: '0.75rem',
+                fontSize: '0.7rem',
                 fontWeight: 700,
                 color: '#059669'
               }}>
-                <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'pulseGlow 2s infinite' }} />
-                <span>Live</span>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'pulseGlow 2s infinite' }} />
+                <span>Operational</span>
               </div>
             </div>
 
-            {/* Metrics Mini-Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '16px' }}>
-              <div style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', color: '#0284C7' }}>
-                  <Users size={14} />
-                  <span style={{ fontSize: '0.7rem', color: '#64748B' }}>Total Users</span>
+            {/* System Pillars (Authentic Real Architecture) */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '10px' }}>
+              <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: '#EBF3FA', color: '#0284C7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Database size={14} />
                 </div>
-                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0F172A' }}>
-                  {overview?.users.total ?? '1,248'}
-                </div>
-              </div>
-
-              <div style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', color: '#059669' }}>
-                  <MessageSquare size={14} />
-                  <span style={{ fontSize: '0.7rem', color: '#64748B' }}>Conversations</span>
-                </div>
-                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0F172A' }}>
-                  {overview?.conversations.totalConversations ?? '856'}
+                <div>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#0F172A' }}>PostgreSQL Cloud</div>
+                  <div style={{ fontSize: '0.65rem', color: '#64748B' }}>Prisma ORM Connected</div>
                 </div>
               </div>
 
-              <div style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', color: '#7C3AED' }}>
-                  <FileText size={14} />
-                  <span style={{ fontSize: '0.7rem', color: '#64748B' }}>Patient Cases</span>
+              <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: '#DEF7EC', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Activity size={14} />
                 </div>
-                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0F172A' }}>
-                  {overview?.patientCases.total ?? '312'}
+                <div>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#0F172A' }}>Audit Engine</div>
+                  <div style={{ fontSize: '0.65rem', color: '#64748B' }}>Live Event Tracking</div>
                 </div>
               </div>
 
-              <div style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', color: '#D97706' }}>
-                  <Calendar size={14} />
-                  <span style={{ fontSize: '0.7rem', color: '#64748B' }}>Knowledge Docs</span>
+              <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: '#FEF3C7', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Lock size={14} />
                 </div>
-                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0F172A' }}>
-                  {overview?.knowledgeBase.totalDocuments ?? '24'}
+                <div>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#0F172A' }}>Access Control</div>
+                  <div style={{ fontSize: '0.65rem', color: '#64748B' }}>RBAC Admin Guard</div>
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: '#F8FAFC', padding: '8px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: '#F3E8FF', color: '#7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ShieldCheck size={14} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#0F172A' }}>Clinical RAG</div>
+                  <div style={{ fontSize: '0.65rem', color: '#64748B' }}>Verified Datasets</div>
                 </div>
               </div>
             </div>
 
             {/* Floating Security Pillars */}
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
               <div style={{
                 flex: 1,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                padding: '10px 14px',
+                gap: '8px',
+                padding: '6px 10px',
                 backgroundColor: '#F0F9FF',
                 border: '1px solid #BAE6FD',
-                borderRadius: '10px'
+                borderRadius: '8px'
               }}>
-                <Lock size={16} color="#0284C7" />
+                <Lock size={14} color="#0284C7" />
                 <div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0369A1' }}>RBAC Protected</div>
-                  <div style={{ fontSize: '0.7rem', color: '#64748B' }}>Authorized personnel only</div>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#0369A1' }}>RBAC Protected</div>
+                  <div style={{ fontSize: '0.65rem', color: '#64748B' }}>Authorized personnel only</div>
                 </div>
               </div>
 
@@ -422,16 +509,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
                 flex: 1,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                padding: '10px 14px',
+                gap: '8px',
+                padding: '6px 10px',
                 backgroundColor: '#ECFDF5',
                 border: '1px solid #A7F3D0',
-                borderRadius: '10px'
+                borderRadius: '8px'
               }}>
-                <CheckCircle2 size={16} color="#059669" />
+                <CheckCircle2 size={14} color="#059669" />
                 <div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#065F46' }}>Audit Trails</div>
-                  <div style={{ fontSize: '0.7rem', color: '#64748B' }}>All actions are logged</div>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#065F46' }}>Audit Trails</div>
+                  <div style={{ fontSize: '0.65rem', color: '#64748B' }}>Real database logging</div>
                 </div>
               </div>
             </div>
@@ -439,29 +526,29 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
         </div>
 
         {/* ======================================================== */}
-        {/* RIGHT COLUMN: ELEVATED ADMIN LOGIN CARD                  */}
+        {/* RIGHT COLUMN: ELEVATED ADMIN LOGIN CARD (COMPACT)        */}
         {/* ======================================================== */}
-        <div className="auth-card-elevated auth-card-admin">
+        <div className="auth-card-elevated auth-card-admin" style={{ padding: '20px 22px' }}>
           {/* Card Header with Dark Shield Icon */}
-          <div style={{ textAlign: 'center', marginBottom: '26px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '16px' }}>
             <div style={{
-              width: '56px',
-              height: '56px',
-              margin: '0 auto 16px',
-              borderRadius: '16px',
+              width: '40px',
+              height: '40px',
+              margin: '0 auto 8px',
+              borderRadius: '12px',
               backgroundColor: '#0F172A',
               color: '#38BDF8',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 8px 18px rgba(15, 23, 42, 0.25)'
+              boxShadow: '0 6px 14px rgba(15, 23, 42, 0.25)'
             }}>
-              <ShieldCheck size={30} />
+              <ShieldCheck size={22} />
             </div>
-            <h2 style={{ fontSize: '1.45rem', fontWeight: 700, color: '#0F172A', marginBottom: '6px' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0F172A', marginBottom: '2px' }}>
               Administrator Portal
             </h2>
-            <p style={{ color: '#64748B', fontSize: '0.875rem' }}>
+            <p style={{ color: '#64748B', fontSize: '0.78rem' }}>
               Authorized personnel only. Protected by RBAC & Audit Trails.
             </p>
           </div>
@@ -471,51 +558,51 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
               backgroundColor: '#FEE2E2',
               border: '1px solid #FCA5A5',
               color: '#991B1B',
-              padding: '12px 14px',
-              borderRadius: '10px',
-              fontSize: '0.85rem',
-              marginBottom: '18px',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              fontSize: '0.78rem',
+              marginBottom: '12px',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px'
+              gap: '6px'
             }}>
-              <ShieldAlert size={18} />
+              <ShieldAlert size={16} />
               <span>{loginError}</span>
             </div>
           )}
 
-          <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '11px' }}>
             <div>
-              <label className="input-label" style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>
+              <label className="input-label" style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', marginBottom: '3px' }}>
                 Admin Email
               </label>
               <div style={{ position: 'relative' }}>
-                <Mail size={17} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                <Mail size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
                 <input
                   type="email"
                   className="input-field"
                   placeholder="Enter your admin email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  style={{ paddingLeft: '40px', borderRadius: '10px', padding: '11px 14px 11px 40px' }}
+                  style={{ paddingLeft: '34px', borderRadius: '8px', padding: '6px 10px 6px 34px', height: '36px', fontSize: '0.85rem' }}
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="input-label" style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>
+              <label className="input-label" style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155', marginBottom: '3px' }}>
                 Password
               </label>
               <div style={{ position: 'relative' }}>
-                <Lock size={17} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                <Lock size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   className="input-field"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  style={{ paddingLeft: '40px', paddingRight: '40px', borderRadius: '10px', padding: '11px 40px 11px 40px' }}
+                  style={{ paddingLeft: '34px', paddingRight: '36px', borderRadius: '8px', padding: '6px 36px 6px 34px', height: '36px', fontSize: '0.85rem' }}
                   required
                 />
                 <button
@@ -523,7 +610,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
                   onClick={() => setShowPassword(!showPassword)}
                   style={{
                     position: 'absolute',
-                    right: '12px',
+                    right: '10px',
                     top: '50%',
                     transform: 'translateY(-50%)',
                     background: 'none',
@@ -533,14 +620,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
                     padding: 0
                   }}
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
 
             {/* Keep me signed in & Forgot Password Row */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.825rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#475569', cursor: 'pointer' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#475569', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={keepSignedIn}
@@ -558,25 +645,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
               className="btn"
               style={{
                 width: '100%',
-                padding: '13px',
-                marginTop: '4px',
+                padding: '9px 12px',
+                marginTop: '2px',
                 backgroundColor: '#0F172A',
                 color: '#FFFFFF',
-                borderRadius: '10px',
+                borderRadius: '8px',
                 fontWeight: 700,
-                boxShadow: '0 4px 12px rgba(15, 23, 42, 0.25)',
+                fontSize: '0.85rem',
+                boxShadow: '0 3px 8px rgba(15, 23, 42, 0.25)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px'
+                gap: '6px'
               }}
               disabled={loginLoading || !email || !password}
             >
-              {loginLoading ? <Loader2 className="animate-spin" size={18} /> : (
+              {loginLoading ? <Loader2 className="animate-spin" size={16} /> : (
                 <>
-                  <ShieldCheck size={18} />
+                  <ShieldCheck size={16} />
                   <span>Secure Admin Login</span>
-                  <ArrowRight size={18} />
+                  <ArrowRight size={15} />
                 </>
               )}
             </button>
@@ -585,10 +673,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              margin: '4px 0',
-              gap: '12px',
+              margin: '2px 0',
+              gap: '8px',
               color: '#94A3B8',
-              fontSize: '0.75rem',
+              fontSize: '0.68rem',
               fontWeight: 600
             }}>
               <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
@@ -602,19 +690,18 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
               onClick={onBackToApp}
               style={{
                 width: '100%',
-                padding: '11px',
+                padding: '7px 10px',
                 backgroundColor: '#FFFFFF',
                 border: '1.5px solid #CBD5E1',
-                borderRadius: '10px',
+                borderRadius: '8px',
                 color: '#334155',
-                fontSize: '0.85rem',
+                fontSize: '0.78rem',
                 fontWeight: 600,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px',
-                transition: 'all 0.15s ease'
+                gap: '6px'
               }}
             >
               <span>← Return to Main Portal</span>
@@ -622,21 +709,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
 
             {/* Interactive Admin Seed Credentials Pill */}
             <div style={{
-              marginTop: '6px',
-              padding: '8px 12px',
+              marginTop: '4px',
+              padding: '5px 8px',
               backgroundColor: '#F8FAFC',
               border: '1px solid #E2E8F0',
-              borderRadius: '8px',
-              fontSize: '0.75rem',
+              borderRadius: '6px',
+              fontSize: '0.72rem',
               color: '#475569',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: '6px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Lock size={13} color="#64748B" />
-                <span>Default seeded via <code>npm run seed:admin</code></span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <Lock size={12} color="#64748B" />
+                <span>Default: <code>admin@electropathy.ai</code></span>
               </div>
               <button
                 type="button"
@@ -645,17 +732,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
                   backgroundColor: copiedSeed ? '#059669' : '#0F172A',
                   color: '#FFFFFF',
                   border: 'none',
-                  borderRadius: '6px',
-                  padding: '3px 8px',
-                  fontSize: '0.72rem',
+                  borderRadius: '4px',
+                  padding: '2px 6px',
+                  fontSize: '0.68rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px'
+                  gap: '3px'
                 }}
               >
-                {copiedSeed ? <Check size={12} /> : <Sparkles size={12} />}
+                {copiedSeed ? <Check size={11} /> : <Sparkles size={11} />}
                 {copiedSeed ? 'Filled!' : 'Fill Admin'}
               </button>
             </div>
@@ -667,57 +754,90 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
 
   // 2. ADMIN DASHBOARD VIEW
   return (
-    <div style={{ maxWidth: '1320px', margin: '20px auto', padding: '0 20px' }}>
-      {/* Top Banner */}
+    <div style={{ maxWidth: '1360px', margin: '16px auto', padding: '0 20px' }}>
+      {/* Top Banner (Dark Governance Console Bar) */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '18px 24px',
-        backgroundColor: '#0F172A',
+        padding: '16px 24px',
+        backgroundColor: '#0B132B',
         color: '#FFFFFF',
-        borderRadius: 'var(--radius-lg)',
-        marginBottom: '24px'
+        borderRadius: '12px',
+        marginBottom: '20px',
+        boxShadow: '0 4px 16px rgba(11, 19, 43, 0.25)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{
             width: '42px',
             height: '42px',
             borderRadius: '10px',
-            backgroundColor: '#1E293B',
+            backgroundColor: '#1C2541',
             color: '#38BDF8',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            border: '1px solid rgba(56, 189, 248, 0.2)'
           }}>
             <ShieldCheck size={24} />
           </div>
           <div>
-            <h2 style={{ fontSize: '1.25rem', color: '#FFFFFF', letterSpacing: '-0.3px' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.3px', margin: 0, lineHeight: 1.2 }}>
               Administration & Governance Console
             </h2>
-            <div style={{ fontSize: '0.75rem', color: '#94A3B8' }}>
-              Electropathy AI • Logged in as: <strong>{adminUser.email || 'System Admin'}</strong>
+            <div style={{ fontSize: '0.78rem', color: '#94A3B8', marginTop: '3px' }}>
+              Electropathy AI • Logged in as: <span style={{ color: '#E2E8F0', fontWeight: 600 }}>{adminUser.email || 'admin@electropathy.ai'}</span>
             </div>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={onBackToApp} className="btn btn-secondary" style={{ padding: '8px 14px', fontSize: '0.85rem' }}>
+          <button
+            onClick={onBackToApp}
+            style={{
+              padding: '8px 18px',
+              backgroundColor: '#FFFFFF',
+              color: '#0F172A',
+              fontWeight: 700,
+              fontSize: '0.85rem',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+              transition: 'all 0.15s ease'
+            }}
+          >
             User Portal
           </button>
-          <button onClick={handleAdminLogout} className="btn" style={{ backgroundColor: '#EF4444', color: '#FFF', padding: '8px 14px', fontSize: '0.85rem' }}>
-            <LogOut size={16} /> Logout
+          <button
+            onClick={handleAdminLogout}
+            style={{
+              backgroundColor: '#EF4444',
+              color: '#FFFFFF',
+              fontWeight: 700,
+              padding: '8px 18px',
+              fontSize: '0.85rem',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 2px 8px rgba(239,68,68,0.3)',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <LogOut size={15} /> Logout
           </button>
         </div>
       </div>
 
-      {/* Tabs Bar */}
+      {/* Tabs Bar (Horizontal Pills matching screenshot) */}
       <div style={{
         display: 'flex',
-        gap: '8px',
-        borderBottom: '1px solid #E2E8F0',
-        marginBottom: '24px'
+        gap: '10px',
+        marginBottom: '20px',
+        flexWrap: 'wrap'
       }}>
         {[
           { key: 'overview', label: 'System Overview', icon: Layers },
@@ -732,18 +852,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
             <button
               key={t.key}
               onClick={() => setActiveTab(t.key as any)}
-              className="btn"
               style={{
-                backgroundColor: isActive ? '#0F172A' : '#F8FAFC',
-                color: isActive ? '#FFFFFF' : '#475569',
-                border: '1px solid #CBD5E1',
-                borderBottom: isActive ? '1px solid #0F172A' : '1px solid #CBD5E1',
-                borderRadius: '8px 8px 0 0',
-                padding: '10px 18px',
-                fontSize: '0.875rem'
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '9px 18px',
+                backgroundColor: isActive ? '#0F172A' : '#FFFFFF',
+                color: isActive ? '#FFFFFF' : '#334155',
+                border: isActive ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                borderRadius: '8px',
+                fontSize: '0.86rem',
+                fontWeight: isActive ? 700 : 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                boxShadow: isActive ? '0 2px 6px rgba(15,23,42,0.15)' : 'none'
               }}
             >
-              <Icon size={16} />
+              <Icon size={16} color={isActive ? '#FFFFFF' : '#64748B'} />
               <span>{t.label}</span>
             </button>
           );
@@ -754,58 +879,278 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
 
       {/* 1. OVERVIEW TAB */}
       {activeTab === 'overview' && (
-        <div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {loadingOverview || !overview ? (
-            <div style={{ padding: '60px', textAlign: 'center', color: '#64748B' }}>
-              <Loader2 className="animate-spin" size={24} style={{ margin: '0 auto 8px' }} />
-              Querying database statistics...
+            <div style={{ padding: '60px', textAlign: 'center', color: '#64748B', backgroundColor: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+              <Loader2 className="animate-spin" size={26} style={{ margin: '0 auto 10px', color: '#0284C7' }} />
+              <div style={{ fontWeight: 600 }}>Querying database statistics & live metrics...</div>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-              <div style={{ backgroundColor: '#FFFFFF', padding: '24px', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: 'var(--shadow-sm)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748B' }}>Total Registered Users</span>
-                  <Users size={20} color="#0F4C81" />
+            <>
+              {/* 4 Metric Cards (Matching Screenshot) */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: '16px'
+              }}>
+                {/* Card 1: Total Registered Users */}
+                <div style={{
+                  backgroundColor: '#FFFFFF',
+                  padding: '20px 22px',
+                  borderRadius: '12px',
+                  border: '1px solid #E2E8F0',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Total Registered Users</span>
+                    <Users size={20} color="#0284C7" />
+                  </div>
+                  <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.15 }}>
+                    {overview.users.total}
+                  </div>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#059669', marginTop: '8px' }}>
+                    {overview.users.active} Active • {overview.users.inactive} Inactive
+                  </div>
                 </div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, color: '#0F172A' }}>{overview.users.total}</div>
-                <div style={{ fontSize: '0.75rem', color: '#10B981', marginTop: '6px' }}>
-                  {overview.users.active} Active • {overview.users.inactive} Inactive
+
+                {/* Card 2: Conversations & Chats */}
+                <div style={{
+                  backgroundColor: '#FFFFFF',
+                  padding: '20px 22px',
+                  borderRadius: '12px',
+                  border: '1px solid #E2E8F0',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Conversations & Chats</span>
+                    <MessageSquare size={20} color="#059669" />
+                  </div>
+                  <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.15 }}>
+                    {overview.conversations.totalConversations}
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '8px' }}>
+                    {overview.conversations.totalMessages} Messages in PostgreSQL
+                  </div>
+                </div>
+
+                {/* Card 3: Clinical Patient Cases */}
+                <div style={{
+                  backgroundColor: '#FFFFFF',
+                  padding: '20px 22px',
+                  borderRadius: '12px',
+                  border: '1px solid #E2E8F0',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Clinical Patient Cases</span>
+                    <FileText size={20} color="#D97706" />
+                  </div>
+                  <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.15 }}>
+                    {overview.patientCases.total}
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '8px' }}>
+                    Recorded via Practitioner Intake Wizard
+                  </div>
+                </div>
+
+                {/* Card 4: Knowledge Base (RAG) */}
+                <div style={{
+                  backgroundColor: '#FFFFFF',
+                  padding: '20px 22px',
+                  borderRadius: '12px',
+                  border: '1px solid #E2E8F0',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Knowledge Base (RAG)</span>
+                    <Layers size={20} color="#7C3AED" />
+                  </div>
+                  <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.15 }}>
+                    {overview.knowledgeBase.totalDocuments} Docs
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '8px' }}>
+                    {overview.knowledgeBase.totalChunks} Indexed Text Chunks
+                  </div>
                 </div>
               </div>
 
-              <div style={{ backgroundColor: '#FFFFFF', padding: '24px', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: 'var(--shadow-sm)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748B' }}>Conversations & Chats</span>
-                  <MessageSquare size={20} color="#00A896" />
-                </div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, color: '#0F172A' }}>{overview.conversations.totalConversations}</div>
-                <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '6px' }}>
-                  {overview.conversations.totalMessages} Messages in PostgreSQL
-                </div>
-              </div>
+              {/* RECENT PLATFORM ACTIVITIES MODULE */}
+              <div style={{
+                backgroundColor: '#FFFFFF',
+                borderRadius: '12px',
+                border: '1px solid #E2E8F0',
+                padding: '20px 24px',
+                boxShadow: '0 1px 4px rgba(15, 23, 42, 0.05)'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '16px',
+                  paddingBottom: '14px',
+                  borderBottom: '1px solid #F1F5F9'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      backgroundColor: '#DEF7EC',
+                      color: '#059669',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Activity size={18} />
+                    </div>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                          Recent Platform Activities
+                        </h3>
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '2px 8px',
+                          backgroundColor: '#DEF7EC',
+                          borderRadius: '999px',
+                          fontSize: '0.68rem',
+                          fontWeight: 700,
+                          color: '#059669'
+                        }}>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'pulseGlow 2s infinite' }} />
+                          Live Tracking
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '2px' }}>
+                        Live recorded events across practitioner intake, logins, AI chats, and governance
+                      </div>
+                    </div>
+                  </div>
 
-              <div style={{ backgroundColor: '#FFFFFF', padding: '24px', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: 'var(--shadow-sm)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748B' }}>Clinical Patient Cases</span>
-                  <FileText size={20} color="#F59E0B" />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button
+                      onClick={loadOverview}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        padding: '6px 12px',
+                        backgroundColor: '#F8FAFC',
+                        border: '1px solid #CBD5E1',
+                        borderRadius: '6px',
+                        fontSize: '0.78rem',
+                        fontWeight: 600,
+                        color: '#475569',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <RefreshCw size={13} className={loadingOverview ? 'animate-spin' : ''} />
+                      <span>Refresh</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('audit')}
+                      style={{
+                        padding: '6px 12px',
+                        backgroundColor: '#0F172A',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '0.78rem',
+                        fontWeight: 600,
+                        color: '#FFFFFF',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <span>View Full Audit Trail</span>
+                      <ChevronRight size={13} />
+                    </button>
+                  </div>
                 </div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, color: '#0F172A' }}>{overview.patientCases.total}</div>
-                <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '6px' }}>
-                  Recorded via Practitioner Intake Wizard
-                </div>
-              </div>
 
-              <div style={{ backgroundColor: '#FFFFFF', padding: '24px', borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: 'var(--shadow-sm)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748B' }}>Knowledge Base (RAG)</span>
-                  <Layers size={20} color="#8B5CF6" />
-                </div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, color: '#0F172A' }}>{overview.knowledgeBase.totalDocuments} Docs</div>
-                <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '6px' }}>
-                  {overview.knowledgeBase.totalChunks} Indexed Text Chunks
-                </div>
+                {/* Activity Feed Table */}
+                {!overview.recentActivities || overview.recentActivities.length === 0 ? (
+                  <div style={{ padding: '36px 20px', textAlign: 'center', color: '#64748B' }}>
+                    <Activity size={28} style={{ margin: '0 auto 8px', color: '#94A3B8' }} />
+                    <div style={{ fontWeight: 600, color: '#334155' }}>No recent activities recorded yet</div>
+                    <div style={{ fontSize: '0.75rem', marginTop: '4px' }}>
+                      User logins, patient intake cases, and clinical conversations will appear here automatically.
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1.5px solid #E2E8F0', color: '#64748B', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                          <th style={{ padding: '10px 12px' }}>Timestamp</th>
+                          <th style={{ padding: '10px 12px' }}>Event / Action</th>
+                          <th style={{ padding: '10px 12px' }}>Actor / User</th>
+                          <th style={{ padding: '10px 12px' }}>Details</th>
+                          <th style={{ padding: '10px 12px', textAlign: 'right' }}>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {overview.recentActivities.map((act) => {
+                          const actionConfig = getActionBadge(act.action);
+                          return (
+                            <tr key={act.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                              <td style={{ padding: '10px 12px', color: '#64748B', whiteSpace: 'nowrap' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                  <Clock size={13} color="#94A3B8" />
+                                  <span>{formatActivityDate(act.createdAt)}</span>
+                                </div>
+                              </td>
+                              <td style={{ padding: '10px 12px' }}>
+                                <span style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '3px 8px',
+                                  borderRadius: '6px',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 700,
+                                  backgroundColor: actionConfig.bg,
+                                  color: actionConfig.color
+                                }}>
+                                  {actionConfig.label}
+                                </span>
+                              </td>
+                              <td style={{ padding: '10px 12px' }}>
+                                <div style={{ fontWeight: 600, color: '#0F172A' }}>
+                                  {act.admin?.fullName || 'Practitioner / User'}
+                                </div>
+                                <div style={{ fontSize: '0.7rem', color: '#64748B' }}>
+                                  {act.admin?.mobileNumber ? `+91 ${act.admin.mobileNumber}` : act.admin?.email || 'System'}
+                                </div>
+                              </td>
+                              <td style={{ padding: '10px 12px', color: '#334155' }}>
+                                {formatActivityDetails(act)}
+                              </td>
+                              <td style={{ padding: '10px 12px', textAlign: 'right' }}>
+                                <span style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  fontSize: '0.72rem',
+                                  color: '#059669',
+                                  fontWeight: 600
+                                }}>
+                                  <CheckCircle2 size={13} />
+                                  <span>Recorded</span>
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-            </div>
+            </>
           )}
         </div>
       )}
@@ -973,7 +1318,120 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
       {/* 4. PATIENT CASES TAB */}
       {activeTab === 'cases' && (
         <div style={{ backgroundColor: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '24px' }}>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '20px' }}>Submitted Clinical Case Records ({patientCases.length})</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                Submitted Clinical Case Records ({patientCases.length})
+              </h3>
+              <p style={{ color: '#64748B', fontSize: '0.82rem', marginTop: '3px' }}>
+                Master roster of all patient intake histories recorded across the system.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowIntakeModal(true)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '9px 18px',
+                backgroundColor: '#0F4C81',
+                color: '#FFFFFF',
+                borderRadius: '8px',
+                border: 'none',
+                fontWeight: 700,
+                fontSize: '0.86rem',
+                cursor: 'pointer',
+                boxShadow: '0 2px 6px rgba(15, 76, 129, 0.25)',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <FilePlus size={16} />
+              <span>+ New Patient Intake</span>
+            </button>
+          </div>
+
+          {/* Modal for New Patient Intake */}
+          {showIntakeModal && (
+            <div style={{
+              position: 'fixed',
+              top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(15, 23, 42, 0.7)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 999,
+              padding: '20px'
+            }}>
+              <div style={{
+                backgroundColor: '#FFFFFF',
+                borderRadius: '16px',
+                width: '100%',
+                maxWidth: '1080px',
+                maxHeight: '92vh',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+              }}>
+                <div style={{
+                  padding: '16px 24px',
+                  borderBottom: '1px solid #E2E8F0',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  backgroundColor: '#F8FAFC'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      backgroundColor: '#0F4C81',
+                      color: '#FFFFFF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <FilePlus size={18} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                        Record New Patient Intake Case
+                      </h3>
+                      <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
+                        Admin & Clinical Practitioner Intake Protocol
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowIntakeModal(false)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#64748B',
+                      padding: '6px',
+                      borderRadius: '8px'
+                    }}
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+                  <PatientIntakeWizard
+                    onCaseSubmitted={() => {
+                      setShowIntakeModal(false);
+                      loadCases();
+                      loadOverview();
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {patientCases.map((cs) => (
               <div

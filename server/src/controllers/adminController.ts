@@ -84,7 +84,8 @@ export class AdminController {
         totalCases,
         casesByStatus,
         knowledgeDocs,
-        knowledgeChunks
+        knowledgeChunks,
+        recentActivities
       ] = await Promise.all([
         prisma.user.count(),
         prisma.user.count({ where: { isActive: true } }),
@@ -97,7 +98,16 @@ export class AdminController {
           _count: { id: true }
         }),
         prisma.knowledgeDocument.count(),
-        prisma.knowledgeChunk.count()
+        prisma.knowledgeChunk.count(),
+        prisma.auditLog.findMany({
+          take: 15,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            admin: {
+              select: { id: true, fullName: true, email: true, mobileNumber: true }
+            }
+          }
+        })
       ]);
 
       res.status(200).json({
@@ -115,7 +125,7 @@ export class AdminController {
           },
           patientCases: {
             total: totalCases,
-            byStatus: casesByStatus.reduce((acc, curr) => {
+            byStatus: casesByStatus.reduce((acc: Record<string, number>, curr: { status: string; _count: { id: number } }) => {
               acc[curr.status] = curr._count.id;
               return acc;
             }, {} as Record<string, number>)
@@ -123,7 +133,17 @@ export class AdminController {
           knowledgeBase: {
             totalDocuments: knowledgeDocs,
             totalChunks: knowledgeChunks
-          }
+          },
+          recentActivities: recentActivities.map((log: any) => ({
+            id: log.id,
+            adminId: log.adminId,
+            action: log.action,
+            targetId: log.targetId,
+            details: log.details,
+            ipAddress: log.ipAddress,
+            createdAt: log.createdAt.toISOString(),
+            admin: log.admin
+          }))
         }
       });
     } catch (error: any) {

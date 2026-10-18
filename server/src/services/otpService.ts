@@ -2,9 +2,10 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { OtpRecord } from '../types/index.js';
 import { smsService } from './smsService.js';
+import { normalizePhoneNumber } from '../utils/phone.js';
 
 class OtpService {
-  // Store: clean mobile number -> OtpRecord
+  // Store: clean mobile number (E.164) -> OtpRecord
   private otpStore: Map<string, OtpRecord> = new Map();
   private readonly OTP_EXPIRY_MS = 15 * 60 * 1000; // 15 minutes
   private readonly RESEND_COOLDOWN_MS = 5 * 1000; // 5 seconds (relaxed for testing)
@@ -13,12 +14,12 @@ class OtpService {
   /**
    * Generates and dispatches OTP to recipient mobile
    */
-  async requestOtp(mobileNumber: string): Promise<{ success: boolean; message: string; cooldownSeconds?: number; devOtp?: string }> {
-    const cleanNumber = mobileNumber.replace(/\D/g, '').slice(-10);
-
-    if (cleanNumber.length !== 10) {
-      throw new Error('Please provide a valid 10-digit mobile number.');
+  async requestOtp(mobileNumber: string): Promise<{ success: boolean; message: string; cooldownSeconds?: number; devOtp?: string; e164?: string }> {
+    const norm = normalizePhoneNumber(mobileNumber);
+    if (!norm.isValid) {
+      throw new Error(norm.error || 'Please provide a valid Indian mobile number.');
     }
+    const cleanNumber = norm.e164;
 
     const existingRecord = this.otpStore.get(cleanNumber);
     const now = new Date();
@@ -66,9 +67,15 @@ class OtpService {
   /**
    * Verifies submitted OTP against stored hash
    */
-  async verifyOtp(mobileNumber: string, enteredOtp: string): Promise<{ valid: boolean; message: string }> {
-    const cleanNumber = mobileNumber.replace(/\D/g, '').slice(-10);
-    const record = this.otpStore.get(cleanNumber);
+  async verifyOtp(mobileNumber: string, enteredOtp: string): Promise<{ valid: boolean; message: string; e164?: string }> {
+    const norm = normalizePhoneNumber(mobileNumber);
+    if (!norm.isValid) {
+      return { valid: false, message: norm.error || 'Invalid mobile number.' };
+    }
+
+    // Check by E.164 or legacy 10-digit
+    const record = this.otpStore.get(norm.e164) || this.otpStore.get(norm.national10Digit);
+    const storeKey = this.otpStore.has(norm.e164) ? norm.e164 : norm.national10Digit;
 
     if (!record) {
       return { valid: false, message: 'No active OTP request found. Please request a new OTP.' };
@@ -80,12 +87,12 @@ class OtpService {
 
     const now = new Date();
     if (now > record.expiresAt) {
-      this.otpStore.delete(cleanNumber);
+      this.otpStore.delete(storeKey);
       return { valid: false, message: 'OTP has expired. Please request a new one.' };
     }
 
     if (record.attempts >= this.MAX_ATTEMPTS) {
-      this.otpStore.delete(cleanNumber);
+      this.otpStore.delete(storeKey);
       return { valid: false, message: 'Maximum verification attempts exceeded. Please request a new OTP.' };
     }
 
@@ -104,9 +111,9 @@ class OtpService {
 
     // Mark as used
     record.isUsed = true;
-    this.otpStore.delete(cleanNumber);
+    this.otpStore.delete(storeKey);
 
-    return { valid: true, message: 'OTP verified successfully.' };
+    return { valid: true, message: 'OTP verified successfully.', e164: norm.e164 };
   }
 }
 

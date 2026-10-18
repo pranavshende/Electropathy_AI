@@ -12,8 +12,27 @@ import { User, PatientCase } from './types';
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [currentLang, setCurrentLang] = useState('en');
-  const [activeTab, setActiveTab] = useState<'intake' | 'records' | 'chat' | 'admin'>('intake');
+  const [activeTab, setActiveTab] = useState<'records' | 'chat'>('chat');
+  const [isAdminRoute, setIsAdminRoute] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Check URL routing for authorized admin interface
+  useEffect(() => {
+    const checkRoute = () => {
+      const path = window.location.pathname.toLowerCase();
+      const search = window.location.search.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      if (path === '/admin' || search.includes('admin') || hash === '#admin') {
+        setIsAdminRoute(true);
+      } else {
+        setIsAdminRoute(false);
+      }
+    };
+
+    checkRoute();
+    window.addEventListener('popstate', checkRoute);
+    return () => window.removeEventListener('popstate', checkRoute);
+  }, []);
 
   useEffect(() => {
     // Check if previously logged in as user
@@ -26,10 +45,12 @@ export default function App() {
             setUser(res.user);
             setCurrentLang(res.user.preferredLang || 'en');
           } else {
-            api.logout();
+            await api.logout();
+            setUser(null);
           }
         } catch {
-          api.logout();
+          await api.logout();
+          setUser(null);
         }
       }
       setLoading(false);
@@ -41,23 +62,42 @@ export default function App() {
   const handleLoginSuccess = (authenticatedUser: User) => {
     setUser(authenticatedUser);
     setCurrentLang(authenticatedUser.preferredLang || 'en');
-    setActiveTab('chat'); // Immediately show their saved consultation history upon login!
+    setActiveTab('chat'); // Immediately show their personal saved consultation history upon login!
+  };
+
+  const handleAdminSuccess = (_admin: any) => {
+    setIsAdminRoute(true);
   };
 
   const handleLogout = async () => {
     await api.logout();
     setUser(null);
-    setActiveTab('intake');
+    setActiveTab('chat');
   };
 
-  const handleCaseSubmitted = (_newCase: PatientCase) => {
-    setActiveTab('records');
+  const handleExitAdmin = () => {
+    setIsAdminRoute(false);
+    if (window.location.pathname === '/admin' || window.location.search.includes('admin') || window.location.hash === '#admin') {
+      window.history.pushState({}, '', '/');
+    }
   };
 
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ color: '#0F4C81', fontWeight: 600 }}>Loading Electropathy AI Portal...</div>
+      </div>
+    );
+  }
+
+  // Admin Portal Route (Authorized administration interface only)
+  if (isAdminRoute) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <main style={{ flex: 1, padding: '8px 16px 0' }}>
+          <AdminPortal onBackToApp={handleExitAdmin} />
+        </main>
+        <MedicalDisclaimer compact />
       </div>
     );
   }
@@ -73,27 +113,25 @@ export default function App() {
         onTabChange={(tab) => setActiveTab(tab)}
       />
 
-      <main style={{ flex: 1, padding: '20px' }}>
-        {activeTab === 'admin' ? (
-          <AdminPortal onBackToApp={() => setActiveTab('intake')} />
-        ) : !user ? (
-          <LoginModal onSuccess={handleLoginSuccess} />
+      <main style={{ flex: 1, padding: !user ? '8px 16px 0' : activeTab === 'chat' ? '10px 20px 0' : '20px' }}>
+        {!user ? (
+          <LoginModal 
+            onSuccess={handleLoginSuccess} 
+            onAdminSuccess={handleAdminSuccess}
+          />
         ) : (
           <>
-            {activeTab === 'intake' && (
-              <PatientIntakeWizard onCaseSubmitted={handleCaseSubmitted} />
-            )}
             {activeTab === 'records' && (
-              <CaseHistoryList />
+              <CaseHistoryList key={user.id} user={user} />
             )}
             {activeTab === 'chat' && (
-              <ChatHistoryView />
+              <ChatHistoryView key={user.id} user={user} />
             )}
           </>
         )}
       </main>
 
-      <MedicalDisclaimer />
+      <MedicalDisclaimer compact={!user} />
     </div>
   );
 }

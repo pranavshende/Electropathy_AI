@@ -4,7 +4,9 @@ import { prisma } from '../db/prisma.js';
 import { otpService } from '../services/otpService.js';
 import { userService } from '../services/userService.js';
 import { tokenService } from '../services/tokenService.js';
+import { auditService } from '../services/auditService.js';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware.js';
+import { normalizePhoneNumber, formatDisplayPhone } from '../utils/phone.js';
 
 export class AuthController {
   /**
@@ -23,16 +25,16 @@ export class AuthController {
         return;
       }
 
-      const cleanNumber = mobileNumber.replace(/\D/g, '').slice(-10);
-      if (cleanNumber.length !== 10 || !/^[6-9]\d{9}$/.test(cleanNumber)) {
+      const norm = normalizePhoneNumber(mobileNumber);
+      if (!norm.isValid) {
         res.status(400).json({
           success: false,
-          message: 'Please provide a valid 10-digit Indian mobile number.'
+          message: norm.error || 'Please provide a valid 10-digit Indian mobile number.'
         });
         return;
       }
 
-      const result = await otpService.requestOtp(cleanNumber);
+      const result = await otpService.requestOtp(norm.e164);
 
       if (!result.success) {
         res.status(429).json({
@@ -46,7 +48,8 @@ export class AuthController {
       res.status(200).json({
         success: true,
         message: result.message,
-        mobileNumber: cleanNumber,
+        mobileNumber: norm.e164,
+        displayMobile: formatDisplayPhone(norm.e164),
         devOtp: (result as any).devOtp
       });
     } catch (error: any) {
@@ -74,7 +77,15 @@ export class AuthController {
         return;
       }
 
-      const cleanNumber = mobileNumber.replace(/\D/g, '').slice(-10);
+      const norm = normalizePhoneNumber(mobileNumber);
+      if (!norm.isValid) {
+        res.status(400).json({
+          success: false,
+          message: norm.error || 'Invalid mobile number format.'
+        });
+        return;
+      }
+
       const cleanOtp = String(otp).trim();
 
       if (cleanOtp.length !== 6 || !/^\d{6}$/.test(cleanOtp)) {
@@ -86,7 +97,7 @@ export class AuthController {
       }
 
       // Verify OTP
-      const verificationResult = await otpService.verifyOtp(cleanNumber, cleanOtp);
+      const verificationResult = await otpService.verifyOtp(norm.e164, cleanOtp);
 
       if (!verificationResult.valid) {
         res.status(400).json({
@@ -97,11 +108,11 @@ export class AuthController {
       }
 
       // Check if user already exists
-      let user = await userService.findByMobile(cleanNumber);
+      let user = await userService.findByMobile(norm.e164);
       let isNewUser = false;
 
       if (!user) {
-        user = await userService.createFromMobile(cleanNumber);
+        user = await userService.createFromMobile(norm.e164);
         isNewUser = true;
       } else if (!user.fullName) {
         isNewUser = true;
@@ -109,6 +120,16 @@ export class AuthController {
 
       // Generate tokens
       const { accessToken, refreshToken } = await tokenService.generateTokens(user);
+
+      // Record activity
+      const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
+      await auditService.log(
+        user.id,
+        isNewUser ? 'USER_REGISTERED' : 'USER_LOGIN_OTP',
+        user.id,
+        { mobile: norm.e164, method: 'otp', isNewUser },
+        ip
+      );
 
       res.status(200).json({
         success: true,
@@ -121,6 +142,7 @@ export class AuthController {
         user: {
           id: user.id,
           mobileNumber: user.mobileNumber,
+          displayMobile: formatDisplayPhone(user.mobileNumber),
           fullName: user.fullName || null,
           email: user.email || null,
           userType: user.userType || null,
@@ -153,17 +175,22 @@ export class AuthController {
         return;
       }
 
-      const cleanNumber = mobileNumber.replace(/\D/g, '').slice(-10);
-      if (cleanNumber.length !== 10) {
+      const norm = normalizePhoneNumber(mobileNumber);
+      if (!norm.isValid) {
         res.status(400).json({
           success: false,
-          message: 'Please provide a valid 10-digit Indian mobile number.'
+          message: norm.error || 'Please provide a valid 10-digit Indian mobile number.'
         });
         return;
       }
 
-      const userRecord = await prisma.user.findUnique({
-        where: { mobileNumber: cleanNumber }
+      let userRecord = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { mobileNumber: norm.e164 },
+            { mobileNumber: norm.national10Digit }
+          ]
+        }
       });
 
       if (!userRecord) {
@@ -172,6 +199,18 @@ export class AuthController {
           message: 'No account found with this mobile number. Please register and verify with OTP first.'
         });
         return;
+      }
+
+      // Upgrade legacy mobileNumber to E.164 if needed
+      if (userRecord.mobileNumber !== norm.e164) {
+        try {
+          userRecord = await prisma.user.update({
+            where: { id: userRecord.id },
+            data: { mobileNumber: norm.e164 }
+          });
+        } catch {
+          // Ignore unique race
+        }
       }
 
       if (!userRecord.isActive) {
@@ -211,6 +250,16 @@ export class AuthController {
 
       // Generate tokens
       const { accessToken, refreshToken } = await tokenService.generateTokens(userRecord as any);
+
+      // Record activity
+      const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
+      await auditService.log(
+        userRecord.id,
+        'USER_LOGIN',
+        userRecord.id,
+        { mobile: norm.e164, method: 'password', fullName: userRecord.fullName || null },
+        ip
+      );
 
       res.status(200).json({
         success: true,
@@ -253,9 +302,9 @@ export class AuthController {
         return;
       }
 
-      const cleanNumber = mobileNumber.replace(/\D/g, '').slice(-10);
-      if (cleanNumber.length !== 10) {
-        res.status(400).json({ success: false, message: 'Invalid mobile number.' });
+      const norm = normalizePhoneNumber(mobileNumber);
+      if (!norm.isValid) {
+        res.status(400).json({ success: false, message: norm.error || 'Invalid mobile number.' });
         return;
       }
 
@@ -264,13 +313,20 @@ export class AuthController {
         return;
       }
 
-      const verifyRes = await otpService.verifyOtp(cleanNumber, String(otp).trim());
+      const verifyRes = await otpService.verifyOtp(norm.e164, String(otp).trim());
       if (!verifyRes.valid) {
         res.status(400).json({ success: false, message: verifyRes.message || 'Invalid or expired OTP.' });
         return;
       }
 
-      const user = await prisma.user.findUnique({ where: { mobileNumber: cleanNumber } });
+      let user = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { mobileNumber: norm.e164 },
+            { mobileNumber: norm.national10Digit }
+          ]
+        }
+      });
       if (!user) {
         res.status(404).json({ success: false, message: 'User account not found.' });
         return;
@@ -334,6 +390,16 @@ export class AuthController {
         preferredLang,
         passwordHash
       });
+
+      // Record activity
+      const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
+      await auditService.log(
+        userId,
+        'USER_PROFILE_UPDATED',
+        userId,
+        { fullName: fullName?.trim(), userType, preferredLang },
+        ip
+      );
 
       res.status(200).json({
         success: true,

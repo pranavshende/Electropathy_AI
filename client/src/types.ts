@@ -113,6 +113,7 @@ export interface AdminOverview {
     totalDocuments: number;
     totalChunks: number;
   };
+  recentActivities?: AuditLogItem[];
 }
 
 export interface AuditLogItem {

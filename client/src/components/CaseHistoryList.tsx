@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { PatientCase } from '../types';
-import { Search, FileText, Calendar, MapPin, User, ChevronRight, Eye } from 'lucide-react';
+import { PatientCase, User } from '../types';
+import { Search, FileText, Calendar, MapPin, User as UserIcon, ChevronRight, Eye, ShieldCheck } from 'lucide-react';
+import { formatDisplayPhone } from '../utils/phone';
 
-export const CaseHistoryList: React.FC = () => {
+interface CaseHistoryListProps {
+  user?: User | null;
+}
+
+export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
   const [cases, setCases] = useState<PatientCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCase, setSelectedCase] = useState<PatientCase | null>(null);
+
+  const isPractitioner = user?.role === 'practitioner';
 
   useEffect(() => {
     loadCases();
@@ -19,9 +26,12 @@ export const CaseHistoryList: React.FC = () => {
       const res = await api.getPatientCases();
       if (res.success && res.cases) {
         setCases(res.cases);
+      } else {
+        setCases([]);
       }
     } catch (err) {
       console.error('Error fetching cases', err);
+      setCases([]);
     } finally {
       setLoading(false);
     }
@@ -45,9 +55,31 @@ export const CaseHistoryList: React.FC = () => {
         gap: '16px'
       }}>
         <div>
-          <h2 style={{ fontSize: '1.5rem', color: '#0F172A' }}>Recorded Patient Histories</h2>
-          <p style={{ color: '#64748B', fontSize: '0.9rem' }}>
-            {cases.length} Total Clinical Records in Database
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+              {isPractitioner ? 'Recorded Patient Histories' : 'My Health Records'}
+            </h2>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              backgroundColor: '#DEF7EC',
+              color: '#059669',
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              padding: '2px 8px',
+              borderRadius: '999px'
+            }}>
+              <ShieldCheck size={11} />
+              <span>Isolated & Private</span>
+            </span>
+          </div>
+          <p style={{ color: '#64748B', fontSize: '0.85rem', marginTop: '4px' }}>
+            {isPractitioner 
+              ? `${cases.length} Total Clinical Records Recorded Under Your Practice`
+              : user 
+                ? `Confidential records registered to ID: ${formatDisplayPhone(user.mobileNumber)}`
+                : 'Your confidential clinical intake records'}
           </p>
         </div>
 
@@ -56,7 +88,7 @@ export const CaseHistoryList: React.FC = () => {
           <input
             type="text"
             className="input-field"
-            placeholder="Search patient, complaint, phone..."
+            placeholder="Search complaint, date, details..."
             style={{ paddingLeft: '38px' }}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -66,7 +98,7 @@ export const CaseHistoryList: React.FC = () => {
 
       {loading ? (
         <div style={{ padding: '60px', textAlign: 'center', color: '#64748B' }}>
-          Loading patient records...
+          Loading clinical records...
         </div>
       ) : filteredCases.length === 0 ? (
         <div style={{
@@ -77,9 +109,13 @@ export const CaseHistoryList: React.FC = () => {
           border: '1px solid #E2E8F0'
         }}>
           <FileText size={48} style={{ margin: '0 auto 16px', color: '#CBD5E1' }} />
-          <h3 style={{ color: '#334155', marginBottom: '8px' }}>No Patient Records Found</h3>
-          <p style={{ color: '#64748B', fontSize: '0.9rem' }}>
-            Complete your first patient intake to build the clinical case database.
+          <h3 style={{ color: '#334155', marginBottom: '8px' }}>
+            {isPractitioner ? 'No Patient Records Found' : 'No Health Records Found'}
+          </h3>
+          <p style={{ color: '#64748B', fontSize: '0.88rem', maxWidth: '460px', margin: '0 auto' }}>
+            {isPractitioner 
+              ? 'Complete your first patient intake to build the clinical case database.'
+              : 'You do not have any saved clinical records under this account yet. Consultation summaries will appear here.'}
           </p>
         </div>
       ) : (

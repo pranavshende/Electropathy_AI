@@ -1,14 +1,15 @@
 import React from 'react';
 import { User } from '../types';
-import { Activity, User as UserIcon, LogOut, Globe, Shield } from 'lucide-react';
+import { Activity, User as UserIcon, LogOut, Globe, FilePlus, FolderOpen, MessageSquare, CheckCircle } from 'lucide-react';
+import { formatDisplayPhone } from '../utils/phone';
 
 interface NavbarProps {
   user: User | null;
   currentLang: string;
   onLanguageChange: (lang: string) => void;
   onLogout: () => void;
-  activeTab: 'intake' | 'records' | 'chat' | 'admin';
-  onTabChange: (tab: 'intake' | 'records' | 'chat' | 'admin') => void;
+  activeTab: 'records' | 'chat';
+  onTabChange: (tab: 'records' | 'chat') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -26,26 +27,26 @@ export const Navbar: React.FC<NavbarProps> = ({
       position: 'sticky',
       top: 0,
       zIndex: 50,
-      boxShadow: 'var(--shadow-sm)'
+      boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
     }}>
       <div style={{
-        maxWidth: '1280px',
+        maxWidth: '1360px',
         margin: '0 auto',
         padding: '0 24px',
-        height: '70px',
+        height: '68px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between'
       }}>
         {/* Brand Logo */}
         <div 
-          onClick={() => onTabChange('intake')}
-          style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}
+          onClick={() => onTabChange('chat')}
+          style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
         >
           <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '12px',
+            width: '40px',
+            height: '40px',
+            borderRadius: '11px',
             background: 'linear-gradient(135deg, #0F4C81 0%, #00A896 100%)',
             display: 'flex',
             alignItems: 'center',
@@ -53,11 +54,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             color: '#FFFFFF',
             boxShadow: '0 4px 10px rgba(0, 168, 150, 0.25)'
           }}>
-            <Activity size={24} />
+            <Activity size={22} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.5px' }}>
+              <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.4px' }}>
                 Electropathy<span style={{ color: '#00A896' }}>AI</span>
               </span>
               <span style={{
@@ -69,53 +70,62 @@ export const Navbar: React.FC<NavbarProps> = ({
                 borderRadius: '4px',
                 textTransform: 'uppercase'
               }}>
-                Portal v1.0
+                Patient Portal
               </span>
             </div>
-            <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-              Clinical Intake & Decision Assistant
+            <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
+              Personal Consultation & Health Records
             </div>
           </div>
         </div>
 
-        {/* Navigation Tabs (if logged in) */}
+        {/* Navigation Tabs (Strictly Patient: Consultations & My Records) */}
         {user && (
-          <nav style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={() => onTabChange('intake')}
-              className="btn"
-              style={{
-                backgroundColor: activeTab === 'intake' ? '#EBF3FA' : 'transparent',
-                color: activeTab === 'intake' ? '#0F4C81' : '#64748B',
-                fontWeight: activeTab === 'intake' ? 700 : 500,
-                border: activeTab === 'intake' ? '1px solid #CBD5E1' : '1px solid transparent'
-              }}
-            >
-              + New Intake
-            </button>
-            <button
-              onClick={() => onTabChange('records')}
-              className="btn"
-              style={{
-                backgroundColor: activeTab === 'records' ? '#EBF3FA' : 'transparent',
-                color: activeTab === 'records' ? '#0F4C81' : '#64748B',
-                fontWeight: activeTab === 'records' ? 700 : 500,
-                border: activeTab === 'records' ? '1px solid #CBD5E1' : '1px solid transparent'
-              }}
-            >
-              Patient Cases
-            </button>
+          <nav style={{ display: 'flex', gap: '6px', backgroundColor: '#F8FAFC', padding: '4px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+            {/* Consultation History & Chat */}
             <button
               onClick={() => onTabChange('chat')}
-              className="btn"
               style={{
-                backgroundColor: activeTab === 'chat' ? '#EBF3FA' : 'transparent',
-                color: activeTab === 'chat' ? '#0F4C81' : '#64748B',
-                fontWeight: activeTab === 'chat' ? 700 : 500,
-                border: activeTab === 'chat' ? '1px solid #CBD5E1' : '1px solid transparent'
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 14px',
+                fontSize: '0.84rem',
+                fontWeight: activeTab === 'chat' ? 700 : 600,
+                color: activeTab === 'chat' ? '#00A896' : '#64748B',
+                backgroundColor: activeTab === 'chat' ? '#FFFFFF' : 'transparent',
+                borderRadius: '7px',
+                border: activeTab === 'chat' ? '1px solid #BAE6FD' : '1px solid transparent',
+                cursor: 'pointer',
+                boxShadow: activeTab === 'chat' ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
+                transition: 'all 0.15s ease'
               }}
             >
-              Clinical History & Chat
+              <MessageSquare size={15} color={activeTab === 'chat' ? '#00A896' : '#94A3B8'} />
+              <span>Consultations & Chat</span>
+            </button>
+
+            {/* My Health Records */}
+            <button
+              onClick={() => onTabChange('records')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 14px',
+                fontSize: '0.84rem',
+                fontWeight: activeTab === 'records' ? 700 : 600,
+                color: activeTab === 'records' ? '#0F4C81' : '#64748B',
+                backgroundColor: activeTab === 'records' ? '#FFFFFF' : 'transparent',
+                borderRadius: '7px',
+                border: activeTab === 'records' ? '1px solid #CBD5E1' : '1px solid transparent',
+                cursor: 'pointer',
+                boxShadow: activeTab === 'records' ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <FolderOpen size={15} color={activeTab === 'records' ? '#0F4C81' : '#94A3B8'} />
+              <span>My Health Records</span>
             </button>
           </nav>
         )}
@@ -144,21 +154,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             </select>
           </div>
 
-          {/* User profile or Guest badge */}
+          {/* User profile with verified phone account identifier */}
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                padding: '6px 12px',
+                padding: '5px 12px',
                 borderRadius: '8px',
                 backgroundColor: '#F8FAFC',
                 border: '1px solid #E2E8F0'
               }}>
                 <div style={{
-                  width: '30px',
-                  height: '30px',
+                  width: '32px',
+                  height: '32px',
                   borderRadius: '50%',
                   backgroundColor: '#0F4C81',
                   color: '#FFFFFF',
@@ -171,11 +181,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {user.fullName ? user.fullName[0]?.toUpperCase() : <UserIcon size={16} />}
                 </div>
                 <div style={{ textAlign: 'left', lineHeight: 1.2 }}>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#0F172A' }}>
-                    {user.fullName || user.mobileNumber}
+                  <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A' }}>
+                    {user.fullName || formatDisplayPhone(user.mobileNumber)}
                   </div>
-                  <div style={{ fontSize: '0.7rem', color: '#00A896', fontWeight: 700, textTransform: 'capitalize' }}>
-                    {user.userType || user.role}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.68rem', color: '#00A896', fontWeight: 600 }}>
+                    <CheckCircle size={10} color="#00A896" />
+                    <span>ID: {formatDisplayPhone(user.mobileNumber)}</span>
                   </div>
                 </div>
               </div>
@@ -186,34 +197,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                 style={{
                   background: 'none',
                   border: '1px solid #E2E8F0',
-                  padding: '8px',
+                  padding: '7px',
                   borderRadius: '8px',
                   cursor: 'pointer',
-                  color: '#64748B'
+                  color: '#64748B',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
               >
-                <LogOut size={18} />
+                <LogOut size={16} />
               </button>
             </div>
           ) : null}
-
-          {/* Admin Console Switcher */}
-          <button
-            onClick={() => onTabChange(activeTab === 'admin' ? 'intake' : 'admin')}
-            className="btn"
-            style={{
-              backgroundColor: activeTab === 'admin' ? '#0F172A' : '#F1F5F9',
-              color: activeTab === 'admin' ? '#38BDF8' : '#334155',
-              padding: '6px 12px',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              borderRadius: '8px',
-              border: '1px solid #CBD5E1'
-            }}
-          >
-            <Shield size={15} />
-            <span>{activeTab === 'admin' ? 'Exit Admin' : 'Admin Console'}</span>
-          </button>
         </div>
       </div>
     </header>

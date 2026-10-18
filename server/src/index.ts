@@ -37,10 +37,10 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
+app.listen(Number(PORT), '0.0.0.0', () => {
   console.log(`\n======================================================`);
   console.log(`🚀 Electropathy AI Backend Server Running!`);
-  console.log(`📡 URL: http://localhost:${PORT}`);
-  console.log(`🔐 Phone Number Auth API: http://localhost:${PORT}/api/auth`);
+  console.log(`📡 URL: http://0.0.0.0:${PORT}`);
+  console.log(`🔐 Phone Number Auth API: http://0.0.0.0:${PORT}/api/auth`);
   console.log(`======================================================\n`);
 });

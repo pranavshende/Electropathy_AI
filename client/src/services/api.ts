@@ -117,7 +117,16 @@ class ApiService {
   async createPatientCase(data: Partial<PatientCase>): Promise<{ success: boolean; case: PatientCase; message: string }> {
     const res = await fetch(`${API_BASE_URL}/patients`, {
       method: 'POST',
-      headers: this.getAdminHeaders(),
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  }
+
+  async updatePatientCase(id: string, data: Partial<PatientCase>): Promise<{ success: boolean; case: PatientCase; message: string }> {
+    const res = await fetch(`${API_BASE_URL}/patients/${id}`, {
+      method: 'PUT',
+      headers: this.getHeaders(),
       body: JSON.stringify(data),
     });
     return res.json();
@@ -141,7 +150,7 @@ class ApiService {
     return res.json();
   }
 
-  async createConversation(data: { title?: string; language?: string; initialMessage?: string }): Promise<{ success: boolean; conversation: ConversationDetail }> {
+  async createConversation(data: { title?: string; language?: string; initialMessage?: string }): Promise<{ success: boolean; conversation?: ConversationDetail; message?: string }> {
     const res = await fetch(`${API_BASE_URL}/conversations`, {
       method: 'POST',
       headers: this.getHeaders(),

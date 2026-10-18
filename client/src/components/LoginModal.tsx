@@ -83,7 +83,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
   };
 
   const handleFillPatientDemo = () => {
-    setMobileNumber('9876543210');
+    setMobileNumber('8421358609');
     setPassword('Password@1234');
     setCopiedPass(true);
     setTimeout(() => setCopiedPass(false), 2000);
@@ -1052,7 +1052,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                       <Sparkles size={13} color="#16A34A" />
-                      <span>Demo: <strong>9876543210</strong> / <strong>Password@1234</strong></span>
+                      <span>Demo: <strong>8421358609</strong> / <strong>Password@1234</strong></span>
                     </div>
                     <button
                       type="button"

@@ -164,6 +164,58 @@ export class PatientController {
       res.status(500).json({ success: false, message: error.message });
     }
   }
+
+  async updateCase(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const user = req.user;
+      if (!user) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const id = req.params.id as string;
+      const existing = await patientService.getCaseById(id);
+      if (!existing) {
+        res.status(404).json({ success: false, message: 'Patient case not found.' });
+        return;
+      }
+
+      // Check ownership or admin
+      const isOwnerPractitioner = existing.practitionerId === user.id;
+      const normUser = normalizePhoneNumber(user.mobileNumber);
+      const normCase = normalizePhoneNumber(existing.contactNumber);
+      const isOwnerPatient =
+        existing.contactNumber === user.mobileNumber ||
+        (normUser.isValid && normCase.isValid && normUser.national10Digit === normCase.national10Digit);
+      const isAdmin = user.role === 'admin';
+
+      if (!isOwnerPractitioner && !isOwnerPatient && !isAdmin) {
+        res.status(403).json({ success: false, message: 'Access denied.' });
+        return;
+      }
+
+      const updated = await patientService.updateCase(id, req.body);
+
+      // Audit log
+      const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
+      await auditService.log(
+        user.id,
+        'PATIENT_CASE_UPDATED',
+        id,
+        { patientName: updated.patientName },
+        ip
+      );
+
+      res.status(200).json({
+        success: true,
+        message: 'Patient case updated successfully.',
+        case: updated
+      });
+    } catch (error: any) {
+      console.error('[PATIENT CONTROLLER updateCase ERROR]', error);
+      res.status(500).json({ success: false, message: error.message || 'Failed to update case.' });
+    }
+  }
 }
 
 export const patientController = new PatientController();

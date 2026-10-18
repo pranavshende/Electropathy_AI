@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { PatientCase } from '../types';
+import { PatientCase, User } from '../types';
 import { 
   ClipboardList, 
-  User, 
+  User as UserIcon, 
   AlertCircle, 
   Stethoscope, 
   HeartPulse, 
@@ -12,52 +12,100 @@ import {
   ArrowRight, 
   ArrowLeft,
   Save,
-  Printer
+  Printer,
+  X
 } from 'lucide-react';
 
 interface PatientIntakeWizardProps {
   onCaseSubmitted: (newCase: PatientCase) => void;
+  initialCase?: PatientCase | null;
+  currentUser?: User | null;
+  onCancel?: () => void;
+  title?: string;
+  submitButtonText?: string;
 }
 
-export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({ onCaseSubmitted }) => {
+export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({ 
+  onCaseSubmitted, 
+  initialCase, 
+  currentUser, 
+  onCancel,
+  title,
+  submitButtonText
+}) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [successCase, setSuccessCase] = useState<PatientCase | null>(null);
 
   // Form State
-  const [patientName, setPatientName] = useState('');
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState<'male' | 'female' | 'other'>('male');
-  const [contactNumber, setContactNumber] = useState('');
-  const [city, setCity] = useState('');
-  const [occupation, setOccupation] = useState('');
+  const [patientName, setPatientName] = useState(initialCase?.patientName || currentUser?.fullName || '');
+  const [age, setAge] = useState(initialCase?.age ? String(initialCase.age) : '');
+  const [gender, setGender] = useState<'male' | 'female' | 'other'>((initialCase?.gender as any) || 'male');
+  const [contactNumber, setContactNumber] = useState(initialCase?.contactNumber || currentUser?.mobileNumber || '');
+  const [city, setCity] = useState(initialCase?.city || '');
+  const [occupation, setOccupation] = useState(initialCase?.occupation || '');
 
   // Chief complaints
-  const [complaintText, setComplaintText] = useState('');
-  const [duration, setDuration] = useState('');
-  const [severity, setSeverity] = useState(5);
-  const [factors, setFactors] = useState('');
+  const [complaintText, setComplaintText] = useState(initialCase?.chiefComplaints?.[0]?.complaint || '');
+  const [duration, setDuration] = useState(initialCase?.chiefComplaints?.[0]?.duration || '');
+  const [severity, setSeverity] = useState(initialCase?.chiefComplaints?.[0]?.severity ?? 5);
+  const [factors, setFactors] = useState(initialCase?.chiefComplaints?.[0]?.factors || '');
 
   // Present Illness
-  const [illnessDescription, setIllnessDescription] = useState('');
-  const [previousTreatments, setPreviousTreatments] = useState('');
-  const [treatmentResponse, setTreatmentResponse] = useState('');
+  const [illnessDescription, setIllnessDescription] = useState(initialCase?.presentIllness?.description || '');
+  const [previousTreatments, setPreviousTreatments] = useState(initialCase?.presentIllness?.previousTreatments || '');
+  const [treatmentResponse, setTreatmentResponse] = useState(initialCase?.presentIllness?.responseToTreatment || '');
 
   // Past medical
-  const [chronicConditions, setChronicConditions] = useState<string[]>([]);
-  const [surgeries, setSurgeries] = useState('');
-  const [allergies, setAllergies] = useState('');
+  const [chronicConditions, setChronicConditions] = useState<string[]>(initialCase?.pastMedical?.chronicConditions || []);
+  const [surgeries, setSurgeries] = useState(initialCase?.pastMedical?.surgeries || '');
+  const [allergies, setAllergies] = useState(
+    Array.isArray(initialCase?.pastMedical?.allergies) 
+      ? initialCase.pastMedical.allergies.join(', ') 
+      : ''
+  );
 
   // Lifestyle
-  const [diet, setDiet] = useState('Vegetarian');
-  const [sleep, setSleep] = useState('Normal (6-8 hours)');
-  const [appetite, setAppetite] = useState('Good');
-  const [stressLevel, setStressLevel] = useState('Moderate');
+  const [diet, setDiet] = useState(initialCase?.lifestyle?.diet || 'Vegetarian');
+  const [sleep, setSleep] = useState(initialCase?.lifestyle?.sleep || 'Normal (6-8 hours)');
+  const [appetite, setAppetite] = useState(initialCase?.lifestyle?.appetite || 'Good');
+  const [stressLevel, setStressLevel] = useState(initialCase?.lifestyle?.stressLevel || 'Moderate');
 
   // Electropathy specifics
-  const [temperament, setTemperament] = useState('Lymphatic (Water/Phlegm)');
-  const [previousElectropathy, setPreviousElectropathy] = useState('');
-  const [clinicalNotes, setClinicalNotes] = useState('');
+  const [temperament, setTemperament] = useState(initialCase?.electropathyDetails?.temperament || 'Lymphatic (Water/Phlegm)');
+  const [previousElectropathy, setPreviousElectropathy] = useState(initialCase?.electropathyDetails?.previousElectropathy || '');
+  const [clinicalNotes, setClinicalNotes] = useState(initialCase?.electropathyDetails?.notes || '');
+
+  useEffect(() => {
+    if (initialCase) {
+      setPatientName(initialCase.patientName || '');
+      setAge(initialCase.age ? String(initialCase.age) : '');
+      setGender((initialCase.gender as any) || 'male');
+      setContactNumber(initialCase.contactNumber || '');
+      setCity(initialCase.city || '');
+      setOccupation(initialCase.occupation || '');
+      setComplaintText(initialCase.chiefComplaints?.[0]?.complaint || '');
+      setDuration(initialCase.chiefComplaints?.[0]?.duration || '');
+      setSeverity(initialCase.chiefComplaints?.[0]?.severity ?? 5);
+      setFactors(initialCase.chiefComplaints?.[0]?.factors || '');
+      setIllnessDescription(initialCase.presentIllness?.description || '');
+      setPreviousTreatments(initialCase.presentIllness?.previousTreatments || '');
+      setTreatmentResponse(initialCase.presentIllness?.responseToTreatment || '');
+      setChronicConditions(initialCase.pastMedical?.chronicConditions || []);
+      setSurgeries(initialCase.pastMedical?.surgeries || '');
+      setAllergies(Array.isArray(initialCase.pastMedical?.allergies) ? initialCase.pastMedical.allergies.join(', ') : '');
+      setDiet(initialCase.lifestyle?.diet || 'Vegetarian');
+      setSleep(initialCase.lifestyle?.sleep || 'Normal (6-8 hours)');
+      setAppetite(initialCase.lifestyle?.appetite || 'Good');
+      setStressLevel(initialCase.lifestyle?.stressLevel || 'Moderate');
+      setTemperament(initialCase.electropathyDetails?.temperament || 'Lymphatic (Water/Phlegm)');
+      setPreviousElectropathy(initialCase.electropathyDetails?.previousElectropathy || '');
+      setClinicalNotes(initialCase.electropathyDetails?.notes || '');
+    } else {
+      setPatientName(currentUser?.fullName || '');
+      setContactNumber(currentUser?.mobileNumber || '');
+    }
+  }, [initialCase, currentUser]);
 
   const conditionOptions = [
     'Diabetes Mellitus', 'Hypertension (BP)', 'Thyroid Disorder', 
@@ -77,26 +125,26 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({ onCase
     setSubmitting(true);
     try {
       const payload: Partial<PatientCase> = {
-        patientName,
-        age: Number(age),
+        patientName: patientName.trim(),
+        age: Number(age) || 0,
         gender,
-        contactNumber,
-        city,
-        occupation,
+        contactNumber: contactNumber.trim() || (currentUser?.mobileNumber || ''),
+        city: city.trim(),
+        occupation: occupation.trim(),
         chiefComplaints: [{
-          complaint: complaintText,
-          duration,
-          severity,
-          factors
+          complaint: complaintText.trim(),
+          duration: duration.trim(),
+          severity: Number(severity),
+          factors: factors.trim()
         }],
         presentIllness: {
-          description: illnessDescription,
-          previousTreatments,
-          responseToTreatment: treatmentResponse
+          description: illnessDescription.trim(),
+          previousTreatments: previousTreatments.trim(),
+          responseToTreatment: treatmentResponse.trim()
         },
         pastMedical: {
           chronicConditions,
-          surgeries,
+          surgeries: surgeries.trim(),
           allergies: allergies.split(',').map(s => s.trim()).filter(Boolean)
         },
         lifestyle: {
@@ -107,13 +155,19 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({ onCase
         },
         electropathyDetails: {
           temperament,
-          previousElectropathy,
-          notes: clinicalNotes
+          previousElectropathy: previousElectropathy.trim(),
+          notes: clinicalNotes.trim()
         },
         status: 'submitted'
       };
 
-      const res = await api.createPatientCase(payload);
+      let res;
+      if (initialCase && initialCase.id) {
+        res = await api.updatePatientCase(initialCase.id, payload);
+      } else {
+        res = await api.createPatientCase(payload);
+      }
+
       if (res.success && res.case) {
         setSuccessCase(res.case);
         onCaseSubmitted(res.case);
@@ -174,7 +228,7 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({ onCase
           <p><strong>Contact:</strong> +91 {successCase.contactNumber} | {successCase.city}</p>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button
             onClick={() => window.print()}
             className="btn btn-secondary"
@@ -183,32 +237,47 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({ onCase
             Print Case Summary
           </button>
           
-          <button
-            onClick={() => {
-              setSuccessCase(null);
-              setCurrentStep(1);
-              setPatientName('');
-              setAge('');
-              setContactNumber('');
-              setComplaintText('');
-            }}
-            className="btn btn-primary"
-          >
-            + Intake Another Patient
-          </button>
+          {onCancel ? (
+            <button
+              onClick={onCancel}
+              className="btn btn-primary"
+            >
+              <CheckCircle size={18} />
+              Continue to Consultation
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setSuccessCase(null);
+                setCurrentStep(1);
+                setPatientName('');
+                setAge('');
+                setContactNumber('');
+                setComplaintText('');
+              }}
+              className="btn btn-primary"
+            >
+              + Intake Another Patient
+            </button>
+          )}
         </div>
       </div>
     );
   }
 
   const steps = [
-    { num: 1, title: 'Demographics', icon: User },
+    { num: 1, title: 'Demographics', icon: UserIcon },
     { num: 2, title: 'Chief Complaints', icon: AlertCircle },
     { num: 3, title: 'Present Illness', icon: Stethoscope },
     { num: 4, title: 'Medical History', icon: HeartPulse },
     { num: 5, title: 'Lifestyle & Vitals', icon: Activity },
     { num: 6, title: 'Electropathy Assessment', icon: ClipboardList }
   ];
+
+  const wizardTitle = title || (initialCase ? 'Edit Patient Clinical History' : 'Clinical Patient History Intake');
+  const wizardSubtitle = initialCase 
+    ? `Updating clinical history & current symptoms for ${patientName || 'patient'}`
+    : 'Standardized Electropathy Case Formulation & Diagnosis Support';
 
   return (
     <div style={{
@@ -233,20 +302,44 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({ onCase
       }}>
         <div>
           <h2 style={{ color: '#FFFFFF', fontSize: '1.2rem', marginBottom: '2px' }}>
-            Clinical Patient History Intake
+            {wizardTitle}
           </h2>
           <p style={{ color: '#93C5FD', fontSize: '0.85rem' }}>
-            Standardized Electropathy Case Formulation & Diagnosis Support
+            {wizardSubtitle}
           </p>
         </div>
-        <div style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.15)',
-          padding: '6px 14px',
-          borderRadius: '20px',
-          fontSize: '0.85rem',
-          fontWeight: 700
-        }}>
-          Step {currentStep} of 6
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+            padding: '6px 14px',
+            borderRadius: '20px',
+            fontSize: '0.85rem',
+            fontWeight: 700
+          }}>
+            Step {currentStep} of 6
+          </div>
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              style={{
+                background: 'rgba(255, 255, 255, 0.15)',
+                border: 'none',
+                color: '#FFFFFF',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'background 0.15s ease'
+              }}
+              title="Close"
+              aria-label="Close"
+            >
+              <X size={18} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -622,15 +715,26 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({ onCase
         flexWrap: 'wrap',
         gap: '10px'
       }}>
-        <button
-          type="button"
-          onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
-          className="btn btn-secondary"
-          disabled={currentStep === 1}
-        >
-          <ArrowLeft size={16} />
-          Previous Step
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="btn btn-secondary"
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
+            className="btn btn-secondary"
+            disabled={currentStep === 1}
+          >
+            <ArrowLeft size={16} />
+            Previous Step
+          </button>
+        </div>
 
         {currentStep < 6 ? (
           <button
@@ -655,7 +759,9 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({ onCase
             disabled={submitting}
           >
             <Save size={18} />
-            {submitting ? 'Saving Case Record...' : 'Complete & Record Intake'}
+            {submitting 
+              ? (initialCase ? 'Updating Case Record...' : 'Saving Case Record...') 
+              : (submitButtonText || (initialCase ? 'Update Patient Case History' : 'Complete & Record Intake'))}
           </button>
         )}
       </div>

@@ -155,6 +155,32 @@ class PatientService {
 
     return this.mapCase(created);
   }
+
+  async updateCase(
+    id: string,
+    data: Partial<Omit<PatientCase, 'id' | 'practitionerId' | 'createdAt' | 'updatedAt'>>
+  ): Promise<PatientCase> {
+    const updateData: any = {};
+    if (data.patientName !== undefined) updateData.patientName = data.patientName;
+    if (data.age !== undefined) updateData.age = Number(data.age);
+    if (data.gender !== undefined) updateData.gender = data.gender;
+    if (data.contactNumber !== undefined) updateData.contactNumber = data.contactNumber;
+    if (data.city !== undefined) updateData.city = data.city;
+    if (data.occupation !== undefined) updateData.occupation = data.occupation;
+    if (data.chiefComplaints !== undefined) updateData.chiefComplaints = data.chiefComplaints as any;
+    if (data.presentIllness !== undefined) updateData.presentIllness = data.presentIllness as any;
+    if (data.pastMedical !== undefined) updateData.pastMedical = data.pastMedical as any;
+    if (data.lifestyle !== undefined) updateData.lifestyle = data.lifestyle as any;
+    if (data.electropathyDetails !== undefined) updateData.electropathyDetails = data.electropathyDetails as any;
+    if (data.status !== undefined) updateData.status = data.status;
+
+    const updated = await prisma.patientCase.update({
+      where: { id },
+      data: updateData
+    });
+
+    return this.mapCase(updated);
+  }
 }
 
 export const patientService = new PatientService();

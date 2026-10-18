@@ -24,9 +24,11 @@ import {
   ArrowRight,
   ArrowLeft,
   HelpCircle,
-  FileText
+  FileText,
+  X
 } from 'lucide-react';
-import { User } from '../types';
+import { User, PatientCase } from '../types';
+import { PatientIntakeWizard } from './PatientIntakeWizard';
 import { formatDisplayPhone } from '../utils/phone';
 
 interface ChatHistoryViewProps {
@@ -48,6 +50,11 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
   const [feedbackState, setFeedbackState] = useState<Record<string, 'up' | 'down'>>({});
   const [isMobile, setIsMobile] = useState(false);
   const [mobileScreen, setMobileScreen] = useState<'list' | 'chat'>('list');
+  const [patientCases, setPatientCases] = useState<PatientCase[]>([]);
+  const [showIntakeModal, setShowIntakeModal] = useState(false);
+  const [intakeCase, setIntakeCase] = useState<PatientCase | null>(null);
+  const [intakeStep, setIntakeStep] = useState<'prompt' | 'form'>('prompt');
+  const [isCreatingConsultation, setIsCreatingConsultation] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -67,7 +74,22 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
 
   useEffect(() => {
     loadConversations();
+    loadPatientCases();
   }, []);
+
+  const loadPatientCases = async () => {
+    try {
+      const res = await api.getPatientCases();
+      if (res.success && res.cases) {
+        setPatientCases(res.cases);
+      } else {
+        setPatientCases([]);
+      }
+    } catch (err) {
+      console.error('Failed to load patient cases', err);
+      setPatientCases([]);
+    }
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -112,12 +134,91 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
     }
   };
 
-  const handleStartNewChat = () => {
-    setActiveConv(null);
-    setMobileScreen('chat');
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
+  const handleStartNewConsultation = async () => {
+    try {
+      const res = await api.getPatientCases();
+      const cases = res.success && res.cases ? res.cases : [];
+      setPatientCases(cases);
+      if (cases.length > 0) {
+        setIntakeCase(cases[0]);
+        setIntakeStep('prompt');
+      } else {
+        setIntakeCase(null);
+        setIntakeStep('form');
+      }
+      setShowIntakeModal(true);
+    } catch (err) {
+      setIntakeCase(null);
+      setIntakeStep('form');
+      setShowIntakeModal(true);
+    }
+  };
+
+  const handleEditPatientHistory = () => {
+    if (patientCases.length > 0) {
+      setIntakeCase(patientCases[0]);
+    } else {
+      setIntakeCase(null);
+    }
+    setIntakeStep('form');
+    setShowIntakeModal(true);
+  };
+
+  const startConsultationWithCase = async (pCase: PatientCase) => {
+    setIsCreatingConsultation(true);
+    try {
+      const complaint = pCase.chiefComplaints?.[0]?.complaint || 'Electropathy Inquiry';
+      const duration = pCase.chiefComplaints?.[0]?.duration ? ` (${pCase.chiefComplaints[0].duration})` : '';
+      const title = `Consultation: ${pCase.patientName} - ${complaint}`;
+
+      const initialMsg = `🩺 **Patient Clinical Intake Profile**:
+• **Patient**: ${pCase.patientName} (${pCase.age} yrs, ${pCase.gender})
+• **Contact**: +91 ${pCase.contactNumber} ${pCase.city ? `| City: ${pCase.city}` : ''}
+• **Primary Chief Complaint**: ${complaint}${duration} (Severity: ${pCase.chiefComplaints?.[0]?.severity ?? 5}/10)
+• **Aggravating/Relieving Factors**: ${pCase.chiefComplaints?.[0]?.factors || 'None noted'}
+• **Present Illness Details**: ${pCase.presentIllness?.description || 'Initial clinical consultation'}
+• **Previous Treatments**: ${pCase.presentIllness?.previousTreatments || 'None'}
+• **Chronic Conditions / Medical History**: ${pCase.pastMedical?.chronicConditions?.join(', ') || 'None reported'}
+• **Allergies**: ${pCase.pastMedical?.allergies?.join(', ') || 'No known drug allergies'}
+• **Lifestyle & Vitals**: Diet: ${pCase.lifestyle?.diet || 'Vegetarian'}, Sleep: ${pCase.lifestyle?.sleep || 'Normal'}, Appetite: ${pCase.lifestyle?.appetite || 'Good'}
+• **Constitutional Temperament**: ${pCase.electropathyDetails?.temperament || 'Lymphatic'}
+${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.electropathyDetails.notes}` : ''}
+
+*Please analyze this clinical presentation according to Count Cesare Mattei's principles of Electropathy and formulate an individualized remedy, dilution, and dosage protocol.*`;
+
+      const res = await api.createConversation({
+        title: title.slice(0, 50),
+        initialMessage: initialMsg
+      });
+
+      if (res.success && res.conversation) {
+        const newId = res.conversation.id;
+        setShowIntakeModal(false);
+        await loadConversations();
+        await selectConversation(newId);
+        setMobileScreen('chat');
+
+        // Deliver grounded Electropathy AI doctor consultation response
+        setTimeout(async () => {
+          const queryForProtocol = `${complaint} ${pCase.electropathyDetails?.temperament || ''} ${pCase.pastMedical?.chronicConditions?.join(' ') || ''}`;
+          const aiProtocol = generateElectropathyResponse(queryForProtocol);
+          const reply = await api.sendMessage(newId, aiProtocol, 'assistant');
+          if (reply.success && reply.message) {
+            setActiveConv(prev => prev && prev.id === newId ? {
+              ...prev,
+              messages: [...prev.messages, reply.message]
+            } : null);
+            loadConversations();
+          }
+        }, 600);
+      } else {
+        alert(res.message || 'Error creating consultation.');
+      }
+    } catch (err) {
+      alert('Error starting new consultation.');
+    } finally {
+      setIsCreatingConsultation(false);
+    }
   };
 
   const generateElectropathyResponse = (query: string): string => {
@@ -376,7 +477,7 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
         {/* Sidebar Header */}
         <div style={{ padding: '14px 16px', borderBottom: '1px solid #E2E8F0' }}>
           <button
-            onClick={handleStartNewChat}
+            onClick={handleStartNewConsultation}
             style={{
               width: '100%',
               padding: '10px 16px',
@@ -682,6 +783,26 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
           {activeConv && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <button
+                onClick={handleEditPatientHistory}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '4px 10px',
+                  backgroundColor: '#EBF3FA',
+                  border: '1px solid #BAE6FD',
+                  borderRadius: '6px',
+                  fontSize: '0.72rem',
+                  color: '#0F4C81',
+                  cursor: 'pointer',
+                  fontWeight: 700
+                }}
+                title="View / Edit Clinical History"
+              >
+                <FileText size={12} />
+                <span>Patient History</span>
+              </button>
+              <button
                 onClick={handleCopyConvId}
                 style={{
                   display: 'inline-flex',
@@ -746,9 +867,35 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
               <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
                 Electropathy Clinical Consultation
               </h3>
-              <p style={{ fontSize: '0.84rem', color: '#64748B', lineHeight: 1.45, maxWidth: '520px', margin: '0 auto 20px' }}>
+              <p style={{ fontSize: '0.84rem', color: '#64748B', lineHeight: 1.45, maxWidth: '520px', margin: '0 auto 16px' }}>
                 Inquire about Count Cesare Mattei’s complex remedies, constitutional temperaments, dilutions (D1–D6), or external fluid applications.
               </p>
+
+              <div style={{ marginBottom: '22px', display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                <button
+                  onClick={handleStartNewConsultation}
+                  style={{
+                    padding: '10px 22px',
+                    fontSize: '0.88rem',
+                    fontWeight: 700,
+                    color: '#FFFFFF',
+                    background: 'linear-gradient(135deg, #0F4C81 0%, #00A896 100%)',
+                    border: 'none',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: '0 4px 14px rgba(0, 168, 150, 0.3)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = '0.94')}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                >
+                  <Plus size={18} />
+                  <span>Start New Consultation (Add / Edit History)</span>
+                </button>
+              </div>
 
               {/* 4 Interactive Starter Prompt Cards */}
               <div style={{ 
@@ -1153,6 +1300,274 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
           </form>
         </div>
       </div>
+
+      {/* Consultation Intake / Patient History Modal */}
+      {showIntakeModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(5px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '16px'
+        }}>
+          <div style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: '16px',
+            maxWidth: intakeStep === 'prompt' ? '580px' : '900px',
+            width: '100%',
+            maxHeight: '92vh',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            overflow: 'hidden',
+            border: '1px solid #E2E8F0'
+          }}>
+            {intakeStep === 'prompt' ? (
+              <div>
+                {/* Header */}
+                <div style={{
+                  padding: '20px 24px',
+                  background: 'linear-gradient(135deg, #0F4C81 0%, #00A896 100%)',
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '10px',
+                      backgroundColor: 'rgba(255,255,255,0.2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Sparkles size={22} color="#FFFFFF" />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, color: '#FFFFFF' }}>
+                        Start New Consultation
+                      </h3>
+                      <p style={{ fontSize: '0.82rem', margin: '2px 0 0', color: '#E0F2FE' }}>
+                        Select patient case grounding for decision support
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowIntakeModal(false)}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.15)',
+                      border: 'none',
+                      color: '#FFFFFF',
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer'
+                    }}
+                    title="Close"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Body */}
+                <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {intakeCase && (
+                    <div style={{
+                      backgroundColor: '#F8FAFC',
+                      border: '1.5px solid #E2E8F0',
+                      borderRadius: '12px',
+                      padding: '16px 18px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '0.74rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#0F4C81' }}>
+                            Existing Patient History
+                          </span>
+                          <span style={{ backgroundColor: '#DEF7EC', color: '#059669', fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '999px' }}>
+                            On File
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '0.72rem', color: '#64748B' }}>
+                          {new Date(intakeCase.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0F172A' }}>
+                        {intakeCase.patientName} <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#64748B' }}>({intakeCase.age} yrs, {intakeCase.gender})</span>
+                      </div>
+                      <div style={{ fontSize: '0.84rem', color: '#334155', marginTop: '4px' }}>
+                        <strong>Chief Complaint:</strong> {intakeCase.chiefComplaints?.[0]?.complaint || 'General Checkup'}
+                        {intakeCase.chiefComplaints?.[0]?.duration ? ` (${intakeCase.chiefComplaints[0].duration})` : ''}
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '3px' }}>
+                        <strong>Constitution:</strong> {intakeCase.electropathyDetails?.temperament || 'Lymphatic'}
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {intakeCase && (
+                      <button
+                        onClick={() => setIntakeStep('form')}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '14px 18px',
+                          borderRadius: '12px',
+                          border: '1.5px solid #00A896',
+                          backgroundColor: '#F0FDFA',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                          <div style={{
+                            width: '38px',
+                            height: '38px',
+                            borderRadius: '10px',
+                            backgroundColor: '#00A896',
+                            color: '#FFFFFF',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0
+                          }}>
+                            <Edit3 size={18} />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0F172A' }}>
+                              Edit & Update Patient History
+                            </div>
+                            <div style={{ fontSize: '0.78rem', color: '#0F766E', marginTop: '2px' }}>
+                              Update symptoms, illness duration, severity, or remedies before consulting
+                            </div>
+                          </div>
+                        </div>
+                        <ArrowRight size={18} color="#00A896" />
+                      </button>
+                    )}
+
+                    {intakeCase && (
+                      <button
+                        onClick={() => startConsultationWithCase(intakeCase)}
+                        disabled={isCreatingConsultation}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '14px 18px',
+                          borderRadius: '12px',
+                          border: '1.5px solid #E2E8F0',
+                          backgroundColor: '#FFFFFF',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                          <div style={{
+                            width: '38px',
+                            height: '38px',
+                            borderRadius: '10px',
+                            backgroundColor: '#0F4C81',
+                            color: '#FFFFFF',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0
+                          }}>
+                            <Zap size={18} />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0F172A' }}>
+                              Consult with Current History Directly
+                            </div>
+                            <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '2px' }}>
+                              Start new session immediately using saved profile without modifications
+                            </div>
+                          </div>
+                        </div>
+                        <ArrowRight size={18} color="#0F4C81" />
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        setIntakeCase(null);
+                        setIntakeStep('form');
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '14px 18px',
+                        borderRadius: '12px',
+                        border: '1.5px dashed #CBD5E1',
+                        backgroundColor: '#FFFFFF',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                        <div style={{
+                          width: '38px',
+                          height: '38px',
+                          borderRadius: '10px',
+                          backgroundColor: '#F1F5F9',
+                          color: '#0F4C81',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0
+                        }}>
+                          <Plus size={18} />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0F172A' }}>
+                            Add New / Different Patient Record
+                          </div>
+                          <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '2px' }}>
+                            Record a fresh clinical intake for a new symptom episode or family member
+                          </div>
+                        </div>
+                      </div>
+                      <ArrowRight size={18} color="#64748B" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{ flex: 1, overflowY: 'auto' }}>
+                <PatientIntakeWizard
+                  initialCase={intakeCase}
+                  currentUser={user}
+                  onCancel={() => setShowIntakeModal(false)}
+                  onCaseSubmitted={async (savedCase) => {
+                    await loadPatientCases();
+                    await startConsultationWithCase(savedCase);
+                  }}
+                  title={intakeCase ? "Edit Patient Clinical History" : "New Patient Clinical Intake"}
+                  submitButtonText={intakeCase ? "Save & Start Consultation" : "Record Intake & Start Consultation"}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

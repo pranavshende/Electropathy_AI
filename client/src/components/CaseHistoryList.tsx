@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { PatientCase, User } from '../types';
-import { Search, FileText, Calendar, MapPin, User as UserIcon, ChevronRight, Eye, ShieldCheck } from 'lucide-react';
+import { Search, FileText, Calendar, MapPin, User as UserIcon, ChevronRight, Eye, ShieldCheck, Plus, Edit3, X } from 'lucide-react';
 import { formatDisplayPhone } from '../utils/phone';
+import { PatientIntakeWizard } from './PatientIntakeWizard';
 
 interface CaseHistoryListProps {
   user?: User | null;
@@ -13,6 +14,8 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCase, setSelectedCase] = useState<PatientCase | null>(null);
+  const [editingCase, setEditingCase] = useState<PatientCase | null>(null);
+  const [showWizardModal, setShowWizardModal] = useState(false);
 
   const isPractitioner = user?.role === 'practitioner';
 
@@ -83,16 +86,39 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
           </p>
         </div>
 
-        <div style={{ position: 'relative', width: '320px', maxWidth: '100%', flex: '1 1 240px' }}>
-          <Search size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94A3B8' }} />
-          <input
-            type="text"
-            className="input-field"
-            placeholder="Search complaint, date, details..."
-            style={{ paddingLeft: '38px', width: '100%' }}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', flex: '1 1 360px', justifyContent: 'flex-end' }}>
+          <div style={{ position: 'relative', width: '280px', maxWidth: '100%', flex: '1 1 200px' }}>
+            <Search size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94A3B8' }} />
+            <input
+              type="text"
+              className="input-field"
+              placeholder="Search complaint, date, details..."
+              style={{ paddingLeft: '38px', width: '100%' }}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          <button
+            onClick={() => {
+              setEditingCase(null);
+              setShowWizardModal(true);
+            }}
+            className="btn btn-primary"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '9px 16px',
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              whiteSpace: 'nowrap',
+              background: 'linear-gradient(135deg, #0F4C81 0%, #00A896 100%)'
+            }}
+          >
+            <Plus size={16} />
+            <span>+ Add History</span>
+          </button>
         </div>
       </div>
 
@@ -198,7 +224,7 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0, marginLeft: 'auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, marginLeft: 'auto' }}>
                 <div style={{ textAlign: 'right', fontSize: '0.72rem', color: '#94A3B8' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
                     <Calendar size={12} />
@@ -206,6 +232,34 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
                   </div>
                   <div>ID: {c.id.slice(0, 8)}</div>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingCase(c);
+                    setShowWizardModal(true);
+                  }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    backgroundColor: '#F0FDFA',
+                    border: '1px solid #5EEAD4',
+                    borderRadius: '6px',
+                    padding: '5px 10px',
+                    fontSize: '0.74rem',
+                    color: '#0F766E',
+                    cursor: 'pointer',
+                    fontWeight: 700,
+                    transition: 'all 0.15s ease'
+                  }}
+                  title="Edit Case History"
+                >
+                  <Edit3 size={13} />
+                  <span>Edit</span>
+                </button>
+
                 <ChevronRight size={18} color="#CBD5E1" />
               </div>
             </div>
@@ -278,13 +332,70 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
               </div>
             </div>
 
-            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingCase(selectedCase);
+                  setSelectedCase(null);
+                  setShowWizardModal(true);
+                }}
+                className="btn btn-secondary"
+                style={{ padding: '8px 14px', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Edit3 size={15} />
+                <span>Edit Case</span>
+              </button>
               <button onClick={() => window.print()} className="btn btn-secondary" style={{ padding: '8px 14px', fontSize: '0.85rem' }}>
                 Print Case
               </button>
               <button onClick={() => setSelectedCase(null)} className="btn btn-primary" style={{ padding: '8px 14px', fontSize: '0.85rem' }}>
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Wizard Modal for Add / Edit Case History */}
+      {showWizardModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(5px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '16px'
+        }}>
+          <div style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: '16px',
+            maxWidth: '920px',
+            width: '100%',
+            maxHeight: '92vh',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            overflow: 'hidden'
+          }}>
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              <PatientIntakeWizard
+                initialCase={editingCase}
+                currentUser={user}
+                onCancel={() => setShowWizardModal(false)}
+                onCaseSubmitted={async () => {
+                  setShowWizardModal(false);
+                  await loadCases();
+                }}
+                title={editingCase ? "Edit Patient Case Record" : "Add Patient Case Record"}
+                submitButtonText={editingCase ? "Save & Update Record" : "Save Patient Intake Record"}
+              />
             </div>
           </div>
         </div>

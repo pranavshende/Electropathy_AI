@@ -22,6 +22,7 @@ import {
   Zap,
   Activity,
   ArrowRight,
+  ArrowLeft,
   HelpCircle,
   FileText
 } from 'lucide-react';
@@ -45,9 +46,24 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [copiedConvId, setCopiedConvId] = useState(false);
   const [feedbackState, setFeedbackState] = useState<Record<string, 'up' | 'down'>>({});
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileScreen, setMobileScreen] = useState<'list' | 'chat'>('list');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setMobileScreen('chat');
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     loadConversations();
@@ -83,6 +99,7 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
 
   const selectConversation = async (id: string) => {
     setLoadingChat(true);
+    setMobileScreen('chat');
     try {
       const res = await api.getConversation(id);
       if (res.success && res.conversation) {
@@ -97,7 +114,10 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
 
   const handleStartNewChat = () => {
     setActiveConv(null);
-    inputRef.current?.focus();
+    setMobileScreen('chat');
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
   };
 
   const generateElectropathyResponse = (query: string): string => {
@@ -327,31 +347,34 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
   );
 
   return (
-    <div style={{
-      maxWidth: '1360px',
-      margin: '8px auto 16px',
-      backgroundColor: '#FFFFFF',
-      borderRadius: '16px',
-      border: '1px solid #E2E8F0',
-      boxShadow: '0 10px 30px -10px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(0,0,0,0.04)',
-      height: 'calc(100vh - 146px)',
-      minHeight: '580px',
-      display: 'flex',
-      overflow: 'hidden'
-    }}>
+    <div 
+      className="chat-view-container"
+      style={{
+        maxWidth: '1360px',
+        margin: '8px auto 16px',
+        backgroundColor: '#FFFFFF',
+        borderRadius: '16px',
+        border: '1px solid #E2E8F0',
+        boxShadow: '0 10px 30px -10px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(0,0,0,0.04)',
+        height: 'calc(100vh - 146px)',
+        minHeight: '520px',
+        display: 'flex',
+        overflow: 'hidden'
+      }}
+    >
       {/* ======================================================== */}
       {/* LEFT SIDEBAR: CONSULTATION DIRECTORY & SEARCH            */}
       {/* ======================================================== */}
       <div style={{
-        width: '330px',
-        borderRight: '1px solid #E2E8F0',
+        width: isMobile ? '100%' : '330px',
+        borderRight: isMobile ? 'none' : '1px solid #E2E8F0',
         backgroundColor: '#F8FAFC',
-        display: 'flex',
+        display: (!isMobile || mobileScreen === 'list') ? 'flex' : 'none',
         flexDirection: 'column',
         flexShrink: 0
       }}>
         {/* Sidebar Header */}
-        <div style={{ padding: '16px 18px', borderBottom: '1px solid #E2E8F0' }}>
+        <div style={{ padding: '14px 16px', borderBottom: '1px solid #E2E8F0' }}>
           <button
             onClick={handleStartNewChat}
             style={{
@@ -562,64 +585,97 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
       {/* ======================================================== */}
       {/* RIGHT MAIN PANEL: ACTIVE CONSULTATION WORKSPACE          */}
       {/* ======================================================== */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#FFFFFF', minWidth: 0 }}>
+      <div style={{ 
+        flex: 1, 
+        display: (!isMobile || mobileScreen === 'chat') ? 'flex' : 'none', 
+        flexDirection: 'column', 
+        backgroundColor: '#FFFFFF', 
+        minWidth: 0 
+      }}>
         {/* Chat Header Bar */}
         <div style={{
-          padding: '14px 22px',
+          padding: isMobile ? '10px 14px' : '14px 22px',
           borderBottom: '1px solid #E2E8F0',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          gap: '8px',
           backgroundColor: '#FFFFFF',
           boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
         }}>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <h2 style={{
-                fontSize: '1.15rem',
-                fontWeight: 800,
-                color: '#0F172A',
-                margin: 0,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                maxWidth: '520px'
-              }}>
-                {activeConv ? activeConv.title : 'Electropathy Clinical Decision Support'}
-              </h2>
-              {activeConv && (
-                <span style={{
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+            {isMobile && (
+              <button
+                type="button"
+                onClick={() => setMobileScreen('list')}
+                style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '4px',
-                  padding: '2px 8px',
-                  backgroundColor: '#DEF7EC',
-                  color: '#059669',
-                  borderRadius: '999px',
-                  fontSize: '0.68rem',
-                  fontWeight: 700
-                }}>
-                  <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'pulseGlow 2s infinite' }} />
-                  Active Session
-                </span>
-              )}
-            </div>
+                  backgroundColor: '#F1F5F9',
+                  border: '1px solid #CBD5E1',
+                  borderRadius: '8px',
+                  padding: '6px 10px',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  color: '#0F4C81',
+                  cursor: 'pointer',
+                  flexShrink: 0
+                }}
+              >
+                <ArrowLeft size={14} />
+                <span>List</span>
+              </button>
+            )}
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.74rem', color: '#64748B', marginTop: '3px' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#00A896', fontWeight: 600 }}>
-                <Database size={12} />
-                <span>PostgreSQL Cloud Sync</span>
-              </span>
-              <span>•</span>
-              <span>{activeConv ? `${activeConv.messages.length} Clinical Messages` : 'Isolated Medical Session'}</span>
-              {user && (
-                <>
-                  <span>•</span>
-                  <span style={{ color: '#334155', fontWeight: 600 }}>
-                    Account ID: {formatDisplayPhone(user.mobileNumber)}
+            <div style={{ minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h2 style={{
+                  fontSize: isMobile ? '0.98rem' : '1.15rem',
+                  fontWeight: 800,
+                  color: '#0F172A',
+                  margin: 0,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: isMobile ? '200px' : '520px'
+                }}>
+                  {activeConv ? activeConv.title : 'Electropathy AI Consultation'}
+                </h2>
+                {activeConv && (
+                  <span style={{
+                    display: isMobile ? 'none' : 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '2px 8px',
+                    backgroundColor: '#DEF7EC',
+                    color: '#059669',
+                    borderRadius: '999px',
+                    fontSize: '0.68rem',
+                    fontWeight: 700
+                  }}>
+                    <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'pulseGlow 2s infinite' }} />
+                    Active Session
                   </span>
-                </>
-              )}
+                )}
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.72rem', color: '#64748B', marginTop: '2px' }}>
+                <span className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#00A896', fontWeight: 600 }}>
+                  <Database size={12} />
+                  <span>PostgreSQL Cloud Sync</span>
+                </span>
+                <span className="hide-on-mobile">•</span>
+                <span>{activeConv ? `${activeConv.messages.length} Messages` : 'Private Session'}</span>
+                {user && (
+                  <>
+                    <span className="hide-on-mobile">•</span>
+                    <span className="hide-on-mobile" style={{ color: '#334155', fontWeight: 600 }}>
+                      ID: {formatDisplayPhone(user.mobileNumber)}
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -695,7 +751,12 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
               </p>
 
               {/* 4 Interactive Starter Prompt Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', textAlign: 'left' }}>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', 
+                gap: '10px', 
+                textAlign: 'left' 
+              }}>
                 <div
                   className="quick-starter-card"
                   onClick={() => handlePromptClick('What is the recommended S1 / L1 protocol for acute lymphatic congestion?')}
@@ -977,18 +1038,21 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
 
         {/* Input Console Area */}
         <div style={{
-          padding: '12px 20px 16px',
+          padding: isMobile ? '8px 10px 12px' : '12px 20px 16px',
           borderTop: '1px solid #E2E8F0',
           backgroundColor: '#FFFFFF'
         }}>
           {/* Quick Consultation Chips Row */}
-          <div style={{
-            display: 'flex',
-            gap: '8px',
-            overflowX: 'auto',
-            paddingBottom: '10px',
-            scrollbarWidth: 'none'
-          }}>
+          <div 
+            className="hide-scrollbar"
+            style={{
+              display: 'flex',
+              gap: '8px',
+              overflowX: 'auto',
+              paddingBottom: '8px',
+              WebkitOverflowScrolling: 'touch'
+            }}
+          >
             <button
               type="button"
               className="prompt-chip"

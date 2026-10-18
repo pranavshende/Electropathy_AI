@@ -354,7 +354,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
             </div>
 
             {/* 4 Feature Items (2x2 Grid) */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+            <div className="auth-features-grid">
               <div className="auth-hero-feature" style={{ padding: '8px 10px', gap: '8px' }}>
                 <div style={{
                   width: '32px',
@@ -453,14 +453,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
             </div>
 
             {/* Bottom Trust Badges (Single Row) */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '8px',
-              marginTop: '4px',
-              paddingTop: '8px',
-              borderTop: '1px solid #E2E8F0'
-            }}>
+            <div className="auth-trust-badges">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{
                   width: '28px',
@@ -565,7 +558,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
             </div>
 
             {/* 4 Feature Items (2x2 Grid) - Admin */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+            <div className="auth-features-grid">
               <div className="auth-hero-feature" style={{ padding: '8px 10px', gap: '8px' }}>
                 <div style={{
                   width: '32px',
@@ -664,14 +657,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
             </div>
 
             {/* Bottom Trust Badges (Single Row) - Admin */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '8px',
-              marginTop: '4px',
-              paddingTop: '8px',
-              borderTop: '1px solid #E2E8F0'
-            }}>
+            <div className="auth-trust-badges">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{
                   width: '28px',

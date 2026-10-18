@@ -213,7 +213,7 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({ onCase
   return (
     <div style={{
       maxWidth: '860px',
-      margin: '30px auto',
+      margin: '16px auto',
       backgroundColor: '#FFFFFF',
       borderRadius: 'var(--radius-lg)',
       boxShadow: 'var(--shadow-md)',
@@ -222,15 +222,17 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({ onCase
     }}>
       {/* Wizard Header */}
       <div style={{
-        padding: '24px 32px',
+        padding: '16px 20px',
         backgroundColor: '#0F4C81',
         color: '#FFFFFF',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '10px'
       }}>
         <div>
-          <h2 style={{ color: '#FFFFFF', fontSize: '1.35rem', marginBottom: '4px' }}>
+          <h2 style={{ color: '#FFFFFF', fontSize: '1.2rem', marginBottom: '2px' }}>
             Clinical Patient History Intake
           </h2>
           <p style={{ color: '#93C5FD', fontSize: '0.85rem' }}>
@@ -249,12 +251,16 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({ onCase
       </div>
 
       {/* Progress Bar & Tabs */}
-      <div style={{
-        display: 'flex',
-        borderBottom: '1px solid #E2E8F0',
-        backgroundColor: '#F8FAFC',
-        overflowX: 'auto'
-      }}>
+      <div 
+        className="hide-scrollbar"
+        style={{
+          display: 'flex',
+          borderBottom: '1px solid #E2E8F0',
+          backgroundColor: '#F8FAFC',
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
         {steps.map((s) => {
           const Icon = s.icon;
           const isActive = currentStep === s.num;
@@ -288,11 +294,11 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({ onCase
       </div>
 
       {/* Step Body */}
-      <div style={{ padding: '36px', minHeight: '380px' }}>
+      <div style={{ padding: '20px 16px', minHeight: '340px' }}>
         
         {/* STEP 1: Demographics */}
         {currentStep === 1 && (
-          <div className="fade-in" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div className="fade-in wizard-form-grid">
             <div style={{ gridColumn: '1 / -1' }}>
               <label className="input-label">Patient Full Name *</label>
               <input
@@ -383,7 +389,7 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({ onCase
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div className="wizard-form-grid">
               <div>
                 <label className="input-label">Duration of Complaint</label>
                 <input
@@ -521,7 +527,7 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({ onCase
 
         {/* STEP 5: Lifestyle */}
         {currentStep === 5 && (
-          <div className="fade-in" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div className="fade-in wizard-form-grid">
             <div>
               <label className="input-label">Dietary Habit</label>
               <select className="input-field" value={diet} onChange={(e) => setDiet(e.target.value)}>
@@ -607,12 +613,14 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({ onCase
 
       {/* Footer Navigation Buttons */}
       <div style={{
-        padding: '20px 32px',
+        padding: '14px 18px',
         backgroundColor: '#F8FAFC',
         borderTop: '1px solid #E2E8F0',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '10px'
       }}>
         <button
           type="button"

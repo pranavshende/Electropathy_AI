@@ -113,7 +113,10 @@ export default function App() {
         onTabChange={(tab) => setActiveTab(tab)}
       />
 
-      <main style={{ flex: 1, padding: !user ? '8px 16px 0' : activeTab === 'chat' ? '10px 20px 0' : '20px' }}>
+      <main 
+        className={`app-main-content ${user ? 'has-user' : ''}`}
+        style={{ flex: 1, padding: !user ? '8px 16px 0' : activeTab === 'chat' ? '10px 20px 0' : '20px' }}
+      >
         {!user ? (
           <LoginModal 
             onSuccess={handleLoginSuccess} 

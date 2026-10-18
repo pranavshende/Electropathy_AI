@@ -42,7 +42,7 @@ export const MedicalDisclaimer: React.FC<MedicalDisclaimerProps> = ({ compact = 
   }
 
   return (
-    <footer style={{
+    <footer className="app-footer-user" style={{
       marginTop: '40px',
       borderTop: '1px solid #E2E8F0',
       backgroundColor: '#FFFFFF',

@@ -754,52 +754,55 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
 
   // 2. ADMIN DASHBOARD VIEW
   return (
-    <div style={{ maxWidth: '1360px', margin: '16px auto', padding: '0 20px' }}>
+    <div style={{ maxWidth: '1360px', margin: '16px auto', padding: '0 12px 60px' }}>
       {/* Top Banner (Dark Governance Console Bar) */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '16px 24px',
+        padding: '14px 18px',
         backgroundColor: '#0B132B',
         color: '#FFFFFF',
         borderRadius: '12px',
-        marginBottom: '20px',
-        boxShadow: '0 4px 16px rgba(11, 19, 43, 0.25)'
+        marginBottom: '16px',
+        boxShadow: '0 4px 16px rgba(11, 19, 43, 0.25)',
+        flexWrap: 'wrap',
+        gap: '12px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
           <div style={{
-            width: '42px',
-            height: '42px',
+            width: '40px',
+            height: '40px',
             borderRadius: '10px',
             backgroundColor: '#1C2541',
             color: '#38BDF8',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            border: '1px solid rgba(56, 189, 248, 0.2)'
+            border: '1px solid rgba(56, 189, 248, 0.2)',
+            flexShrink: 0
           }}>
-            <ShieldCheck size={24} />
+            <ShieldCheck size={22} />
           </div>
-          <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.3px', margin: 0, lineHeight: 1.2 }}>
-              Administration & Governance Console
+          <div style={{ minWidth: 0 }}>
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.3px', margin: 0, lineHeight: 1.2 }}>
+              Governance Console
             </h2>
-            <div style={{ fontSize: '0.78rem', color: '#94A3B8', marginTop: '3px' }}>
-              Electropathy AI • Logged in as: <span style={{ color: '#E2E8F0', fontWeight: 600 }}>{adminUser.email || 'admin@electropathy.ai'}</span>
+            <div style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              Admin: <span style={{ color: '#E2E8F0', fontWeight: 600 }}>{adminUser.email || 'admin@electropathy.ai'}</span>
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginLeft: 'auto' }}>
           <button
             onClick={onBackToApp}
             style={{
-              padding: '8px 18px',
+              padding: '7px 14px',
               backgroundColor: '#FFFFFF',
               color: '#0F172A',
               fontWeight: 700,
-              fontSize: '0.85rem',
+              fontSize: '0.82rem',
               borderRadius: '8px',
               border: 'none',
               cursor: 'pointer',
@@ -815,8 +818,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
               backgroundColor: '#EF4444',
               color: '#FFFFFF',
               fontWeight: 700,
-              padding: '8px 18px',
-              fontSize: '0.85rem',
+              padding: '7px 14px',
+              fontSize: '0.82rem',
               borderRadius: '8px',
               border: 'none',
               cursor: 'pointer',
@@ -827,21 +830,27 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
               transition: 'all 0.15s ease'
             }}
           >
-            <LogOut size={15} /> Logout
+            <LogOut size={14} /> Logout
           </button>
         </div>
       </div>
 
-      {/* Tabs Bar (Horizontal Pills matching screenshot) */}
-      <div style={{
-        display: 'flex',
-        gap: '10px',
-        marginBottom: '20px',
-        flexWrap: 'wrap'
-      }}>
+      {/* Tabs Bar (Horizontally scrollable with smooth touch on mobile) */}
+      <div 
+        className="hide-scrollbar"
+        style={{
+          display: 'flex',
+          gap: '8px',
+          marginBottom: '16px',
+          overflowX: 'auto',
+          flexWrap: 'nowrap',
+          WebkitOverflowScrolling: 'touch',
+          paddingBottom: '4px'
+        }}
+      >
         {[
-          { key: 'overview', label: 'System Overview', icon: Layers },
-          { key: 'users', label: 'User Management', icon: Users },
+          { key: 'overview', label: 'Overview', icon: Layers },
+          { key: 'users', label: 'Users', icon: Users },
           { key: 'conversations', label: 'Conversations', icon: MessageSquare },
           { key: 'cases', label: 'Patient Cases', icon: FileText },
           { key: 'audit', label: 'Audit Trail', icon: History }
@@ -855,20 +864,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '9px 18px',
+                gap: '6px',
+                padding: '8px 14px',
                 backgroundColor: isActive ? '#0F172A' : '#FFFFFF',
                 color: isActive ? '#FFFFFF' : '#334155',
                 border: isActive ? '1px solid #0F172A' : '1px solid #CBD5E1',
                 borderRadius: '8px',
-                fontSize: '0.86rem',
+                fontSize: '0.82rem',
                 fontWeight: isActive ? 700 : 600,
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
-                boxShadow: isActive ? '0 2px 6px rgba(15,23,42,0.15)' : 'none'
+                boxShadow: isActive ? '0 2px 6px rgba(15,23,42,0.15)' : 'none',
+                whiteSpace: 'nowrap',
+                flexShrink: 0
               }}
             >
-              <Icon size={16} color={isActive ? '#FFFFFF' : '#64748B'} />
+              <Icon size={15} color={isActive ? '#FFFFFF' : '#64748B'} />
               <span>{t.label}</span>
             </button>
           );
@@ -887,11 +898,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
             </div>
           ) : (
             <>
-              {/* 4 Metric Cards (Matching Screenshot) */}
+              {/* 4 Metric Cards (Responsive auto-fit) */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: '16px'
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                gap: '14px'
               }}>
                 {/* Card 1: Total Registered Users */}
                 <div style={{
@@ -988,7 +999,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
                   alignItems: 'center',
                   marginBottom: '16px',
                   paddingBottom: '14px',
-                  borderBottom: '1px solid #F1F5F9'
+                  borderBottom: '1px solid #F1F5F9',
+                  flexWrap: 'wrap',
+                  gap: '12px'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{
@@ -1081,8 +1094,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
                     </div>
                   </div>
                 ) : (
-                  <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
+                  <div className="responsive-table-container">
+                    <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
                       <thead>
                         <tr style={{ borderBottom: '1.5px solid #E2E8F0', color: '#64748B', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                           <th style={{ padding: '10px 12px' }}>Timestamp</th>
@@ -1157,10 +1170,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
 
       {/* 2. USERS TAB */}
       {activeTab === 'users' && (
-        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '16px' }}>
-            <h3 style={{ fontSize: '1.2rem' }}>Registered Users ({userTotal})</h3>
-            <div style={{ position: 'relative', width: '320px' }}>
+        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '18px 16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '12px', flexWrap: 'wrap' }}>
+            <h3 style={{ fontSize: '1.15rem', margin: 0 }}>Registered Users ({userTotal})</h3>
+            <div style={{ position: 'relative', width: '320px', maxWidth: '100%', flex: '1 1 240px' }}>
               <Search size={16} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94A3B8' }} />
               <input
                 type="text"
@@ -1169,12 +1182,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && loadUsers()}
-                style={{ paddingLeft: '36px' }}
+                style={{ paddingLeft: '36px', width: '100%' }}
               />
             </div>
           </div>
 
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+          <div className="responsive-table-container">
+            <table style={{ width: '100%', minWidth: '650px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
             <thead>
               <tr style={{ borderBottom: '1.5px solid #E2E8F0', color: '#64748B' }}>
                 <th style={{ padding: '12px 14px' }}>User / Mobile</th>
@@ -1258,6 +1272,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
@@ -1480,34 +1495,36 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
 
       {/* 5. AUDIT LOGS TAB */}
       {activeTab === 'audit' && (
-        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '24px' }}>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '20px' }}>Administrative Audit Trail</h3>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-            <thead>
-              <tr style={{ borderBottom: '1.5px solid #E2E8F0', color: '#64748B' }}>
-                <th style={{ padding: '10px' }}>Action</th>
-                <th style={{ padding: '10px' }}>Admin</th>
-                <th style={{ padding: '10px' }}>Target ID</th>
-                <th style={{ padding: '10px' }}>IP Address</th>
-                <th style={{ padding: '10px' }}>Timestamp</th>
-              </tr>
-            </thead>
-            <tbody>
-              {auditLogs.map((log) => (
-                <tr key={log.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                  <td style={{ padding: '10px' }}>
-                    <code style={{ backgroundColor: '#F1F5F9', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
-                      {log.action}
-                    </code>
-                  </td>
-                  <td style={{ padding: '10px' }}>{log.admin?.email || log.adminId}</td>
-                  <td style={{ padding: '10px', color: '#64748B' }}>{log.targetId ? log.targetId.slice(0, 8) + '...' : '—'}</td>
-                  <td style={{ padding: '10px', color: '#64748B' }}>{log.ipAddress || 'localhost'}</td>
-                  <td style={{ padding: '10px', color: '#64748B' }}>{new Date(log.createdAt).toLocaleString()}</td>
+        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '18px 16px' }}>
+          <h3 style={{ fontSize: '1.15rem', marginBottom: '16px' }}>Administrative Audit Trail</h3>
+          <div className="responsive-table-container">
+            <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '1.5px solid #E2E8F0', color: '#64748B' }}>
+                  <th style={{ padding: '10px' }}>Action</th>
+                  <th style={{ padding: '10px' }}>Admin</th>
+                  <th style={{ padding: '10px' }}>Target ID</th>
+                  <th style={{ padding: '10px' }}>IP Address</th>
+                  <th style={{ padding: '10px' }}>Timestamp</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {auditLogs.map((log) => (
+                  <tr key={log.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                    <td style={{ padding: '10px' }}>
+                      <code style={{ backgroundColor: '#F1F5F9', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                        {log.action}
+                      </code>
+                    </td>
+                    <td style={{ padding: '10px' }}>{log.admin?.email || log.adminId}</td>
+                    <td style={{ padding: '10px', color: '#64748B' }}>{log.targetId ? log.targetId.slice(0, 8) + '...' : '—'}</td>
+                    <td style={{ padding: '10px', color: '#64748B' }}>{log.ipAddress || 'localhost'}</td>
+                    <td style={{ padding: '10px', color: '#64748B' }}>{new Date(log.createdAt).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -1517,13 +1534,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
           position: 'fixed',
           top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: 'rgba(15, 23, 42, 0.6)',
+          backdropFilter: 'blur(3px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 100, padding: '20px'
+          zIndex: 100, padding: '12px'
         }}>
-          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '16px', maxWidth: '640px', width: '100%', padding: '30px', maxHeight: '85vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-              <h3>User Profile Details</h3>
-              <button onClick={() => setSelectedUserDetail(null)} style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer' }}>✕</button>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', maxWidth: '640px', width: '100%', padding: '20px 16px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <h3 style={{ fontSize: '1.15rem', margin: 0 }}>User Profile Details</h3>
+              <button onClick={() => setSelectedUserDetail(null)} style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: '#64748B' }}>✕</button>
             </div>
             <p><strong>Full Name:</strong> {selectedUserDetail.fullName || 'Not provided'}</p>
             <p><strong>Mobile Number:</strong> +91 {selectedUserDetail.mobileNumber}</p>
@@ -1532,16 +1550,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
             <p><strong>Account Status:</strong> {selectedUserDetail.isActive ? 'Active' : 'Deactivated'}</p>
             <p><strong>Joined:</strong> {new Date(selectedUserDetail.createdAt).toLocaleString()}</p>
             
-            <h4 style={{ marginTop: '20px', marginBottom: '10px', color: '#0F4C81' }}>Associated Conversations:</h4>
+            <h4 style={{ marginTop: '16px', marginBottom: '8px', color: '#0F4C81', fontSize: '0.95rem' }}>Associated Conversations:</h4>
             {selectedUserDetail.conversations?.length === 0 ? <p style={{ color: '#64748B', fontSize: '0.85rem' }}>No conversations recorded.</p> : (
               selectedUserDetail.conversations.map((c: any) => (
-                <div key={c.id} style={{ padding: '6px 0', borderBottom: '1px solid #F1F5F9', fontSize: '0.85rem' }}>
+                <div key={c.id} style={{ padding: '6px 0', borderBottom: '1px solid #F1F5F9', fontSize: '0.82rem' }}>
                   • {c.title} ({new Date(c.updatedAt).toLocaleDateString()})
                 </div>
               ))
             )}
-            <div style={{ marginTop: '24px', textAlign: 'right' }}>
-              <button onClick={() => setSelectedUserDetail(null)} className="btn btn-primary">Close</button>
+            <div style={{ marginTop: '20px', textAlign: 'right' }}>
+              <button onClick={() => setSelectedUserDetail(null)} className="btn btn-primary" style={{ padding: '7px 16px', fontSize: '0.85rem' }}>Close</button>
             </div>
           </div>
         </div>
@@ -1553,38 +1571,39 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
           position: 'fixed',
           top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: 'rgba(15, 23, 42, 0.6)',
+          backdropFilter: 'blur(3px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 100, padding: '20px'
+          zIndex: 100, padding: '12px'
         }}>
-          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '16px', maxWidth: '680px', width: '100%', padding: '30px', maxHeight: '85vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-              <div>
-                <h3>{selectedConvDetail.title}</h3>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', maxWidth: '680px', width: '100%', padding: '20px 16px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <div style={{ minWidth: 0, paddingRight: '10px' }}>
+                <h3 style={{ fontSize: '1.1rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selectedConvDetail.title}</h3>
                 <span style={{ fontSize: '0.75rem', color: '#64748B' }}>
                   User: {selectedConvDetail.user?.fullName || selectedConvDetail.user?.mobileNumber}
                 </span>
               </div>
-              <button onClick={() => setSelectedConvDetail(null)} style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer' }}>✕</button>
+              <button onClick={() => setSelectedConvDetail(null)} style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: '#64748B' }}>✕</button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {selectedConvDetail.messages?.map((m: any) => (
                 <div key={m.id} style={{
-                  padding: '12px 16px',
+                  padding: '10px 14px',
                   borderRadius: '10px',
                   backgroundColor: m.role === 'user' ? '#EBF3FA' : '#F1F5F9',
                   border: '1px solid #E2E8F0'
                 }}>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: m.role === 'user' ? '#0F4C81' : '#00A896', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: m.role === 'user' ? '#0F4C81' : '#00A896', marginBottom: '3px' }}>
                     {m.role === 'user' ? 'User' : 'Assistant'} • {new Date(m.createdAt).toLocaleTimeString()}
                   </div>
-                  <div style={{ fontSize: '0.9rem', color: '#0F172A' }}>{m.content}</div>
+                  <div style={{ fontSize: '0.85rem', color: '#0F172A', wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{m.content}</div>
                 </div>
               ))}
             </div>
 
-            <div style={{ marginTop: '24px', textAlign: 'right' }}>
-              <button onClick={() => setSelectedConvDetail(null)} className="btn btn-primary">Close</button>
+            <div style={{ marginTop: '20px', textAlign: 'right' }}>
+              <button onClick={() => setSelectedConvDetail(null)} className="btn btn-primary" style={{ padding: '7px 16px', fontSize: '0.85rem' }}>Close</button>
             </div>
           </div>
         </div>
@@ -1596,28 +1615,29 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
           position: 'fixed',
           top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: 'rgba(15, 23, 42, 0.6)',
+          backdropFilter: 'blur(3px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 100, padding: '20px'
+          zIndex: 100, padding: '12px'
         }}>
-          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '16px', maxWidth: '640px', width: '100%', padding: '30px', maxHeight: '85vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-              <h3>Patient Clinical Case: {selectedCaseDetail.patientName}</h3>
-              <button onClick={() => setSelectedCaseDetail(null)} style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer' }}>✕</button>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', maxWidth: '640px', width: '100%', padding: '20px 16px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <h3 style={{ fontSize: '1.1rem', margin: 0 }}>Case: {selectedCaseDetail.patientName}</h3>
+              <button onClick={() => setSelectedCaseDetail(null)} style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: '#64748B' }}>✕</button>
             </div>
 
-            <div style={{ fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <p><strong>Age / Gender:</strong> {selectedCaseDetail.age} yrs | {selectedCaseDetail.gender}</p>
               <p><strong>Contact:</strong> +91 {selectedCaseDetail.contactNumber} | {selectedCaseDetail.city}</p>
               <p><strong>Practitioner:</strong> {selectedCaseDetail.practitioner?.fullName || selectedCaseDetail.practitioner?.mobileNumber}</p>
-              <div style={{ backgroundColor: '#F8FAFC', padding: '12px', borderRadius: '8px' }}>
+              <div style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '8px', marginTop: '4px' }}>
                 <p><strong>Chief Complaints:</strong> {selectedCaseDetail.chiefComplaints[0]?.complaint} ({selectedCaseDetail.chiefComplaints[0]?.duration})</p>
                 <p><strong>Severity:</strong> {selectedCaseDetail.chiefComplaints[0]?.severity}/10</p>
                 <p><strong>Temperament:</strong> {selectedCaseDetail.electropathyDetails?.temperament}</p>
               </div>
             </div>
 
-            <div style={{ marginTop: '24px', textAlign: 'right' }}>
-              <button onClick={() => setSelectedCaseDetail(null)} className="btn btn-primary">Close</button>
+            <div style={{ marginTop: '20px', textAlign: 'right' }}>
+              <button onClick={() => setSelectedCaseDetail(null)} className="btn btn-primary" style={{ padding: '7px 16px', fontSize: '0.85rem' }}>Close</button>
             </div>
           </div>
         </div>

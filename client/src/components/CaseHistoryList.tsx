@@ -44,19 +44,19 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
   );
 
   return (
-    <div style={{ maxWidth: '1080px', margin: '30px auto', padding: '0 16px' }}>
+    <div style={{ maxWidth: '1080px', margin: '16px auto', padding: '0 12px 60px' }}>
       {/* Header & Search */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '24px',
+        marginBottom: '20px',
         flexWrap: 'wrap',
-        gap: '16px'
+        gap: '14px'
       }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
               {isPractitioner ? 'Recorded Patient Histories' : 'My Health Records'}
             </h2>
             <span style={{
@@ -74,7 +74,7 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
               <span>Isolated & Private</span>
             </span>
           </div>
-          <p style={{ color: '#64748B', fontSize: '0.85rem', marginTop: '4px' }}>
+          <p style={{ color: '#64748B', fontSize: '0.82rem', marginTop: '4px' }}>
             {isPractitioner 
               ? `${cases.length} Total Clinical Records Recorded Under Your Practice`
               : user 
@@ -83,13 +83,13 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
           </p>
         </div>
 
-        <div style={{ position: 'relative', width: '320px' }}>
+        <div style={{ position: 'relative', width: '320px', maxWidth: '100%', flex: '1 1 240px' }}>
           <Search size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94A3B8' }} />
           <input
             type="text"
             className="input-field"
             placeholder="Search complaint, date, details..."
-            style={{ paddingLeft: '38px' }}
+            style={{ paddingLeft: '38px', width: '100%' }}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -104,22 +104,22 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
         <div style={{
           backgroundColor: '#FFFFFF',
           borderRadius: 'var(--radius-lg)',
-          padding: '60px',
+          padding: '40px 20px',
           textAlign: 'center',
           border: '1px solid #E2E8F0'
         }}>
-          <FileText size={48} style={{ margin: '0 auto 16px', color: '#CBD5E1' }} />
-          <h3 style={{ color: '#334155', marginBottom: '8px' }}>
+          <FileText size={44} style={{ margin: '0 auto 14px', color: '#CBD5E1' }} />
+          <h3 style={{ color: '#334155', marginBottom: '8px', fontSize: '1.1rem' }}>
             {isPractitioner ? 'No Patient Records Found' : 'No Health Records Found'}
           </h3>
-          <p style={{ color: '#64748B', fontSize: '0.88rem', maxWidth: '460px', margin: '0 auto' }}>
+          <p style={{ color: '#64748B', fontSize: '0.84rem', maxWidth: '460px', margin: '0 auto' }}>
             {isPractitioner 
               ? 'Complete your first patient intake to build the clinical case database.'
               : 'You do not have any saved clinical records under this account yet. Consultation summaries will appear here.'}
           </p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {filteredCases.map((c) => (
             <div
               key={c.id}
@@ -127,14 +127,16 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
               style={{
                 backgroundColor: '#FFFFFF',
                 borderRadius: 'var(--radius-md)',
-                padding: '20px 24px',
+                padding: '16px 18px',
                 border: '1px solid #E2E8F0',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
+                gap: '12px',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
-                boxShadow: 'var(--shadow-sm)'
+                boxShadow: 'var(--shadow-sm)',
+                flexWrap: 'wrap'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = '#00A896';
@@ -145,35 +147,37 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
                 e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: '1 1 240px', minWidth: 0 }}>
                 <div style={{
-                  width: '46px',
-                  height: '46px',
-                  borderRadius: '12px',
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '10px',
                   backgroundColor: '#EBF3FA',
                   color: '#0F4C81',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontWeight: 700
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  flexShrink: 0
                 }}>
                   {c.patientName[0]?.toUpperCase()}
                 </div>
 
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0F172A' }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '1rem', fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {c.patientName}
                     </span>
-                    <span style={{ fontSize: '0.8rem', color: '#64748B' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#64748B' }}>
                       ({c.age} yrs, {c.gender})
                     </span>
                     <span style={{
-                      fontSize: '0.7rem',
+                      fontSize: '0.68rem',
                       fontWeight: 700,
                       backgroundColor: '#E0F5F2',
                       color: '#00A896',
-                      padding: '2px 8px',
+                      padding: '2px 7px',
                       borderRadius: '12px',
                       textTransform: 'uppercase'
                     }}>
@@ -181,28 +185,28 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
                     </span>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem', color: '#475569' }}>
-                    <span>
-                      <strong>Chief Complaint:</strong> {c.chiefComplaints[0]?.complaint || 'N/A'}
+                  <div style={{ display: 'flex', gap: '12px', fontSize: '0.82rem', color: '#475569', flexWrap: 'wrap' }}>
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '300px' }}>
+                      <strong>Complaint:</strong> {c.chiefComplaints[0]?.complaint || 'N/A'}
                     </span>
                     {c.city && (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748B' }}>
-                        <MapPin size={14} /> {c.city}
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#64748B', fontSize: '0.76rem' }}>
+                        <MapPin size={13} /> {c.city}
                       </span>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ textAlign: 'right', fontSize: '0.75rem', color: '#94A3B8' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Calendar size={13} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0, marginLeft: 'auto' }}>
+                <div style={{ textAlign: 'right', fontSize: '0.72rem', color: '#94A3B8' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
+                    <Calendar size={12} />
                     {new Date(c.createdAt).toLocaleDateString()}
                   </div>
                   <div>ID: {c.id.slice(0, 8)}</div>
                 </div>
-                <ChevronRight size={20} color="#CBD5E1" />
+                <ChevronRight size={18} color="#CBD5E1" />
               </div>
             </div>
           ))}
@@ -223,62 +227,62 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 100,
-          padding: '20px'
+          padding: '12px'
         }}>
           <div style={{
             backgroundColor: '#FFFFFF',
             borderRadius: 'var(--radius-lg)',
             maxWidth: '680px',
             width: '100%',
-            maxHeight: '90vh',
+            maxHeight: '92vh',
             overflowY: 'auto',
-            padding: '32px',
+            padding: '20px 18px',
             boxShadow: 'var(--shadow-xl)'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div>
-                <h3 style={{ fontSize: '1.35rem', color: '#0F172A' }}>{selectedCase.patientName}</h3>
-                <p style={{ color: '#64748B', fontSize: '0.85rem' }}>
-                  Case ID: {selectedCase.id} | Recorded on {new Date(selectedCase.createdAt).toLocaleString()}
+                <h3 style={{ fontSize: '1.2rem', color: '#0F172A', fontWeight: 800 }}>{selectedCase.patientName}</h3>
+                <p style={{ color: '#64748B', fontSize: '0.78rem' }}>
+                  Case ID: {selectedCase.id.slice(0, 8)} • Recorded {new Date(selectedCase.createdAt).toLocaleDateString()}
                 </p>
               </div>
               <button
                 onClick={() => setSelectedCase(null)}
-                style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#64748B' }}
+                style={{ background: 'none', border: 'none', fontSize: '1.3rem', cursor: 'pointer', color: '#64748B', padding: '4px 8px' }}
               >
                 ✕
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '0.925rem' }}>
-              <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '8px' }}>
-                <h4 style={{ color: '#0F4C81', marginBottom: '8px' }}>Demographics & Contact</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.88rem' }}>
+              <div style={{ backgroundColor: '#F8FAFC', padding: '14px', borderRadius: '8px' }}>
+                <h4 style={{ color: '#0F4C81', marginBottom: '6px', fontSize: '0.9rem' }}>Demographics & Contact</h4>
                 <p><strong>Age / Gender:</strong> {selectedCase.age} years | {selectedCase.gender}</p>
                 <p><strong>Mobile Number:</strong> +91 {selectedCase.contactNumber}</p>
                 <p><strong>Location:</strong> {selectedCase.city || 'Not provided'} | {selectedCase.occupation || 'N/A'}</p>
               </div>
 
-              <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '8px' }}>
-                <h4 style={{ color: '#0F4C81', marginBottom: '8px' }}>Chief Complaints</h4>
+              <div style={{ backgroundColor: '#F8FAFC', padding: '14px', borderRadius: '8px' }}>
+                <h4 style={{ color: '#0F4C81', marginBottom: '6px', fontSize: '0.9rem' }}>Chief Complaints</h4>
                 <p><strong>Complaint:</strong> {selectedCase.chiefComplaints[0]?.complaint}</p>
                 <p><strong>Duration:</strong> {selectedCase.chiefComplaints[0]?.duration || 'N/A'}</p>
                 <p><strong>Pain Severity:</strong> {selectedCase.chiefComplaints[0]?.severity}/10</p>
                 <p><strong>Modality / Factors:</strong> {selectedCase.chiefComplaints[0]?.factors || 'None noted'}</p>
               </div>
 
-              <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '8px' }}>
-                <h4 style={{ color: '#0F4C81', marginBottom: '8px' }}>Electropathy Constitution & Impressions</h4>
+              <div style={{ backgroundColor: '#F8FAFC', padding: '14px', borderRadius: '8px' }}>
+                <h4 style={{ color: '#0F4C81', marginBottom: '6px', fontSize: '0.9rem' }}>Electropathy Constitution & Impressions</h4>
                 <p><strong>Temperament:</strong> {selectedCase.electropathyDetails?.temperament || 'Not specified'}</p>
                 <p><strong>Prior Remedies:</strong> {selectedCase.electropathyDetails?.previousElectropathy || 'None'}</p>
                 <p><strong>Clinical Notes:</strong> {selectedCase.electropathyDetails?.notes || 'None'}</p>
               </div>
             </div>
 
-            <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button onClick={() => window.print()} className="btn btn-secondary">
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button onClick={() => window.print()} className="btn btn-secondary" style={{ padding: '8px 14px', fontSize: '0.85rem' }}>
                 Print Case
               </button>
-              <button onClick={() => setSelectedCase(null)} className="btn btn-primary">
+              <button onClick={() => setSelectedCase(null)} className="btn btn-primary" style={{ padding: '8px 14px', fontSize: '0.85rem' }}>
                 Close
               </button>
             </div>

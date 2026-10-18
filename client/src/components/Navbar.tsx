@@ -47,14 +47,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             width: '40px',
             height: '40px',
             borderRadius: '11px',
-            background: 'linear-gradient(135deg, #0F4C81 0%, #00A896 100%)',
+            overflow: 'hidden',
+            boxShadow: '0 4px 10px rgba(0, 168, 150, 0.25)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#FFFFFF',
-            boxShadow: '0 4px 10px rgba(0, 168, 150, 0.25)'
+            backgroundColor: '#FFFFFF'
           }}>
-            <Activity size={22} />
+            <img src="/favicon.svg" alt="Electropathy AI Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

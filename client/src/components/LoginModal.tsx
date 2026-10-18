@@ -884,20 +884,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
             {/* Card Header with Brand Icon */}
             <div style={{ textAlign: 'center', marginBottom: '14px' }}>
               <div style={{
-                width: '40px',
-                height: '40px',
+                width: '44px',
+                height: '44px',
                 margin: '0 auto 6px',
                 borderRadius: '12px',
-                background: 'linear-gradient(135deg, #00A896 0%, #0F4C81 100%)',
+                overflow: 'hidden',
+                boxShadow: '0 6px 14px rgba(0, 168, 150, 0.25)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#FFFFFF',
-                boxShadow: '0 6px 14px rgba(0, 168, 150, 0.25)'
+                backgroundColor: '#FFFFFF'
               }}>
-                {mode === 'password_login' && <Activity size={20} />}
-                {mode === 'otp_register' && (registerStep === 'profile' ? <UserIcon size={20} /> : <Phone size={20} />)}
-                {mode === 'forgot_password' && <KeyRound size={20} />}
+                <img src="/favicon.svg" alt="Electropathy AI" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0F172A', marginBottom: '2px' }}>
@@ -1550,18 +1548,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
             {/* Card Header with Shield Icon */}
             <div style={{ textAlign: 'center', marginBottom: '14px' }}>
               <div style={{
-                width: '42px',
-                height: '42px',
+                width: '44px',
+                height: '44px',
                 margin: '0 auto 6px',
                 borderRadius: '12px',
-                background: 'linear-gradient(135deg, #0F4C81 0%, #0284C7 100%)',
+                overflow: 'hidden',
+                boxShadow: '0 6px 14px rgba(15, 76, 129, 0.25)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#FFFFFF',
-                boxShadow: '0 6px 14px rgba(15, 76, 129, 0.25)'
+                backgroundColor: '#FFFFFF'
               }}>
-                <ShieldCheck size={22} />
+                <img src="/favicon.svg" alt="Electropathy AI Admin" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0F172A', marginBottom: '2px' }}>

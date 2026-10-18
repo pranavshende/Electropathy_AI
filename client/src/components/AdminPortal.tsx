@@ -13,12 +13,18 @@ import {
   CheckCircle, 
   XCircle, 
   Eye, 
+  EyeOff,
   LogOut,
   Loader2,
   Calendar,
   Layers,
   ChevronRight,
-  ShieldAlert
+  ShieldAlert,
+  ArrowRight,
+  BarChart3,
+  Sparkles,
+  Check,
+  CheckCircle2
 } from 'lucide-react';
 
 interface AdminPortalProps {
@@ -32,6 +38,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
   // Login Form State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [keepSignedIn, setKeepSignedIn] = useState(true);
+  const [copiedSeed, setCopiedSeed] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
@@ -169,109 +178,489 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
 
   // 1. ADMIN LOGIN VIEW
   if (!adminUser) {
+    const handleFillAdminCredentials = () => {
+      setEmail('admin@electropathy.ai');
+      setPassword('Admin@Electropathy2026!');
+      setCopiedSeed(true);
+      setTimeout(() => setCopiedSeed(false), 2000);
+    };
+
     return (
-      <div style={{
-        maxWidth: '440px',
-        margin: '60px auto',
-        padding: '36px',
-        backgroundColor: '#FFFFFF',
-        borderRadius: 'var(--radius-lg)',
-        boxShadow: 'var(--shadow-xl)',
-        border: '1px solid #E2E8F0',
-        textAlign: 'left'
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+      <div className="auth-split-wrapper">
+        {/* ======================================================== */}
+        {/* LEFT COLUMN: HERO, PLATFORM OVERVIEW CARD & FEATURES     */}
+        {/* ======================================================== */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+          {/* Eyebrow Badge */}
           <div style={{
-            width: '56px',
-            height: '56px',
-            margin: '0 auto 16px',
-            borderRadius: '16px',
-            backgroundColor: '#0F172A',
-            color: '#38BDF8',
-            display: 'flex',
+            display: 'inline-flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 8px 16px rgba(15, 23, 42, 0.2)'
+            gap: '8px',
+            padding: '6px 14px',
+            backgroundColor: '#EBF3FA',
+            borderRadius: '999px',
+            width: 'fit-content'
           }}>
-            <ShieldCheck size={32} />
-          </div>
-          <h2 style={{ fontSize: '1.45rem', marginBottom: '6px' }}>Administrator Portal</h2>
-          <p style={{ color: '#64748B', fontSize: '0.85rem' }}>
-            Authorized personnel only. Protected by RBAC & Audit Trails.
-          </p>
-        </div>
-
-        {loginError && (
-          <div style={{
-            backgroundColor: '#FEE2E2',
-            border: '1px solid #FCA5A5',
-            color: '#991B1B',
-            padding: '12px',
-            borderRadius: '8px',
-            fontSize: '0.85rem',
-            marginBottom: '18px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <ShieldAlert size={18} />
-            <span>{loginError}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-          <div>
-            <label className="input-label">Admin Email</label>
-            <div style={{ position: 'relative' }}>
-              <Mail size={16} style={{ position: 'absolute', left: '12px', top: '13px', color: '#94A3B8' }} />
-              <input
-                type="email"
-                className="input-field"
-                placeholder="admin@electropathy.ai"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ paddingLeft: '38px' }}
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="input-label">Password</label>
-            <div style={{ position: 'relative' }}>
-              <Lock size={16} style={{ position: 'absolute', left: '12px', top: '13px', color: '#94A3B8' }} />
-              <input
-                type="password"
-                className="input-field"
-                placeholder="••••••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ paddingLeft: '38px' }}
-                required
-              />
-            </div>
-            <span style={{ fontSize: '0.725rem', color: '#64748B', marginTop: '6px', display: 'block' }}>
-              Default credential seeded via <code>npm run seed:admin</code>
+            <ShieldCheck size={16} color="#0284C7" />
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0284C7', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              Secure Admin Access
             </span>
           </div>
 
-          <button
-            type="submit"
-            className="btn btn-primary"
-            style={{ width: '100%', padding: '12px', backgroundColor: '#0F172A' }}
-            disabled={loginLoading}
-          >
-            {loginLoading ? <Loader2 className="animate-spin" size={18} /> : 'Secure Admin Login'}
-          </button>
+          {/* Heading */}
+          <div>
+            <h1 style={{
+              fontSize: '2.6rem',
+              lineHeight: 1.15,
+              fontWeight: 800,
+              color: '#0F172A',
+              letterSpacing: '-0.025em',
+              marginBottom: '14px'
+            }}>
+              Administrator <br />
+              <span style={{ color: '#0284C7' }}>Portal</span>
+            </h1>
+            <p style={{ fontSize: '1.025rem', color: '#64748B', lineHeight: 1.6, maxWidth: '500px' }}>
+              Manage users, monitor platform activity, oversee clinical data, and maintain knowledge resources with secure administrative access.
+            </p>
+          </div>
 
-          <button
-            type="button"
-            onClick={onBackToApp}
-            style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: '0.85rem', textAlign: 'center', marginTop: '6px' }}
-          >
-            ← Return to Main Portal
-          </button>
-        </form>
+          {/* 4 Feature Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '14px' }}>
+            <div className="auth-hero-feature">
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '10px',
+                backgroundColor: '#EBF3FA',
+                color: '#0284C7',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <Users size={20} />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0F172A', marginBottom: '2px' }}>
+                  User Management
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#64748B', lineHeight: 1.4 }}>
+                  View and manage all registered users
+                </div>
+              </div>
+            </div>
+
+            <div className="auth-hero-feature">
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '10px',
+                backgroundColor: '#DEF7EC',
+                color: '#059669',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <FileText size={20} />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0F172A', marginBottom: '2px' }}>
+                  Clinical Records
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#64748B', lineHeight: 1.4 }}>
+                  Monitor patient cases and conversations
+                </div>
+              </div>
+            </div>
+
+            <div className="auth-hero-feature">
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '10px',
+                backgroundColor: '#F3E8FF',
+                color: '#7C3AED',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <BarChart3 size={20} />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0F172A', marginBottom: '2px' }}>
+                  Platform Analytics
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#64748B', lineHeight: 1.4 }}>
+                  Track usage, performance and insights
+                </div>
+              </div>
+            </div>
+
+            <div className="auth-hero-feature">
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '10px',
+                backgroundColor: '#FEF3C7',
+                color: '#D97706',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <ShieldCheck size={20} />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0F172A', marginBottom: '2px' }}>
+                  Secure & Audited
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#64748B', lineHeight: 1.4 }}>
+                  Protected by RBAC and audit trails
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive 3D Platform Overview Card Preview */}
+          <div style={{
+            background: 'linear-gradient(145deg, #FFFFFF 0%, #F8FAFC 100%)',
+            borderRadius: '20px',
+            border: '1px solid #E2E8F0',
+            boxShadow: '0 16px 36px -10px rgba(15, 23, 42, 0.08)',
+            padding: '22px',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Live Indicator Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Layers size={18} color="#0F172A" />
+                <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#0F172A' }}>Platform Overview</span>
+              </div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 10px',
+                backgroundColor: '#DEF7EC',
+                borderRadius: '999px',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: '#059669'
+              }}>
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'pulseGlow 2s infinite' }} />
+                <span>Live</span>
+              </div>
+            </div>
+
+            {/* Metrics Mini-Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '16px' }}>
+              <div style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', color: '#0284C7' }}>
+                  <Users size={14} />
+                  <span style={{ fontSize: '0.7rem', color: '#64748B' }}>Total Users</span>
+                </div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0F172A' }}>
+                  {overview?.users.total ?? '1,248'}
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', color: '#059669' }}>
+                  <MessageSquare size={14} />
+                  <span style={{ fontSize: '0.7rem', color: '#64748B' }}>Conversations</span>
+                </div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0F172A' }}>
+                  {overview?.conversations.totalConversations ?? '856'}
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', color: '#7C3AED' }}>
+                  <FileText size={14} />
+                  <span style={{ fontSize: '0.7rem', color: '#64748B' }}>Patient Cases</span>
+                </div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0F172A' }}>
+                  {overview?.patientCases.total ?? '312'}
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', color: '#D97706' }}>
+                  <Calendar size={14} />
+                  <span style={{ fontSize: '0.7rem', color: '#64748B' }}>Knowledge Docs</span>
+                </div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0F172A' }}>
+                  {overview?.knowledgeBase.totalDocuments ?? '24'}
+                </div>
+              </div>
+            </div>
+
+            {/* Floating Security Pillars */}
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <div style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '10px 14px',
+                backgroundColor: '#F0F9FF',
+                border: '1px solid #BAE6FD',
+                borderRadius: '10px'
+              }}>
+                <Lock size={16} color="#0284C7" />
+                <div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0369A1' }}>RBAC Protected</div>
+                  <div style={{ fontSize: '0.7rem', color: '#64748B' }}>Authorized personnel only</div>
+                </div>
+              </div>
+
+              <div style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '10px 14px',
+                backgroundColor: '#ECFDF5',
+                border: '1px solid #A7F3D0',
+                borderRadius: '10px'
+              }}>
+                <CheckCircle2 size={16} color="#059669" />
+                <div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#065F46' }}>Audit Trails</div>
+                  <div style={{ fontSize: '0.7rem', color: '#64748B' }}>All actions are logged</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ======================================================== */}
+        {/* RIGHT COLUMN: ELEVATED ADMIN LOGIN CARD                  */}
+        {/* ======================================================== */}
+        <div className="auth-card-elevated auth-card-admin">
+          {/* Card Header with Dark Shield Icon */}
+          <div style={{ textAlign: 'center', marginBottom: '26px' }}>
+            <div style={{
+              width: '56px',
+              height: '56px',
+              margin: '0 auto 16px',
+              borderRadius: '16px',
+              backgroundColor: '#0F172A',
+              color: '#38BDF8',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 18px rgba(15, 23, 42, 0.25)'
+            }}>
+              <ShieldCheck size={30} />
+            </div>
+            <h2 style={{ fontSize: '1.45rem', fontWeight: 700, color: '#0F172A', marginBottom: '6px' }}>
+              Administrator Portal
+            </h2>
+            <p style={{ color: '#64748B', fontSize: '0.875rem' }}>
+              Authorized personnel only. Protected by RBAC & Audit Trails.
+            </p>
+          </div>
+
+          {loginError && (
+            <div style={{
+              backgroundColor: '#FEE2E2',
+              border: '1px solid #FCA5A5',
+              color: '#991B1B',
+              padding: '12px 14px',
+              borderRadius: '10px',
+              fontSize: '0.85rem',
+              marginBottom: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <ShieldAlert size={18} />
+              <span>{loginError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            <div>
+              <label className="input-label" style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>
+                Admin Email
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Mail size={17} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                <input
+                  type="email"
+                  className="input-field"
+                  placeholder="Enter your admin email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  style={{ paddingLeft: '40px', borderRadius: '10px', padding: '11px 14px 11px 40px' }}
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="input-label" style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>
+                Password
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Lock size={17} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="input-field"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={{ paddingLeft: '40px', paddingRight: '40px', borderRadius: '10px', padding: '11px 40px 11px 40px' }}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: '#94A3B8',
+                    cursor: 'pointer',
+                    padding: 0
+                  }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Keep me signed in & Forgot Password Row */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.825rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#475569', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={keepSignedIn}
+                  onChange={(e) => setKeepSignedIn(e.target.checked)}
+                  style={{ borderRadius: '4px', accentColor: '#0F172A' }}
+                />
+                <span>Keep me signed in</span>
+              </label>
+              <span style={{ color: '#0284C7', fontWeight: 600, cursor: 'pointer' }}>Forgot Password?</span>
+            </div>
+
+            {/* Primary Submit Button */}
+            <button
+              type="submit"
+              className="btn"
+              style={{
+                width: '100%',
+                padding: '13px',
+                marginTop: '4px',
+                backgroundColor: '#0F172A',
+                color: '#FFFFFF',
+                borderRadius: '10px',
+                fontWeight: 700,
+                boxShadow: '0 4px 12px rgba(15, 23, 42, 0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+              disabled={loginLoading || !email || !password}
+            >
+              {loginLoading ? <Loader2 className="animate-spin" size={18} /> : (
+                <>
+                  <ShieldCheck size={18} />
+                  <span>Secure Admin Login</span>
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
+
+            {/* OR Divider */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              margin: '4px 0',
+              gap: '12px',
+              color: '#94A3B8',
+              fontSize: '0.75rem',
+              fontWeight: 600
+            }}>
+              <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
+              <span>OR</span>
+              <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
+            </div>
+
+            {/* Outline Return Button */}
+            <button
+              type="button"
+              onClick={onBackToApp}
+              style={{
+                width: '100%',
+                padding: '11px',
+                backgroundColor: '#FFFFFF',
+                border: '1.5px solid #CBD5E1',
+                borderRadius: '10px',
+                color: '#334155',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <span>← Return to Main Portal</span>
+            </button>
+
+            {/* Interactive Admin Seed Credentials Pill */}
+            <div style={{
+              marginTop: '6px',
+              padding: '8px 12px',
+              backgroundColor: '#F8FAFC',
+              border: '1px solid #E2E8F0',
+              borderRadius: '8px',
+              fontSize: '0.75rem',
+              color: '#475569',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '6px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Lock size={13} color="#64748B" />
+                <span>Default seeded via <code>npm run seed:admin</code></span>
+              </div>
+              <button
+                type="button"
+                onClick={handleFillAdminCredentials}
+                style={{
+                  backgroundColor: copiedSeed ? '#059669' : '#0F172A',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '3px 8px',
+                  fontSize: '0.72rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                {copiedSeed ? <Check size={12} /> : <Sparkles size={12} />}
+                {copiedSeed ? 'Filled!' : 'Fill Admin'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     );
   }

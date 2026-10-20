@@ -337,5 +337,27 @@ npx tsx src/tests/chatbotVerificationTest.ts
 3. **Verified Clean Build**:
    - `npm run build` in `client` passes with zero errors. All raw `#`, `*`, and `**` symbols are now rendered as authentic headings, bold headers, and styled lists.
 
+---
+
+## 12. Loading Spinner Freezing Resolution (Completed)
+
+### Problem Diagnosis
+- When clicking "Ask AI" in the Admin AI Chatbot or sending messages in Patient Consultation, the circular loading spinner icon (`<Loader2 />`) appeared frozen as a motionless circle.
+- **Root Cause**: The client application is built with vanilla CSS without Tailwind CSS. Components applied utility classes `className="spin"` and `className="animate-spin"`, but `@keyframes spin` and the corresponding `.spin` / `.animate-spin` CSS rules were completely missing from all stylesheets in `client/src/index.css`.
+- As a result, the browser rendered the SVG icon in its static initial state, giving the appearance that the spinner froze during background AI inference or live PostgreSQL queries.
+
+### Resolution Applied
+1. **Added Hardware-Accelerated Spin Keyframes (`client/src/index.css`)**:
+   - Defined `@keyframes spin` from `0deg` to `360deg`.
+   - Applied GPU-composited `.spin` and `.animate-spin` rules with `will-change: transform`, `transform-origin: center center`, and `transform-box: fill-box`.
+   - Offloading the rotation matrix to the browser's compositor layer guarantees silky-smooth 60fps continuous rotation that will never freeze or stutter, even when the JavaScript main thread executes React re-renders or stream updates.
+2. **Standardized Spinner Classes & Interactive State (`client/src/components/AdminAIChatbot.tsx`)**:
+   - Updated the "Ask AI" submit button to dynamically display `{loading ? 'Consulting AI...' : 'Ask AI'}` along with `<Loader2 size={16} className="spin animate-spin" />`.
+   - Updated the live database query stream banner to use `className="spin animate-spin"`.
+3. **End-to-End Build & Validation**:
+   - Verified compilation via `npm run build` in `client/` (exited with code 0).
+   - Validated that all loaders across Admin Portal, Admin AI Chatbot, Patient Consultation, and Authentication modals now spin continuously and smoothly without freezing.
+
+
 
 

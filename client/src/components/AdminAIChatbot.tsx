@@ -720,7 +720,7 @@ I am your clinical assistant grounded in **PostgreSQL live patient records** and
 
               {loading && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, backgroundColor: '#F8FAFC', borderRadius: 8, width: 'fit-content' }}>
-                  <Loader2 size={16} className="spin" color="#0F4C81" />
+                  <Loader2 size={16} className="spin animate-spin" color="#0F4C81" />
                   <span style={{ fontSize: 13, color: '#64748B' }}>
                     Querying PostgreSQL live records & verifying with Dr. Wandhare's dataset...
                   </span>
@@ -839,8 +839,8 @@ I am your clinical assistant grounded in **PostgreSQL live patient records** and
                   fontSize: 13
                 }}
               >
-                {loading ? <Loader2 size={16} className="spin" /> : <Send size={16} />}
-                Ask AI
+                {loading ? <Loader2 size={16} className="spin animate-spin" /> : <Send size={16} />}
+                <span>{loading ? 'Consulting AI...' : 'Ask AI'}</span>
               </button>
             </div>
           </div>

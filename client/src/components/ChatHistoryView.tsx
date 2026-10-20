@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
+import { MarkdownMessage } from './MarkdownMessage';
 import { ConversationSummary, ConversationDetail } from '../types';
 import { 
   MessageSquare, 
@@ -1068,16 +1069,8 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
                       </div>
                     )}
 
-                    {/* Message Body with Clean Formatting */}
-                    <div style={{
-                      fontSize: '0.88rem',
-                      lineHeight: 1.55,
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      color: isUser ? '#FFFFFF' : '#1E293B'
-                    }}>
-                      {m.content}
-                    </div>
+                    {/* Message Body with Clean Markdown Formatting */}
+                    <MarkdownMessage content={m.content} isUser={isUser} />
 
                     {/* Footer for User Message */}
                     {isUser && (

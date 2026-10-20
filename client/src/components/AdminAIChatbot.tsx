@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
+import { MarkdownMessage } from './MarkdownMessage';
 import { 
   Bot, 
   User, 
@@ -641,10 +642,8 @@ I am your clinical assistant grounded in **PostgreSQL live patient records** and
                       fontSize: 13.5
                     }}
                   >
-                    {/* Render Text Content (supports Markdown styling) */}
-                    <div style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
-                      {msg.text}
-                    </div>
+                    {/* Render Text Content with full Markdown formatting */}
+                    <MarkdownMessage content={msg.text} isUser={msg.sender === 'admin'} />
 
                     {/* Metadata Badges for AI Responses */}
                     {msg.sender === 'ai' && (

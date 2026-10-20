@@ -318,4 +318,24 @@ npx tsx src/tests/chatbotVerificationTest.ts
    - Verified that `gemini-3-flash-preview` and `gemini-3.5-flash` return rich Electropathy clinical analyses with zero errors.
    - Full 39-test verification suite passes: `39 PASSED, 0 FAILED`.
 
+---
+
+## 11. Markdown Parsing & Raw Formatting Symbols Removal (Completed)
+
+### Problem Diagnosis
+- Both `ChatHistoryView.tsx` and `AdminAIChatbot.tsx` were previously dumping raw unparsed strings (`{msg.text}` or `{m.content}`) directly inside `<div style={{ whiteSpace: 'pre-wrap' }}>`.
+- Consequently, Markdown formatting syntax like headings (`### 📋 Patient Clinical Record Summary`), bullet points (`* **Patient Identity:**`), bold labels (`**Ramesh Sharma**`), and blockquotes displayed as literal unstyled characters (`#`, `*`, `**`).
+
+### Resolution Applied
+1. **Created Dedicated `MarkdownMessage` Component (`client/src/components/MarkdownMessage.tsx`)**:
+   - Integrated `react-markdown` with `remark-gfm` for full GitHub-Flavored Markdown support (headings, lists, bold/italics, tables, blockquotes, code blocks).
+   - Added automatic leading bullet normalization (`replace(/^[ \t]*[•●]\s+/gm, '* ')`) to guarantee Unicode bullets are converted to standard structured `<ul><li>` list trees.
+   - Provided full theme-aware support with `isUser` prop (white text and subtle borders in patient bubbles; rich navy headings, dark slate text, and amber blockquote callouts in assistant messages).
+2. **Integrated in Admin and Patient Portals**:
+   - Updated [AdminAIChatbot.tsx](file:///d:/Electropathy_AI/client/src/components/AdminAIChatbot.tsx#L644) to render all admin messages and AI clinical summaries through `<MarkdownMessage>`.
+   - Updated [ChatHistoryView.tsx](file:///d:/Electropathy_AI/client/src/components/ChatHistoryView.tsx#L1070) to render patient consultation intake notes and responses through `<MarkdownMessage>`.
+3. **Verified Clean Build**:
+   - `npm run build` in `client` passes with zero errors. All raw `#`, `*`, and `**` symbols are now rendered as authentic headings, bold headers, and styled lists.
+
+
 

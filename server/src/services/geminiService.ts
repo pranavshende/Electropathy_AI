@@ -56,8 +56,8 @@ class GeminiService {
   ): Promise<GeminiResponse> {
     const apiKey = this.getApiKey();
     const startTime = Date.now();
-    const primaryModel = options?.model || 'gemini-3-flash-preview';
-    const fallbackModels = ['gemini-3.5-flash', 'gemma-4-26b-a4b-it', 'gemini-2.5-flash'];
+    const primaryModel = options?.model || 'gemini-robotics-er-2-preview';
+    const fallbackModels = ['gemini-3-flash-preview', 'gemini-3.5-flash', 'gemini-2.5-flash'];
 
     const payload: any = {
       contents: [

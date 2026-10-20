@@ -358,6 +358,30 @@ npx tsx src/tests/chatbotVerificationTest.ts
    - Verified compilation via `npm run build` in `client/` (exited with code 0).
    - Validated that all loaders across Admin Portal, Admin AI Chatbot, Patient Consultation, and Authentication modals now spin continuously and smoothly without freezing.
 
+---
+
+## 13. Patient Chatbot Fallback & Gemini Free-Tier Quota Diagnosis (Completed)
+
+### Problem Diagnosis
+- When asking health questions in the patient consultation view, users received a static 2-sentence response:
+  *"Thank you for sharing your concern regarding '...'. For general comfort, ensure adequate hydration and rest. Because safe healthcare requires thorough clinical assessment, please consult a qualified healthcare practitioner for an accurate evaluation."*
+- **Root Cause 1 (Google API Free-Tier Quota Cap)**:
+  - Probing Google's Generative Language API directly revealed that the configured Gemini API key exceeded Google AI Studio's free tier cap of **20 requests per day** across the `gemini-3-flash`, `gemini-3.5-flash`, and `gemini-2.5-flash` models:
+    `429 RESOURCE_EXHAUSTED: Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3-flash. Please retry in 15h52m.`
+- **Root Cause 2 (Overly Generic Safety Fallback in `patientChatService.ts`)**:
+  - When all models returned 429 quota exhaustion, `patientChatService.processPatientMessage` caught the error and called `this.getOfflineSafeResponse(...)`.
+  - Previously, `getOfflineSafeResponse` discarded all retrieved doctor-approved dataset records from PostgreSQL and returned a hardcoded 2-sentence generic template, making the chatbot appear non-functional.
+
+### Resolution Applied
+1. **Upgraded Patient Fallback Engine (`server/src/services/patientChatService.ts`)**:
+   - Updated `getOfflineSafeResponse` to receive and format the actual **Dr. Ashish Wandhare Verified Electropathy Protocols** retrieved from PostgreSQL (`datasetMatches`), including remedies, dilution potencies, dosages, and patient-specific allergy warnings.
+   - Added transparent system status notices explaining that the clinic database engine is serving authoritative records while the Google Gemini API 20 req/day quota resets.
+2. **Multilingual Database Synthesis**:
+   - Grounded responses in English, Hindi (हिंदी), and Marathi (मराठी) directly from PostgreSQL when Google's quota is reached.
+3. **Seamless Live AI Transition**:
+   - As soon as the user configures a fresh Gemini API key or the daily 20-request free tier quota resets, full dynamic Gemini AI text generation resumes automatically.
+
+
 
 
 

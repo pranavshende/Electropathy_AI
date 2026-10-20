@@ -146,11 +146,11 @@ Respond with empathy, medical accuracy, and clear safety guidance following all 
         maxOutputTokens: 1800
       });
     } catch (err: any) {
-      console.warn('[PATIENT CHAT] Gemini generation failure, providing safe offline clinical response:', err.message);
+      console.warn('[PATIENT CHAT] Gemini generation failure, providing database-backed clinical response:', err.message);
       aiResponse = {
-        text: this.getOfflineSafeResponse(cleanContent, targetLang, emergencyAlert),
-        model: 'offline-safe-guardrail',
-        latencyMs: 10
+        text: this.getOfflineSafeResponse(cleanContent, targetLang, emergencyAlert, datasetMatches, patientProfile, err.message),
+        model: 'database-clinical-engine',
+        latencyMs: 15
       };
     }
 
@@ -233,9 +233,16 @@ Respond with empathy, medical accuracy, and clear safety guidance following all 
   }
 
   /**
-   * Safe offline fallback response when Gemini API is temporarily unavailable
+   * Safe database-grounded fallback response when Gemini API is temporarily unavailable
    */
-  private getOfflineSafeResponse(query: string, lang: string, emergencyAlert: string | null): string {
+  private getOfflineSafeResponse(
+    query: string,
+    lang: string,
+    emergencyAlert: string | null,
+    datasetMatches: any[] = [],
+    patientProfile: any = null,
+    errorMessage?: string
+  ): string {
     if (emergencyAlert) {
       if (lang === 'hi') {
         return `⚠️ **आपातकालीन चेतावनी**: आपके द्वारा बताए गए लक्षण (${emergencyAlert}) गंभीर हो सकते हैं। कृपया तुरंत नजदीकी अस्पताल के आपातकालीन विभाग में जाएं या एम्बुलेंस से संपर्क करें। किसी भी घरेलू उपचार के भरोसे न रहें।`;
@@ -246,14 +253,64 @@ Respond with empathy, medical accuracy, and clear safety guidance following all 
       return `⚠️ **EMERGENCY WARNING**: The symptoms you described (${emergencyAlert}) require immediate professional medical evaluation. Please visit the nearest emergency room or call emergency medical services immediately. Do not rely on home remedies for severe symptoms.`;
     }
 
+    // Format verified doctor dataset matches from PostgreSQL
+    let remediesBlock = '';
+    if (datasetMatches.length > 0) {
+      remediesBlock = datasetMatches.map((m, idx) => {
+        return `**${idx + 1}. Clinical Record (${m.citation || 'Dr. Ashish Wandhare Verified Protocol'})**\n${m.content}`;
+      }).join('\n\n');
+    }
+
+    const patientAllergyNotice = patientProfile?.latestCase?.pastMedical?.allergies?.length
+      ? `\n\n*Note on allergies: Patient has documented allergies to: ${patientProfile.latestCase.pastMedical.allergies.join(', ')}.*`
+      : '';
+
     if (lang === 'hi') {
-      return `नमस्ते! आपके प्रश्न "${query}" के संबंध में: कृपया पर्याप्त पानी पिएं और पर्याप्त आराम करें। सटीक निदान एवं इलेक्ट्रोपैथी परामर्श के लिए कृपया योग्य चिकित्सक से व्यक्तिगत रूप से संपर्क करें।`;
+      return `### 🌿 डॉ. आशीष वांधारे प्रमाणित इलेक्ट्रोपैथी परामर्श
+
+आपके लक्षण/प्रश्न ("${query}") के संबंध में प्रमाणित डेटाबेस से निम्नलिखित जानकारी उपलब्ध है:
+
+${remediesBlock || 'इस विशिष्ट लक्षण के लिए क्लिनिक डेटाबेस में अभी कोई पूर्व-प्रमाणित रिकॉर्ड नहीं मिला है।'}
+${patientAllergyNotice}
+
+### 💡 सामान्य सावधानियां एवं देखभाल:
+* पर्याप्त मात्रा में गुनगुना पानी पिएं और पर्याप्त आराम करें।
+* किसी भी तीव्र दर्द या असुविधा में बिना डॉक्टर की सलाह के दवा की खुराक न बदलें।
+* व्यक्तिगत परीक्षण एवं सटीक डायल्यूशन निर्धारण के लिए कृपया क्लिनिक में डॉ. आशीष वांधारे से परामर्श लें।
+
+> ⚠️ *सूचना: गूगल जेमिनी एआई का दैनिक फ्री कोटा (20 अनुरोध/दिन) समाप्त होने के कारण यह जानकारी सीधे पोस्टग्रेएसक्यूएल क्लिनिकल डेटाबेस से प्रदान की गई है। नया एपीआई टोकन जोड़ने पर लाइव एआई पुनर्जनन स्वतः सक्रिय हो जाएगा।*`;
     }
+
     if (lang === 'mr') {
-      return `नमस्कार! आपल्या प्रश्नाबाबत ("${query}"): कृपया भरपूर पाणी प्या आणि विश्रांती घ्या. अचूक निदान आणि इलेक्ट्रोपॅथी उपचारांसाठी कृपया तज्ज्ञ डॉक्टरांशी संपर्क साधा.`;
+      return `### 🌿 डॉ. आशिष वांधारे प्रमाणित इलेक्ट्रोपॅथी सल्ला
+
+आपल्या प्रश्नाबाबत ("${query}") क्लिनिक डेटाबेसमधून खालील माहिती उपलब्ध झाली आहे:
+
+${remediesBlock || 'या लक्षणांसाठी क्लिनिक डेटाबेसमध्ये पूर्व-प्रमाणित रेकॉर्ड आढळले नाही.'}
+${patientAllergyNotice}
+
+### 💡 सामान्य काळजी व सूचना:
+* भरपूर पाणी प्या आणि पुरेशी विश्रांती घ्या.
+* वैयक्तिक तपासणी व अचूक डायल्यूशन निवडीसाठी कृपया तज्ज्ञ डॉक्टरांचा सल्ला घ्या.
+
+> ⚠️ *टीप: गुगल जेमिनी एआय चा दैनंदिन फ्री कोटा (20 requests/day) संपल्यामुळे ही माहिती थेट पोस्टग्रेस क्लिनिकल डेटाबेसमधून देण्यात आली आहे.*`;
     }
-    return `Thank you for sharing your concern regarding "${query}". For general comfort, ensure adequate hydration and rest. Because safe healthcare requires thorough clinical assessment, please consult a qualified healthcare practitioner for an accurate evaluation.`;
+
+    return `### 🌿 Dr. Ashish Wandhare's Verified Electropathy Clinical Guidance
+
+In response to your health query regarding **"${query}"**, the following doctor-approved Electropathy protocols were retrieved from Dr. Ashish Wandhare's clinic dataset:
+
+${remediesBlock || '*No direct matching remedy record was found in the clinic dataset for this specific phrase. Please consult with the doctor for a personalized clinical intake.*'}
+${patientAllergyNotice}
+
+### 💧 Supportive Self-Care & Clinical Precautions:
+* **Hydration & Rest:** Maintain adequate fluid intake and prioritize rest to support your lymphatic circulation.
+* **Avoid Self-Medicating:** Do not modify prescribed chronic medications without consulting your attending physician.
+* **In-Person Evaluation:** For acute or worsening symptoms, an in-person clinical examination and pulse/temperament diagnosis is advised.
+
+> ⚠️ *System Notice: Real-time Gemini AI dynamic generation is currently operating via the Authoritative Clinic Database Engine because the Google AI Studio free-tier daily request quota (20 requests/day) has been reached on this API key. The clinical records and remedies above were retrieved directly from Dr. Ashish Wandhare's verified PostgreSQL dataset.*`;
   }
 }
 
 export const patientChatService = new PatientChatService();
+

@@ -21,4 +21,10 @@ router.get('/patient-cases', (req, res) => adminController.getPatientCases(req, 
 router.get('/patient-cases/:id', (req, res) => adminController.getPatientCaseDetails(req, res));
 router.get('/audit-logs', (req, res) => adminController.getAuditLogs(req, res));
 
+// Admin AI Chatbot & Clinical Decision Support Endpoints
+router.post('/chat', (req, res) => adminController.chat(req, res));
+router.get('/patients/search', (req, res) => adminController.searchPatients(req, res));
+router.get('/patients/:id/summary', (req, res) => adminController.getPatientFullSummary(req, res));
+router.get('/knowledge', (req, res) => adminController.getKnowledge(req, res));
+
 export default router;

@@ -34,6 +34,7 @@ import {
   X
 } from 'lucide-react';
 import { PatientIntakeWizard } from './PatientIntakeWizard';
+import { AdminAIChatbot } from './AdminAIChatbot';
 
 interface AdminPortalProps {
   onBackToApp: () => void;
@@ -41,7 +42,7 @@ interface AdminPortalProps {
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
   const [adminUser, setAdminUser] = useState<any | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'conversations' | 'cases' | 'audit'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'ai-assistant' | 'users' | 'conversations' | 'cases' | 'audit'>('overview');
   const [showIntakeModal, setShowIntakeModal] = useState(false);
   
   // Login Form State
@@ -850,6 +851,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
       >
         {[
           { key: 'overview', label: 'Overview', icon: Layers },
+          { key: 'ai-assistant', label: 'AI Clinical Assistant', icon: Sparkles },
           { key: 'users', label: 'Users', icon: Users },
           { key: 'conversations', label: 'Conversations', icon: MessageSquare },
           { key: 'cases', label: 'Patient Cases', icon: FileText },
@@ -866,9 +868,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
                 alignItems: 'center',
                 gap: '6px',
                 padding: '8px 14px',
-                backgroundColor: isActive ? '#0F172A' : '#FFFFFF',
+                backgroundColor: isActive ? (t.key === 'ai-assistant' ? '#0F4C81' : '#0F172A') : '#FFFFFF',
                 color: isActive ? '#FFFFFF' : '#334155',
-                border: isActive ? '1px solid #0F172A' : '1px solid #CBD5E1',
+                border: isActive ? (t.key === 'ai-assistant' ? '1px solid #0F4C81' : '1px solid #0F172A') : '1px solid #CBD5E1',
                 borderRadius: '8px',
                 fontSize: '0.82rem',
                 fontWeight: isActive ? 700 : 600,
@@ -879,7 +881,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
                 flexShrink: 0
               }}
             >
-              <Icon size={15} color={isActive ? '#FFFFFF' : '#64748B'} />
+              <Icon size={15} color={isActive ? '#FFFFFF' : (t.key === 'ai-assistant' ? '#0F4C81' : '#64748B')} />
               <span>{t.label}</span>
             </button>
           );
@@ -887,6 +889,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
       </div>
 
       {/* TAB CONTENT */}
+
+      {/* AI CLINICAL ASSISTANT TAB */}
+      {activeTab === 'ai-assistant' && (
+        <AdminAIChatbot />
+      )}
 
       {/* 1. OVERVIEW TAB */}
       {activeTab === 'overview' && (

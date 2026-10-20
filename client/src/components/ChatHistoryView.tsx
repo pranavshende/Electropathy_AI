@@ -198,19 +198,19 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
         await selectConversation(newId);
         setMobileScreen('chat');
 
-        // Deliver grounded Electropathy AI doctor consultation response
-        setTimeout(async () => {
-          const queryForProtocol = `${complaint} ${pCase.electropathyDetails?.temperament || ''} ${pCase.pastMedical?.chronicConditions?.join(' ') || ''}`;
-          const aiProtocol = generateElectropathyResponse(queryForProtocol);
-          const reply = await api.sendMessage(newId, aiProtocol, 'assistant');
-          if (reply.success && reply.message) {
+        // Query real backend AI consultation grounded with Gemini & Doctor's dataset
+        try {
+          const chatRes = await api.sendPatientChatMessage(newId, initialMsg, user?.preferredLang);
+          if (chatRes.success && chatRes.assistantMessage) {
             setActiveConv(prev => prev && prev.id === newId ? {
               ...prev,
-              messages: [...prev.messages, reply.message]
+              messages: [...prev.messages, chatRes.assistantMessage]
             } : null);
             loadConversations();
           }
-        }, 600);
+        } catch (chatErr) {
+          console.error('Failed to get consultation reply from backend AI', chatErr);
+        }
       } else {
         alert(res.message || 'Error creating consultation.');
       }
@@ -331,55 +331,41 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
     try {
       let convId = activeConv?.id;
 
-      // If no active conversation, create one first
+      // If no active conversation, initialize consultation atomically with backend AI
       if (!convId) {
-        const newConvRes = await api.createConversation({
-          title: userText.slice(0, 32) + (userText.length > 32 ? '...' : ''),
-          initialMessage: userText
-        });
-        if (newConvRes.success && newConvRes.conversation) {
-          convId = newConvRes.conversation.id;
+        const initRes = await api.initPatientChat(userText, user?.preferredLang);
+        if (initRes.success && initRes.conversation) {
           await loadConversations();
-          await selectConversation(convId);
-
-          // Simulated grounded Electropathy AI response for initial inquiry
-          setTimeout(async () => {
-            const assistantText = generateElectropathyResponse(userText);
-            const reply = await api.sendMessage(convId!, assistantText, 'assistant');
-            if (reply.success && reply.message) {
-              setActiveConv(prev => prev ? {
-                ...prev,
-                messages: [...prev.messages, reply.message]
-              } : null);
-              loadConversations();
-            }
-          }, 500);
+          await selectConversation(initRes.conversation.id);
+        } else {
+          alert(initRes.message || 'Failed to initialize consultation.');
         }
       } else {
-        // Send user message
-        const msgRes = await api.sendMessage(convId, userText, 'user');
-        if (msgRes.success && msgRes.message) {
-          setActiveConv(prev => prev ? {
-            ...prev,
-            messages: [...prev.messages, msgRes.message]
-          } : null);
+        // Optimistically render user message while AI processes
+        const tempMsg = {
+          id: `temp-${Date.now()}`,
+          conversationId: convId,
+          role: 'user',
+          content: userText,
+          createdAt: new Date().toISOString()
+        };
+        setActiveConv(prev => prev ? {
+          ...prev,
+          messages: [...prev.messages, tempMsg as any]
+        } : null);
 
-          // Simulated grounded Electropathy AI response
-          setTimeout(async () => {
-            const assistantText = generateElectropathyResponse(userText);
-            const reply = await api.sendMessage(convId!, assistantText, 'assistant');
-            if (reply.success && reply.message) {
-              setActiveConv(prev => prev ? {
-                ...prev,
-                messages: [...prev.messages, reply.message]
-              } : null);
-              loadConversations();
-            }
-          }, 500);
+        // Call backend patient consultation endpoint (Gemini + Doctor Dataset + PostgreSQL live facts)
+        const chatRes = await api.sendPatientChatMessage(convId, userText, user?.preferredLang);
+        if (chatRes.success) {
+          await selectConversation(convId);
+          loadConversations();
+        } else {
+          alert(chatRes.message || 'Failed to get clinical response.');
         }
       }
-    } catch (err) {
-      alert('Failed to send consultation message.');
+    } catch (err: any) {
+      console.error('[CHAT ERROR]', err);
+      alert('Failed to send consultation message. Please try again.');
     } finally {
       setSending(false);
     }

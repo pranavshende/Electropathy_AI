@@ -6,6 +6,9 @@ import { userService } from '../services/userService.js';
 import { auditService } from '../services/auditService.js';
 import { conversationService } from '../services/conversationService.js';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware.js';
+import { adminChatService } from '../services/adminChatService.js';
+import { patientContextService } from '../services/patientContextService.js';
+import { knowledgeService } from '../services/knowledgeService.js';
 
 export class AdminController {
   /**
@@ -397,6 +400,94 @@ export class AdminController {
       res.status(500).json({ success: false, message: 'Failed to load audit logs' });
     }
   }
+
+  /**
+   * Admin AI Chatbot Query
+   * POST /api/admin/chat
+   */
+  async chat(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const adminId = req.user?.id;
+      if (!adminId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const { query, patientId } = req.body;
+      if (!query || typeof query !== 'string' || !query.trim()) {
+        res.status(400).json({ success: false, message: 'A natural language query is required' });
+        return;
+      }
+
+      const ipAddress = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
+      const response = await adminChatService.processAdminQuery({
+        adminId,
+        query: query.trim(),
+        patientId,
+        ipAddress
+      });
+
+      res.status(200).json({ success: true, ...response });
+    } catch (error: any) {
+      console.error('[ADMIN CHAT CONTROLLER ERROR]', error);
+      res.status(500).json({ success: false, message: error.message || 'Internal AI service error' });
+    }
+  }
+
+  /**
+   * Search patients for admin selection
+   * GET /api/admin/patients/search
+   */
+  async searchPatients(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const q = (req.query.q as string) || '';
+      const limit = parseInt(req.query.limit as string) || 10;
+      const result = await patientContextService.searchPatients(q, limit);
+      res.status(200).json({ success: true, ...result });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: 'Failed to search patients' });
+    }
+  }
+
+  /**
+   * Full patient case and medical history summary
+   * GET /api/admin/patients/:id/summary
+   */
+  async getPatientFullSummary(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const patientId = req.params.id as string;
+      const profile = await patientContextService.getPatientFullProfile({ caseId: patientId });
+
+      if (!profile) {
+        res.status(404).json({ success: false, message: 'Patient profile not found' });
+        return;
+      }
+
+      if (req.user) {
+        await auditService.log(req.user.id, 'VIEW_PATIENT_SUMMARY', patientId);
+      }
+
+      res.status(200).json({ success: true, profile });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: 'Failed to retrieve patient summary' });
+    }
+  }
+
+  /**
+   * Approved doctor medicine dataset knowledge chunks
+   * GET /api/admin/knowledge
+   */
+  async getKnowledge(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const result = await knowledgeService.getAllApprovedChunks(page, limit);
+      res.status(200).json({ success: true, ...result });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: 'Failed to retrieve knowledge chunks' });
+    }
+  }
 }
 
 export const adminController = new AdminController();
+

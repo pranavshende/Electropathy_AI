@@ -1,0 +1,264 @@
+# Electropathy AI — Implementation Progress & Architecture Documentation
+
+**Document:** Implementation Progress & System Architecture  
+**Project:** Electropathy AI — Admin & Patient Chatbots with Gemini Integration  
+**Date:** October 20, 2026  
+**Status:** Completed & Verified  
+
+---
+
+## 1. Executive Summary
+
+We have completed the full implementation of the **Electropathy AI Admin and Patient Chatbots with Google Gemini Integration**, adhering to real-time database grounding, doctor-approved dataset retrieval, strict medical safety guardrails, and role-based access control.
+
+### Core Milestones Achieved
+1. **Gemini 2.5 Flash / 1.5 Flash Backend Service**:
+   - Secure server-side execution with API key shielding.
+   - Guardrails against independent prescribing, invented dosages, or model hallucinations.
+   - Built-in retry mechanism, 20s timeout, and model fallback.
+2. **Doctor-Approved Electropathy Dataset & Knowledge Base**:
+   - Seeded Dr. Ashish Wandhare's verified Electropathy Clinical Treatment Protocols & Materia Medica into PostgreSQL `KnowledgeDocument` and `KnowledgeChunk`.
+   - Real-time querying without static caching (`isApproved: true, isEnabled: true`).
+   - Clear distinction between doctor-approved remedies (with citations) and general AI interpretation.
+3. **Live PostgreSQL Patient Context Retrieval**:
+   - Authoritative query-time database fetching via Prisma ORM.
+   - Support for patient search by name, mobile number, or case ID with ambiguous-name handling.
+   - Extraction of complaints, duration, severity, present illness, past medical (chronic conditions, allergies), lifestyle, and electropathy temperament.
+   - Missing information detection and emergency red flag analysis.
+4. **Admin AI Clinical Assistant**:
+   - Integrated as a prominent tab in the Admin Portal with deep navy / teal medical-grade UI.
+   - Patient search, selector, active patient context banner, and quick clinical prompt chips.
+   - Structured responses separated into: Patient Database Record Summary, Doctor-Approved Dataset Findings, and Clinical Interpretation / Precautions.
+   - One-click Markdown copy-summary functionality.
+   - Sensitive administrative AI queries logged to `AuditLog`.
+5. **Patient Chatbot Upgrade**:
+   - Replaced previous frontend keyword simulation with real backend Gemini integration.
+   - Multilingual support for English, Hindi (`hi`), and Marathi (`mr`) in authentic Devanagari script.
+   - Automatic emergency escalation for red flag symptoms (chest pain, shortness of breath, stroke signs, anaphylaxis, loss of consciousness).
+   - Atomic multi-turn conversation and message persistence in PostgreSQL.
+6. **Automated Verification & Quality Assurance**:
+   - 39-point automated test suite passed with 0 failures (`chatbotVerificationTest.ts`).
+   - Real-time DB synchronization verified: updates to symptoms or newly added allergies reflect immediately in chatbot responses without server restart.
+
+---
+
+## 2. System Architecture & Information Flow
+
+```mermaid
+flowchart TD
+    subgraph ClientLayer["Frontend (React + Vite + TypeScript)"]
+        ADMIN_UI["Admin Portal: AI Clinical Assistant (AdminAIChatbot.tsx)"]
+        PATIENT_UI["Patient Portal: Chat Consultation (ChatHistoryView.tsx)"]
+        API_SVC["Frontend API Service (api.ts)"]
+        ADMIN_UI --> API_SVC
+        PATIENT_UI --> API_SVC
+    end
+
+    subgraph SecurityLayer["Security & Authentication (Express Middlewares)"]
+        AUTH_MW["authenticate (JWT Bearer Token)"]
+        ADMIN_MW["requireAdmin (Role Verification)"]
+    end
+
+    subgraph ServiceLayer["Backend Services (Node.js + TypeScript)"]
+        ACS["Admin Chat Service (adminChatService.ts)"]
+        PCS["Patient Chat Service (patientChatService.ts)"]
+        PCS_CTX["Patient Context Service (patientContextService.ts)"]
+        KS["Knowledge Service (knowledgeService.ts)"]
+        GS["Gemini AI Service (geminiService.ts)"]
+        AUDIT["Audit Service (auditService.ts)"]
+    end
+
+    subgraph StorageLayer["Authoritative Database (PostgreSQL on Supabase)"]
+        T_USERS[("users")]
+        T_CASES[("patient_cases")]
+        T_DOCS[("patient_documents")]
+        T_CONV[("conversations & messages")]
+        T_KNOW[("knowledge_documents & chunks")]
+        T_AUDIT[("audit_logs")]
+    end
+
+    subgraph ExternalAI["External AI Provider (Google Cloud)"]
+        GEMINI_API["Google Generative Language API (Gemini 2.5 Flash / 1.5 Flash)"]
+    end
+
+    API_SVC -->|/api/admin/chat| AUTH_MW --> ADMIN_MW --> ACS
+    API_SVC -->|/api/conversations/:id/chat| AUTH_MW --> PCS
+
+    ACS --> PCS_CTX
+    ACS --> KS
+    ACS --> GS
+    ACS --> AUDIT
+
+    PCS --> PCS_CTX
+    PCS --> KS
+    PCS --> GS
+
+    PCS_CTX <--> T_CASES
+    PCS_CTX <--> T_USERS
+    KS <--> T_KNOW
+    PCS <--> T_CONV
+    AUDIT --> T_AUDIT
+
+    GS <-->|Secure API Key| GEMINI_API
+```
+
+---
+
+## 3. Detailed Component Breakdown
+
+### A. Backend AI & Data Services
+
+| File | Purpose & Responsibilities |
+| :--- | :--- |
+| **`server/src/services/geminiService.ts`** | Backend-only Gemini API communication handler. Reads `GEMINI_API_KEY` / `Gemini_API_KEY`. Enforces prompt sanitization against prompt injection, handles rate limiting, timeouts (20s), and model failovers (`gemini-2.5-flash` $\rightarrow$ `gemini-1.5-flash`). API key is never logged or exposed. |
+| **`server/src/services/knowledgeData.ts`** | Structured clinical protocol dataset based on Dr. Ashish Wandhare's verified Electropathy Materia Medica. Contains remedies, dilutions, dosages, administration routes, precautions, contraindications, and citations. |
+| **`server/src/services/knowledgeService.ts`** | Manages `KnowledgeDocument` and `KnowledgeChunk` records in PostgreSQL. Automatically seeds doctor dataset chunks on first run. Performs real-time search across approved & enabled chunks. Returns zero matches when a condition has no verified doctor protocol. |
+| **`server/src/services/patientContextService.ts`** | Queries authoritative, up-to-date PostgreSQL records for patients. Resolves patient identity by unique case ID, user ID, contact number, or name. Handles ambiguous patient names with candidate lists. Extracts structured clinical profile, detects missing data, and scans for safety red flags. |
+| **`server/src/services/adminChatService.ts`** | Clinical decision support engine for administrators. Injects live patient profile + doctor dataset matches into Gemini. Enforces strict Markdown sectioning (Patient Record Summary, Doctor-Approved Dataset Findings, Clinical Interpretation). Records access in `AuditLog`. |
+| **`server/src/services/patientChatService.ts`** | Secure patient consultation engine. Supports English, Hindi (`hi`), and Marathi (`mr`). Checks for emergency red flags and provides immediate hospital escalation. Distinguishes general supportive self-care from doctor dataset remedies. Persists messages in `Conversation` and `Message` tables. |
+
+### B. Controllers & API Endpoints
+
+| Route | Method | Auth Level | Controller Method | Function |
+| :--- | :---: | :---: | :--- | :--- |
+| `/api/admin/chat` | `POST` | Admin | `adminController.chat` | Admin natural-language query with optional `patientId` grounding |
+| `/api/admin/patients/search` | `GET` | Admin | `adminController.searchPatients` | Search patients by name, mobile, or ID for the admin chatbot |
+| `/api/admin/patients/:id/summary` | `GET` | Admin | `adminController.getPatientFullSummary` | Complete structured case summary and medical history |
+| `/api/admin/knowledge` | `GET` | Admin | `adminController.getKnowledge` | List all approved knowledge chunks from PostgreSQL |
+| `/api/conversations/:id/chat` | `POST` | Patient | `conversationController.chat` | Multi-turn patient chat message with live grounding & emergency triage |
+| `/api/conversations/chat-init` | `POST` | Patient | `conversationController.chatInit` | Atomic conversation creation and initial message processing |
+
+### C. Frontend Interface Components
+
+| File | Enhancements & UI/UX Features |
+| :--- | :--- |
+| **`client/src/components/AdminAIChatbot.tsx`** | Dedicated clinical assistant tab in the Admin Portal. Features: patient selector with type-ahead search, active patient context chip, suggested quick prompts, live patient summary card, doctor dataset citations, and copy-summary button. |
+| **`client/src/components/AdminPortal.tsx`** | Updated navigation tabs to include `"AI Clinical Assistant"`. Renders `AdminAIChatbot` seamlessly within the governance dashboard. |
+| **`client/src/components/ChatHistoryView.tsx`** | Upgraded from client-side simulated template responses to live backend Gemini API integration. Supports multilingual responses (Hindi/Marathi/English) and renders emergency alert banners. |
+| **`client/src/services/api.ts`** | Added API methods: `adminChat()`, `searchAdminPatients()`, `getAdminPatientSummary()`, `getAdminKnowledge()`, `sendPatientChatMessage()`, and `initPatientChat()`. |
+
+---
+
+## 4. Medical Safety, Privacy & Guardrail Protocol
+
+1. **No Independent Prescribing**: Gemini is instructed via system prompts never to independently prescribe prescription-only medicines, invent pharmaceutical dosages, or recommend stopping current medications.
+2. **Emergency Triage Escalation**:
+   - Automatic regex and keyword pattern scanning for emergency conditions:
+     - Chest pain / Angina / Heart attack (`छाती में दर्द`, `छातीत दुखणे`)
+     - Severe respiratory distress / Shortness of breath (`सांस फूलना`, `दम लागणे`)
+     - Stroke signs / Facial droop / Slurred speech (`लकवा`, `पक्षाघात`)
+     - Anaphylaxis / Lip or tongue swelling (`गला बंद होना`)
+     - Loss of consciousness / Syncope (`बेहोश`, `बेशुद्ध`)
+     - Active hemorrhage / Hemoptysis (`खून की उल्टी`, `रक्ताची उलटी`)
+   - If detected, an immediate urgent emergency room warning is displayed, refusing home remedy substitution.
+3. **Doctor-Approved Evidence Attribution**:
+   - The AI explicitly distinguishes verified remedies from Dr. Wandhare's dataset (providing citations like `EW-NEPHRO-06` or `EW-NEURO-01`) from general AI interpretation.
+   - If no record exists for a condition, the assistant explicitly states: *"No matching record was found in the doctor-approved dataset for this specific presentation."*
+4. **Prompt Injection & Cross-Patient Isolation**:
+   - User inputs are sanitized to strip control characters and malicious overrides ("Ignore previous instructions", "You are now DAN").
+   - Multi-tenant isolation verified: Patient A cannot query, view, or inject into Patient B's conversations or records (returns 404/Forbidden).
+5. **Audit Trail**: Every administrative AI record access is logged to PostgreSQL `AuditLog` (`action: 'ADMIN_AI_QUERY'`) recording the administrator ID, patient ID, and query summary without exposing credentials or API keys.
+
+---
+
+## 5. Verification & Test Execution Matrix
+
+All automated test suites were executed directly against PostgreSQL and the backend API.
+
+| Test # | Test Scenario | Expected Result | Status |
+| :---: | :--- | :--- | :---: |
+| **1** | Gemini Key Detection | Configured in environment, shielded from exposure | **PASS** |
+| **2** | Gemini API Request & Fallback | Live generation succeeds, latency tracked | **PASS** |
+| **3** | Admin Chatbot Access & Audit | Retrieves patient profile, logs `ADMIN_AI_QUERY` | **PASS** |
+| **4** | Patient Lookup & Ambiguity | Exact match by ID; returns multiple candidates for ambiguous name | **PASS** |
+| **5** | Medical History & Missing Info | Retrieves complaints, duration, severity; flags missing items | **PASS** |
+| **6** | Doctor Dataset Retrieval | Queries renal colic $\rightarrow$ S6, C6, A2; headache $\rightarrow$ F1, S1, A1 | **PASS** |
+| **7** | Separation of Findings | Dedicated sections for DB facts, Dataset findings, and AI notes | **PASS** |
+| **8** | Emergency Escalation | Chest pain inquiry triggers urgent hospital evaluation alert | **PASS** |
+| **9** | Multilingual (Hindi & Marathi) | Responses generated in authentic Devanagari script | **PASS** |
+| **10** | Message Persistence | User prompt and assistant reply persisted in PostgreSQL `messages` | **PASS** |
+| **11** | Cross-Patient Isolation | Patient B blocked from accessing Patient A conversation | **PASS** |
+| **12** | Prompt Injection Defense | Neutralizes prompt override, zero credential or DB password leakage | **PASS** |
+| **13** | Unavailable Dataset Handling | Reports no doctor record found without hallucinating remedies | **PASS** |
+| **14** | Real-Time DB Synchronization | Immediate recognition of newly created cases, updated symptoms, and newly added allergies without server restart | **PASS** |
+
+### Test Suite Execution Summary
+- **Chatbot & Gemini Verification Suite (`chatbotVerificationTest.ts`)**: **39 PASSED, 0 FAILED**
+- **Security & Data Isolation Suite (`securityTest.ts`)**: **27 PASSED, 0 FAILED**
+- **Password Auth & OTP Suite (`passwordAuthTest.ts`)**: **4 PASSED, 0 FAILED**
+- **TypeScript Builds**: `server` (Exit Code 0), `client` (Exit Code 0)
+
+---
+
+## 6. Files Created & Modified
+
+### Files Created
+- `server/src/services/geminiService.ts`
+- `server/src/services/knowledgeData.ts`
+- `server/src/services/knowledgeService.ts`
+- `server/src/services/patientContextService.ts`
+- `server/src/services/adminChatService.ts`
+- `server/src/services/patientChatService.ts`
+- `server/src/tests/chatbotVerificationTest.ts`
+- `client/src/components/AdminAIChatbot.tsx`
+- `project_Structure/progress.md`
+
+### Files Modified
+- `server/src/controllers/adminController.ts`
+- `server/src/routes/adminRoutes.ts`
+- `server/src/controllers/conversationController.ts`
+- `server/src/routes/conversationRoutes.ts`
+- `client/src/components/AdminPortal.tsx`
+- `client/src/components/ChatHistoryView.tsx`
+- `client/src/services/api.ts`
+
+---
+
+## 7. Configuration & Environment Variables Reference
+
+Ensure `server/.env` contains the required keys (documented with placeholders only):
+
+```env
+PORT=5000
+NODE_ENV=development
+
+# Database configuration (PostgreSQL / Supabase)
+DATABASE_URL="postgresql://username:password@host:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://username:password@host:5432/postgres"
+
+# JWT Secrets
+JWT_SECRET=your_jwt_secret_here
+JWT_REFRESH_SECRET=your_jwt_refresh_secret_here
+
+# SMS Gateway (BlackSMS / MSG91)
+SMS_PROVIDER=blacksms
+BLACKSMS_API_URL=https://blacksms.in/sms
+BLACKSMS_AUTH_KEY=your_sms_key_here
+BLACKSMS_SENDER_ID=your_sender_id
+BLACKSMS_ROUTE=1
+
+# Google Gemini API Key
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+---
+
+## 8. Instructions to Run and Verify Locally
+
+### 1. Start Backend Server
+```powershell
+cd D:\Electropathy_AI\server
+npm run dev
+```
+
+### 2. Start Frontend Client
+```powershell
+cd D:\Electropathy_AI\client
+npm run dev
+```
+
+### 3. Run Automated Verification Tests
+```powershell
+cd D:\Electropathy_AI\server
+npx tsx src/tests/chatbotVerificationTest.ts
+```

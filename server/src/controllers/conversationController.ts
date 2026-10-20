@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware.js';
 import { conversationService } from '../services/conversationService.js';
 import { auditService } from '../services/auditService.js';
+import { patientChatService } from '../services/patientChatService.js';
 
 export class ConversationController {
   /**
@@ -177,6 +178,84 @@ export class ConversationController {
       res.status(201).json({ success: true, message: msg });
     } catch (error: any) {
       res.status(500).json({ success: false, message: 'Failed to add message' });
+    }
+  }
+
+  /**
+   * POST /api/conversations/:id/chat
+   * Dynamic, grounded patient AI consultation
+   */
+  async chat(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const conversationId = req.params.id as string;
+      const { content, preferredLang } = req.body;
+
+      if (!content || typeof content !== 'string' || !content.trim()) {
+        res.status(400).json({ success: false, message: 'Message content is required' });
+        return;
+      }
+
+      const response = await patientChatService.processPatientMessage({
+        userId,
+        conversationId,
+        content: content.trim(),
+        preferredLang: preferredLang || req.user?.preferredLang
+      });
+
+      res.status(200).json({ success: true, ...response });
+    } catch (error: any) {
+      console.error('[PATIENT CHAT CONTROLLER ERROR]', error);
+      res.status(500).json({ success: false, message: error.message || 'Failed to process consultation message' });
+    }
+  }
+
+  /**
+   * POST /api/conversations/chat-init
+   * Create conversation and process initial patient message in one atomic step
+   */
+  async chatInit(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const { content, language, title } = req.body;
+      if (!content || typeof content !== 'string' || !content.trim()) {
+        res.status(400).json({ success: false, message: 'Message content is required' });
+        return;
+      }
+
+      const userLang = language || req.user?.preferredLang || 'en';
+      const convTitle = title || content.trim().slice(0, 35) + (content.trim().length > 35 ? '...' : '');
+
+      const conv = await conversationService.createConversation(userId, {
+        title: convTitle,
+        language: userLang
+      });
+
+      const response = await patientChatService.processPatientMessage({
+        userId,
+        conversationId: conv.id,
+        content: content.trim(),
+        preferredLang: userLang
+      });
+
+      res.status(201).json({
+        success: true,
+        conversation: conv,
+        ...response
+      });
+    } catch (error: any) {
+      console.error('[PATIENT CHAT-INIT ERROR]', error);
+      res.status(500).json({ success: false, message: error.message || 'Failed to initialize consultation' });
     }
   }
 }

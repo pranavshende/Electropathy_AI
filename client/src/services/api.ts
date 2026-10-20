@@ -313,6 +313,62 @@ class ApiService {
     });
     return res.json();
   }
+
+  // --- Admin AI Assistant & Clinical Decision Support ---
+
+  async adminChat(data: { query: string; patientId?: string }) {
+    const res = await fetch(`${API_BASE_URL}/admin/chat`, {
+      method: 'POST',
+      headers: this.getAdminHeaders(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  }
+
+  async searchAdminPatients(q = '', limit = 10) {
+    const query = new URLSearchParams({ q, limit: String(limit) }).toString();
+    const res = await fetch(`${API_BASE_URL}/admin/patients/search?${query}`, {
+      method: 'GET',
+      headers: this.getAdminHeaders(),
+    });
+    return res.json();
+  }
+
+  async getAdminPatientSummary(patientId: string) {
+    const res = await fetch(`${API_BASE_URL}/admin/patients/${patientId}/summary`, {
+      method: 'GET',
+      headers: this.getAdminHeaders(),
+    });
+    return res.json();
+  }
+
+  async getAdminKnowledge(page = 1, limit = 50) {
+    const res = await fetch(`${API_BASE_URL}/admin/knowledge?page=${page}&limit=${limit}`, {
+      method: 'GET',
+      headers: this.getAdminHeaders(),
+    });
+    return res.json();
+  }
+
+  // --- Patient AI Consultation ---
+
+  async sendPatientChatMessage(conversationId: string, content: string, preferredLang?: string) {
+    const res = await fetch(`${API_BASE_URL}/conversations/${conversationId}/chat`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ content, preferredLang }),
+    });
+    return res.json();
+  }
+
+  async initPatientChat(content: string, language?: string, title?: string) {
+    const res = await fetch(`${API_BASE_URL}/conversations/chat-init`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ content, language, title }),
+    });
+    return res.json();
+  }
 }
 
 export const api = new ApiService();

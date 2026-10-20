@@ -56,8 +56,27 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
   const [intakeStep, setIntakeStep] = useState<'prompt' | 'form'>('prompt');
   const [isCreatingConsultation, setIsCreatingConsultation] = useState(false);
 
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const prevConvIdRef = useRef<string | null>(null);
+
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    if (!messagesContainerRef.current) return;
+    const el = messagesContainerRef.current;
+    el.scrollTo({
+      top: el.scrollHeight,
+      behavior
+    });
+  };
+
+  const scrollToTop = () => {
+    if (!messagesContainerRef.current) return;
+    messagesContainerRef.current.scrollTo({
+      top: 0,
+      behavior: 'auto'
+    });
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -92,8 +111,32 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
   };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [activeConv?.messages, sending]);
+    if (!activeConv) return;
+    const isNewConversation = prevConvIdRef.current !== activeConv.id;
+    prevConvIdRef.current = activeConv.id;
+
+    if (isNewConversation) {
+      // When opening or switching to a consultation:
+      // If the consultation is newly created or has <= 2 messages (e.g. intake profile),
+      // scroll to TOP so the patient clinical intake profile is completely readable without being cut off!
+      if (activeConv.messages.length <= 2) {
+        scrollToTop();
+      } else {
+        // Multi-turn consultation: scroll cleanly to latest messages without jarring animation
+        scrollToBottom('auto');
+      }
+    } else {
+      // Same consultation: a message was added or bot is responding
+      const el = messagesContainerRef.current;
+      if (el) {
+        // Only auto-scroll if user is already near bottom (within 160px) or while sending
+        const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 160;
+        if (isNearBottom || sending) {
+          scrollToBottom('smooth');
+        }
+      }
+    }
+  }, [activeConv?.id, activeConv?.messages.length, sending]);
 
   const loadConversations = async () => {
     setLoadingList(true);
@@ -437,14 +480,16 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
     <div 
       className="chat-view-container"
       style={{
+        width: '100%',
         maxWidth: '1360px',
-        margin: '8px auto 16px',
+        margin: '0 auto',
         backgroundColor: '#FFFFFF',
         borderRadius: '16px',
         border: '1px solid #E2E8F0',
         boxShadow: '0 10px 30px -10px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(0,0,0,0.04)',
-        height: 'calc(100vh - 146px)',
-        minHeight: '520px',
+        height: '100%',
+        minHeight: 0,
+        flex: 1,
         display: 'flex',
         overflow: 'hidden'
       }}
@@ -461,7 +506,7 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
         flexShrink: 0
       }}>
         {/* Sidebar Header */}
-        <div style={{ padding: '14px 16px', borderBottom: '1px solid #E2E8F0' }}>
+        <div style={{ flexShrink: 0, padding: '14px 16px', borderBottom: '1px solid #E2E8F0' }}>
           <button
             onClick={handleStartNewConsultation}
             style={{
@@ -649,6 +694,7 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
 
         {/* Sidebar Footer: Cloud Sync Status */}
         <div style={{
+          flexShrink: 0,
           padding: '10px 14px',
           borderTop: '1px solid #E2E8F0',
           backgroundColor: '#FFFFFF',
@@ -674,14 +720,18 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
       {/* ======================================================== */}
       <div style={{ 
         flex: 1, 
+        minHeight: 0,
+        height: '100%',
         display: (!isMobile || mobileScreen === 'chat') ? 'flex' : 'none', 
         flexDirection: 'column', 
         backgroundColor: '#FFFFFF', 
-        minWidth: 0 
+        minWidth: 0,
+        overflow: 'hidden'
       }}>
         {/* Chat Header Bar */}
         <div style={{
-          padding: isMobile ? '10px 14px' : '14px 22px',
+          flexShrink: 0,
+          padding: isMobile ? '10px 14px' : '12px 20px',
           borderBottom: '1px solid #E2E8F0',
           display: 'flex',
           alignItems: 'center',
@@ -813,15 +863,20 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
         </div>
 
         {/* Message Thread Container */}
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '20px 24px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '18px',
-          backgroundColor: '#FAFCFD'
-        }}>
+        <div 
+          ref={messagesContainerRef}
+          className="custom-scrollbar"
+          style={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            padding: isMobile ? '12px 12px 20px' : '18px 24px 24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            backgroundColor: '#FAFCFD'
+          }}
+        >
           {loadingChat ? (
             <div style={{ textAlign: 'center', padding: '60px', color: '#64748B' }}>
               <Loader2 className="animate-spin" size={26} style={{ margin: '0 auto 10px', color: '#0F4C81' }} />
@@ -1166,12 +1221,13 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
             </div>
           )}
 
-          <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} style={{ height: '4px', flexShrink: 0 }} />
         </div>
 
         {/* Input Console Area */}
         <div style={{
-          padding: isMobile ? '8px 10px 12px' : '12px 20px 16px',
+          flexShrink: 0,
+          padding: isMobile ? '8px 10px 10px' : '10px 20px 12px',
           borderTop: '1px solid #E2E8F0',
           backgroundColor: '#FFFFFF'
         }}>
@@ -1284,6 +1340,21 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
               {sending ? <Loader2 className="animate-spin" size={17} /> : <Send size={17} />}
             </button>
           </form>
+
+          {/* Integrated Slim Medical Disclaimer */}
+          <div style={{
+            marginTop: '6px',
+            textAlign: 'center',
+            fontSize: '0.68rem',
+            color: '#94A3B8',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px'
+          }}>
+            <ShieldCheck size={12} color="#00A896" />
+            <span>Electropathy AI Clinical Decision Support grounded in Dr. Ashish Wandhare's dataset • Final medical judgment resides with licensed practitioners</span>
+          </div>
         </div>
       </div>
 

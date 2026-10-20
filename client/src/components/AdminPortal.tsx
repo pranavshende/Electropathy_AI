@@ -754,18 +754,32 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
   }
 
   // 2. ADMIN DASHBOARD VIEW
+  const isAIAssistantActive = activeTab === 'ai-assistant';
+
   return (
-    <div style={{ maxWidth: '1360px', margin: '16px auto', padding: '0 12px 60px' }}>
+    <div style={{
+      maxWidth: '1360px',
+      margin: '0 auto',
+      width: '100%',
+      padding: isAIAssistantActive ? '4px 12px 8px' : '16px 12px 60px',
+      height: isAIAssistantActive ? '100%' : 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      flex: 1,
+      minHeight: 0,
+      overflow: isAIAssistantActive ? 'hidden' : 'visible'
+    }}>
       {/* Top Banner (Dark Governance Console Bar) */}
       <div style={{
+        flexShrink: 0,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '14px 18px',
+        padding: '12px 18px',
         backgroundColor: '#0B132B',
         color: '#FFFFFF',
         borderRadius: '12px',
-        marginBottom: '16px',
+        marginBottom: isAIAssistantActive ? '10px' : '16px',
         boxShadow: '0 4px 16px rgba(11, 19, 43, 0.25)',
         flexWrap: 'wrap',
         gap: '12px'
@@ -842,9 +856,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
         style={{
           display: 'flex',
           gap: '8px',
-          marginBottom: '16px',
+          marginBottom: isAIAssistantActive ? '10px' : '16px',
           overflowX: 'auto',
           flexWrap: 'nowrap',
+          flexShrink: 0,
           WebkitOverflowScrolling: 'touch',
           paddingBottom: '4px'
         }}
@@ -892,7 +907,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
 
       {/* AI CLINICAL ASSISTANT TAB */}
       {activeTab === 'ai-assistant' && (
-        <AdminAIChatbot />
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <AdminAIChatbot />
+        </div>
       )}
 
       {/* 1. OVERVIEW TAB */}

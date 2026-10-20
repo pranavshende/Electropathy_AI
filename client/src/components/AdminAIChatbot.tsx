@@ -67,6 +67,7 @@ export const AdminAIChatbot: React.FC = () => {
   const [knowledgeList, setKnowledgeList] = useState<any[]>([]);
   const [loadingKnowledge, setLoadingKnowledge] = useState(false);
 
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -94,7 +95,12 @@ I am your clinical assistant grounded in **PostgreSQL live patient records** and
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }, [messages, loading]);
 
   // Load patient candidates when typing or opening dropdown
@@ -219,7 +225,7 @@ I am your clinical assistant grounded in **PostgreSQL live patient records** and
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', gap: 12 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, height: '100%', gap: 10, overflow: 'hidden' }}>
       {/* Top Header / Mode Switcher */}
       <div style={{ 
         display: 'flex', 
@@ -585,7 +591,7 @@ I am your clinical assistant grounded in **PostgreSQL live patient records** and
             </div>
 
             {/* Messages Thread */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div ref={messagesContainerRef} className="custom-scrollbar" style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
               {messages.map((msg) => (
                 <div
                   key={msg.id}

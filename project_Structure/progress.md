@@ -262,3 +262,32 @@ npm run dev
 cd D:\Electropathy_AI\server
 npx tsx src/tests/chatbotVerificationTest.ts
 ```
+
+---
+
+## 9. Chatbot Layout & Scrolling Resolution (Completed)
+
+### Problem Diagnosis
+1. **Double Vertical Scrollbars**: Outer browser window had a scrollbar because `ChatHistoryView` (`height: calc(100vh - 146px)` + margins) combined with Navbar and `<MedicalDisclaimer>` exceeded viewport height, resulting in nested page-level and container-level scrolling.
+2. **Global Ancestor Scrolling via `scrollIntoView`**: `messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })` was scrolling all parent scroll containers including the browser window itself, causing page jumps and disorienting viewport shifts.
+3. **Premature Auto-Scrolling**: When opening a consultation with a new patient intake profile, `scrollIntoView` scrolled straight to the bottom of the long message, clipping the clinical intake header ("Patient Clinical Intake Profile", Chief Complaints, etc.).
+4. **Cramped Message Viewport**: Excessive container margins and external disclaimer margins cramped the chat viewport to ~300px on typical laptop displays.
+5. **Chunky Native Windows Scrollbars**: Lack of custom scrollbar styles rendered Windows 98-style grey scrollbars with arrow buttons crowding the UI.
+
+### Key Fixes Applied
+1. **Strict 100% Viewport Locking (`App.tsx`)**:
+   - Locked root container to `height: 100vh, maxHeight: 100vh, overflow: hidden` whenever `isChatActive` is true.
+   - `<main>` occupies `flex: 1, minHeight: 0, overflow: hidden` with uniform `8px 16px 8px` padding.
+   - Eliminated external `<MedicalDisclaimer>` on the chat view, integrating a sleek single-line clinical decision support notice directly into the chat input console.
+2. **Container-Bound Scroll Management (`ChatHistoryView.tsx` & `AdminAIChatbot.tsx`)**:
+   - Replaced `messagesEndRef.current?.scrollIntoView()` with container-specific `messagesContainerRef.current.scrollTo(...)`. Ancestor elements and the browser window now never scroll.
+   - Added intelligent scroll detection:
+     - Opening/switching to a consultation with <= 2 messages scrolls to **TOP** (`scrollTop = 0`), keeping the entire clinical profile and chief complaint visible immediately.
+     - Multi-turn conversations scroll cleanly to the bottom.
+     - New messages auto-scroll only if the user is already near the bottom (within 160px) or during message transmission.
+3. **Flex-Based Dynamic Height**:
+   - Converted `.chat-view-container` from rigid `calc(100vh - 146px)` with fixed margins to `flex: 1, minHeight: 0, height: 100%, margin: 0 auto`.
+   - Ensured header and input console have `flexShrink: 0`, while message thread has `flex: 1, minHeight: 0, overflowY: 'auto'`.
+4. **Modern Sleek Scrollbars (`index.css`)**:
+   - Added subtle 6px rounded scrollbars (`::-webkit-scrollbar`, `scrollbar-width: thin`), eliminating chunky default scrollbars and arrow buttons across desktop and mobile.
+

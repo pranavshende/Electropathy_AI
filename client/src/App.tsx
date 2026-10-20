@@ -90,20 +90,28 @@ export default function App() {
     );
   }
 
+  const isChatActive = Boolean(user && activeTab === 'chat');
+
   // Admin Portal Route (Authorized administration interface only)
   if (isAdminRoute) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <main style={{ flex: 1, padding: '8px 16px 0' }}>
+      <div style={{ height: '100vh', maxHeight: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <main style={{ flex: 1, minHeight: 0, padding: '8px 16px 8px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <AdminPortal onBackToApp={handleExitAdmin} />
         </main>
-        <MedicalDisclaimer compact />
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ 
+      height: isChatActive ? '100vh' : undefined,
+      minHeight: '100vh',
+      maxHeight: isChatActive ? '100vh' : undefined,
+      overflow: isChatActive ? 'hidden' : 'auto',
+      display: 'flex', 
+      flexDirection: 'column' 
+    }}>
       <Navbar
         user={user}
         currentLang={currentLang}
@@ -115,7 +123,14 @@ export default function App() {
 
       <main 
         className={`app-main-content ${user ? 'has-user' : ''}`}
-        style={{ flex: 1, padding: !user ? '8px 16px 0' : activeTab === 'chat' ? '10px 20px 0' : '20px' }}
+        style={{ 
+          flex: 1, 
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: isChatActive ? 'hidden' : 'visible',
+          padding: !user ? '8px 16px 0' : isChatActive ? '8px 16px 8px' : '20px' 
+        }}
       >
         {!user ? (
           <LoginModal 
@@ -134,7 +149,9 @@ export default function App() {
         )}
       </main>
 
-      <MedicalDisclaimer compact={!user} />
+      {!isChatActive && (
+        <MedicalDisclaimer compact={!user} />
+      )}
     </div>
   );
 }

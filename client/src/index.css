@@ -43,12 +43,40 @@
   padding: 0;
 }
 
+html, body, #root {
+  height: 100%;
+}
+
 body {
   font-family: 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg-page);
   color: var(--text-main);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Modern Sleek Scrollbar Styling (Replaces chunky default Windows scrollbars) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.45);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.7);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -442,10 +470,11 @@ h1, h2, h3, h4, h5, h6 {
 /* Chat container phone view optimizations */
 @media (max-width: 768px) {
   .chat-view-container {
-    height: calc(100dvh - 128px) !important;
-    min-height: calc(100dvh - 128px) !important;
+    height: 100% !important;
+    min-height: 0 !important;
     border-radius: 12px !important;
-    margin: 4px auto 8px !important;
+    margin: 0 !important;
+    flex: 1 !important;
   }
 
   .chat-bubble-user,
@@ -454,11 +483,11 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .app-main-content {
-    padding: 4px 6px 0 !important;
+    padding: 4px 6px 4px !important;
   }
 
   .app-main-content.has-user {
-    padding-bottom: 68px !important;
+    padding-bottom: 64px !important;
   }
 
   .app-footer-user {

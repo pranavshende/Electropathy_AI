@@ -291,3 +291,31 @@ npx tsx src/tests/chatbotVerificationTest.ts
 4. **Modern Sleek Scrollbars (`index.css`)**:
    - Added subtle 6px rounded scrollbars (`::-webkit-scrollbar`, `scrollbar-width: thin`), eliminating chunky default scrollbars and arrow buttons across desktop and mobile.
 
+---
+
+## 10. Gemini Model API Transition & Active Failover Resolution (Completed)
+
+### Problem Diagnosis
+1. **Discontinued Model Name (`gemini-1.5-flash`)**: The fallback model in `geminiService.ts` was set to `gemini-1.5-flash`. When queried via API endpoint `v1beta`, Google returned:
+   `models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.`
+2. **Free Tier Daily Quota Exhaustion (`gemini-2.5-flash`)**: The free tier quota on `gemini-2.5-flash` for the user's API key has a cap of 20 requests per day (`limit: 20, model: gemini-2.5-flash`), which returned `429 RESOURCE_EXHAUSTED`.
+3. When `gemini-2.5-flash` hit the 20-request limit, it attempted to fall back to `gemini-1.5-flash`, which failed with 404, displaying the offline message.
+
+### Resolution Applied
+1. **Live Model Enumeration via `ModelService.ListModels`**:
+   - Programmatically inspected the live models available for this API key via Google's `v1beta/models` endpoint.
+   - Identified active, quota-healthy models: `gemini-3-flash-preview`, `gemini-3.5-flash`, and `gemma-4-26b-a4b-it`.
+2. **Updated Model Cascade (`server/src/services/geminiService.ts`)**:
+   - **Primary Model**: `gemini-3-flash-preview` (high throughput, low latency ~2.5s, active quota).
+   - **Secondary Fallback**: `gemini-3.5-flash` (state-of-the-art model for complex clinical protocols).
+   - **Tertiary Fallback**: `gemma-4-26b-a4b-it` (open-weights model on Google infrastructure without free-tier flash quotas).
+   - **Quaternary Fallback**: `gemini-2.5-flash` (re-enabled automatically once daily quota resets).
+   - Completely eliminated the deprecated `gemini-1.5-flash`.
+3. **Swift 12s Failover Timeout**:
+   - Reduced model timeout from 20s to 12s so temporary spikes trigger seamless failovers without stalling the frontend UI.
+4. **End-to-End Validation**:
+   - Tested real clinical generations directly through `geminiService.generateText()`.
+   - Verified that `gemini-3-flash-preview` and `gemini-3.5-flash` return rich Electropathy clinical analyses with zero errors.
+   - Full 39-test verification suite passes: `39 PASSED, 0 FAILED`.
+
+

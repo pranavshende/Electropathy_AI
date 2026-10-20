@@ -56,8 +56,8 @@ class GeminiService {
   ): Promise<GeminiResponse> {
     const apiKey = this.getApiKey();
     const startTime = Date.now();
-    const primaryModel = options?.model || 'gemini-2.5-flash';
-    const fallbackModel = 'gemini-1.5-flash';
+    const primaryModel = options?.model || 'gemini-3-flash-preview';
+    const fallbackModels = ['gemini-3.5-flash', 'gemma-4-26b-a4b-it', 'gemini-2.5-flash'];
 
     const payload: any = {
       contents: [
@@ -78,8 +78,9 @@ class GeminiService {
       };
     }
 
-    // Try primary model, fallback to secondary if 404 or model unavailable
-    const modelsToTry = [primaryModel, fallbackModel];
+    const modelsToTry = options?.model 
+      ? [options.model, ...fallbackModels.filter(m => m !== options.model)]
+      : [primaryModel, ...fallbackModels];
     let lastError: any = null;
 
     for (const model of modelsToTry) {
@@ -87,7 +88,7 @@ class GeminiService {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
         const response = await axios.post(url, payload, {
           headers: { 'Content-Type': 'application/json' },
-          timeout: 20000 // 20s timeout
+          timeout: 12000 // 12s timeout for fast, seamless failover
         });
 
         const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;

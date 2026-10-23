@@ -765,8 +765,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
       height: isAIAssistantActive ? '100%' : 'auto',
       display: 'flex',
       flexDirection: 'column',
-      flex: 1,
-      minHeight: 0,
+      flex: isAIAssistantActive ? 1 : 'none',
+      minHeight: isAIAssistantActive ? 0 : undefined,
       overflow: isAIAssistantActive ? 'hidden' : 'visible'
     }}>
       {/* Top Banner (Dark Governance Console Bar) */}
@@ -850,7 +850,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
         </div>
       </div>
 
-      {/* Tabs Bar (Horizontally scrollable with smooth touch on mobile) */}
+      {/* Tabs Bar (Horizontally scrollable with smooth touch on mobile, sticky when scrolling long pages) */}
       <div 
         className="hide-scrollbar"
         style={{
@@ -861,7 +861,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
           flexWrap: 'nowrap',
           flexShrink: 0,
           WebkitOverflowScrolling: 'touch',
-          paddingBottom: '4px'
+          paddingBottom: '4px',
+          position: isAIAssistantActive ? 'static' : 'sticky',
+          top: 0,
+          zIndex: 20,
+          backgroundColor: '#F8FAFC',
+          paddingTop: isAIAssistantActive ? 0 : '4px'
         }}
       >
         {[

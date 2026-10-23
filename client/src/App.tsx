@@ -95,8 +95,8 @@ export default function App() {
   // Admin Portal Route (Authorized administration interface only)
   if (isAdminRoute) {
     return (
-      <div style={{ height: '100vh', maxHeight: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <main style={{ flex: 1, minHeight: 0, padding: '8px 16px 8px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ minHeight: '100vh', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <main style={{ flex: 1, minHeight: 0, padding: '8px 16px 8px', display: 'flex', flexDirection: 'column', overflowY: 'auto', overflowX: 'hidden' }}>
           <AdminPortal onBackToApp={handleExitAdmin} />
         </main>
       </div>

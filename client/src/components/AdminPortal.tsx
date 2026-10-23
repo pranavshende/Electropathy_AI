@@ -762,12 +762,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
       margin: '0 auto',
       width: '100%',
       padding: isAIAssistantActive ? '4px 12px 8px' : '16px 12px 60px',
-      height: isAIAssistantActive ? '100%' : 'auto',
       display: 'flex',
       flexDirection: 'column',
-      flex: isAIAssistantActive ? 1 : 'none',
-      minHeight: isAIAssistantActive ? 0 : undefined,
-      overflow: isAIAssistantActive ? 'hidden' : 'visible'
+      flex: 1
     }}>
       {/* Top Banner (Dark Governance Console Bar) */}
       <div style={{
@@ -912,7 +909,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
 
       {/* AI CLINICAL ASSISTANT TAB */}
       {activeTab === 'ai-assistant' && (
-        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ height: 'calc(100vh - 130px)', minHeight: '520px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <AdminAIChatbot />
         </div>
       )}

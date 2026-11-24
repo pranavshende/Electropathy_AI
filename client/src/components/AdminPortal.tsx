@@ -31,10 +31,12 @@ import {
   Radio,
   Database,
   FilePlus,
+  HeartPulse,
   X
 } from 'lucide-react';
 import { PatientIntakeWizard } from './PatientIntakeWizard';
 import { AdminAIChatbot } from './AdminAIChatbot';
+import { PatientManagementView } from './PatientManagementView';
 
 interface AdminPortalProps {
   onBackToApp: () => void;
@@ -42,7 +44,7 @@ interface AdminPortalProps {
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
   const [adminUser, setAdminUser] = useState<any | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'ai-assistant' | 'users' | 'conversations' | 'cases' | 'audit'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'patients' | 'ai-assistant' | 'users' | 'conversations' | 'cases' | 'audit'>('overview');
   const [showIntakeModal, setShowIntakeModal] = useState(false);
   
   // Login Form State
@@ -892,6 +894,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
       >
         {[
           { key: 'overview', label: 'Overview', icon: Layers },
+          { key: 'patients', label: 'Patients (Auto-Profiles)', icon: HeartPulse },
           { key: 'ai-assistant', label: 'AI Clinical Assistant', icon: Sparkles },
           { key: 'users', label: 'Users', icon: Users },
           { key: 'conversations', label: 'Conversations', icon: MessageSquare },
@@ -931,6 +934,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
       </div>
 
       {/* TAB CONTENT */}
+
+      {/* PATIENT PROFILING & MEDICAL HISTORY MANAGEMENT TAB */}
+      {activeTab === 'patients' && (
+        <PatientManagementView
+          onSelectConversation={async (convId) => {
+            setActiveTab('conversations');
+            try {
+              const res = await api.adminGetConversationDetails(convId);
+              if (res.success) setSelectedConvDetail(res.conversation);
+            } catch (err) {
+              console.error('Failed to load conversation transcript', err);
+            }
+          }}
+        />
+      )}
 
       {/* AI CLINICAL ASSISTANT TAB */}
       {activeTab === 'ai-assistant' && (

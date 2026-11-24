@@ -221,7 +221,7 @@ Provide a comprehensive, structured response answering the query with complete a
     try {
       aiResponse = await geminiService.generateText(fullPrompt, systemInstruction, {
         temperature: 0.15,
-        maxOutputTokens: 2500
+        maxOutputTokens: 1200
       });
     } catch (err: any) {
       console.warn('[ADMIN CHAT] Falling back to structured local clinical synthesis due to Gemini error:', err.message);

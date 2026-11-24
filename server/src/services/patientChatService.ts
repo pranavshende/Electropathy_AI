@@ -1,9 +1,11 @@
 import { prisma } from '../db/prisma.js';
+import { dbCircuitBreaker } from '../db/circuitBreaker.js';
 import { geminiService } from './geminiService.js';
 import { patientContextService } from './patientContextService.js';
 import { knowledgeService } from './knowledgeService.js';
 import { conversationService } from './conversationService.js';
 import { multilingualNlpService, SupportedLanguage } from './multilingualNlpService.js';
+import { patientProfilingService } from './patientProfilingService.js';
 
 export interface PatientChatRequest {
   userId: string;
@@ -34,25 +36,34 @@ class PatientChatService {
 
     // 1. Verify Conversation ownership (with resilient fallback if Prisma pooler is unreachable)
     let conversation: any = null;
-    try {
-      conversation = await prisma.conversation.findFirst({
-        where: {
-          id: req.conversationId,
-          userId: req.userId,
-          isDeleted: false
-        },
-        include: {
-          messages: {
-            take: 8,
-            orderBy: { createdAt: 'desc' }
+    if (dbCircuitBreaker.isDbAvailable()) {
+      try {
+        conversation = await prisma.conversation.findFirst({
+          where: {
+            id: req.conversationId,
+            userId: req.userId,
+            isDeleted: false
           },
-          user: {
-            select: { id: true, preferredLang: true, fullName: true, mobileNumber: true }
+          include: {
+            messages: {
+              take: 8,
+              orderBy: { createdAt: 'desc' }
+            },
+            user: {
+              select: { id: true, preferredLang: true, fullName: true, mobileNumber: true }
+            }
           }
+        });
+        if (conversation) {
+          dbCircuitBreaker.recordSuccess();
         }
-      });
-    } catch (err: any) {
-      console.warn('[PATIENT CHAT] Database lookup failed, using in-memory conversation fallback:', err.message);
+      } catch (err: any) {
+        dbCircuitBreaker.recordError(err);
+        console.warn('[PATIENT CHAT] Database lookup failed, using in-memory conversation fallback:', err.message);
+      }
+    }
+
+    if (!conversation) {
       conversation = await conversationService.getConversation(req.userId, req.conversationId);
       if (conversation && !conversation.user) {
         conversation.user = {
@@ -194,7 +205,7 @@ Respond with empathy, medical accuracy, and clear safety guidance following all 
     try {
       aiResponse = await geminiService.generateText(fullPrompt, systemInstruction, {
         temperature: 0.25,
-        maxOutputTokens: 1800
+        maxOutputTokens: 900
       });
     } catch (err: any) {
       console.warn('[PATIENT CHAT] Gemini generation failure, providing database-backed clinical response:', err.message);
@@ -209,53 +220,60 @@ Respond with empathy, medical accuracy, and clear safety guidance following all 
     let userMsg: any = null;
     let assistantMsg: any = null;
 
-    try {
-      const result = await prisma.$transaction(async (tx) => {
-        const uMsg = await tx.message.create({
-          data: {
-            conversationId: req.conversationId,
-            role: 'user',
-            content: cleanContent
-          }
-        });
-
-        const aMsg = await tx.message.create({
-          data: {
-            conversationId: req.conversationId,
-            role: 'assistant',
-            content: aiResponse.text,
-            metadata: {
-              model: aiResponse.model,
-              latencyMs: aiResponse.latencyMs,
-              emergencyFlag: Boolean(emergencyAlert),
-              datasetMatchesCount: datasetMatches.length,
-              targetLang
+    if (dbCircuitBreaker.isDbAvailable()) {
+      try {
+        const result = await prisma.$transaction(async (tx) => {
+          const uMsg = await tx.message.create({
+            data: {
+              conversationId: req.conversationId,
+              role: 'user',
+              content: cleanContent
             }
+          });
+
+          const aMsg = await tx.message.create({
+            data: {
+              conversationId: req.conversationId,
+              role: 'assistant',
+              content: aiResponse.text,
+              metadata: {
+                model: aiResponse.model,
+                latencyMs: aiResponse.latencyMs,
+                emergencyFlag: Boolean(emergencyAlert),
+                datasetMatchesCount: datasetMatches.length,
+                targetLang
+              }
+            }
+          });
+
+          // Update conversation title if this is the first exchange
+          if (conversation.messages && conversation.messages.length === 0) {
+            const generatedTitle = cleanContent.length > 35 
+              ? cleanContent.slice(0, 35) + '...' 
+              : cleanContent;
+            await tx.conversation.update({
+              where: { id: req.conversationId },
+              data: { title: generatedTitle, updatedAt: new Date() }
+            });
+          } else {
+            await tx.conversation.update({
+              where: { id: req.conversationId },
+              data: { updatedAt: new Date() }
+            });
           }
+
+          return { uMsg, aMsg };
         });
+        userMsg = result.uMsg;
+        assistantMsg = result.aMsg;
+        dbCircuitBreaker.recordSuccess();
+      } catch (dbErr: any) {
+        dbCircuitBreaker.recordError(dbErr);
+        console.warn('[PATIENT CHAT] Database transaction failed, saving in memory session:', dbErr.message);
+      }
+    }
 
-        // Update conversation title if this is the first exchange
-        if (conversation.messages && conversation.messages.length === 0) {
-          const generatedTitle = cleanContent.length > 35 
-            ? cleanContent.slice(0, 35) + '...' 
-            : cleanContent;
-          await tx.conversation.update({
-            where: { id: req.conversationId },
-            data: { title: generatedTitle, updatedAt: new Date() }
-          });
-        } else {
-          await tx.conversation.update({
-            where: { id: req.conversationId },
-            data: { updatedAt: new Date() }
-          });
-        }
-
-        return { uMsg, aMsg };
-      });
-      userMsg = result.uMsg;
-      assistantMsg = result.aMsg;
-    } catch (dbErr: any) {
-      console.warn('[PATIENT CHAT] Database transaction failed, saving in memory session:', dbErr.message);
+    if (!userMsg || !assistantMsg) {
       userMsg = {
         id: 'msg-' + Date.now().toString(36),
         conversationId: req.conversationId,
@@ -283,6 +301,20 @@ Respond with empathy, medical accuracy, and clear safety guidance following all 
         conversation.messages.push(userMsg, assistantMsg);
       }
     }
+
+    // 9. Asynchronous, Non-blocking Automatic Patient Profiling & History Extraction
+    setImmediate(() => {
+      patientProfilingService.extractAndUpdateProfileAsync({
+        userId: req.userId,
+        conversationId: req.conversationId,
+        messageId: userMsg?.id,
+        userMessage: cleanContent,
+        assistantMessage: aiResponse.text,
+        lang: targetLang
+      }).catch(profilingErr => {
+        console.error('[BACKGROUND PROFILING WARNING]', profilingErr);
+      });
+    });
 
     return {
       userMessage: userMsg,

@@ -1,4 +1,5 @@
 import { prisma } from '../db/prisma.js';
+import { dbCircuitBreaker } from '../db/circuitBreaker.js';
 import { DOCTOR_APPROVED_DATASET, DoctorMedicineRecord } from './knowledgeData.js';
 import {
   CORE_ELECTROPATHY_REMEDIES,
@@ -170,7 +171,7 @@ ${spg.sourceValidationStatus}`;
    * into PostgreSQL KnowledgeDocument and KnowledgeChunk if not already populated.
    */
   async ensureKnowledgeSeeded(): Promise<void> {
-    if (this.hasEnsuredSeed) return;
+    if (this.hasEnsuredSeed || !dbCircuitBreaker.isDbAvailable()) return;
 
     try {
       const existingDoc = await prisma.knowledgeDocument.findFirst({
@@ -222,6 +223,7 @@ ${spg.sourceValidationStatus}`;
 
       this.hasEnsuredSeed = true;
     } catch (err: any) {
+      dbCircuitBreaker.recordError(err);
       console.warn('[KNOWLEDGE SERVICE] Database connection unavailable; using high-speed in-memory verified Electropathy Materia Medica chunks.');
     }
   }
@@ -279,40 +281,44 @@ ${item.citation}`;
 
     let poolChunks: RetrievedKnowledgeChunk[] = [];
 
-    try {
-      await this.ensureKnowledgeSeeded();
+    if (dbCircuitBreaker.isDbAvailable()) {
+      try {
+        await this.ensureKnowledgeSeeded();
 
-      const whereClause: any = {
-        isApproved: true,
-        isEnabled: true
-      };
-      if (options?.category) {
-        whereClause.category = options.category;
-      }
-
-      const dbChunks = await prisma.knowledgeChunk.findMany({
-        where: whereClause,
-        include: {
-          document: {
-            select: { fileName: true, status: true }
-          }
+        const whereClause: any = {
+          isApproved: true,
+          isEnabled: true
+        };
+        if (options?.category) {
+          whereClause.category = options.category;
         }
-      });
 
-      if (dbChunks && dbChunks.length > 0) {
-        poolChunks = dbChunks.map(c => ({
-          id: c.id,
-          documentId: c.documentId,
-          category: c.category || 'General',
-          content: c.content,
-          isApproved: c.isApproved,
-          isEnabled: c.isEnabled,
-          metadata: c.metadata,
-          citation: (c.metadata as any)?.citation || c.document.fileName
-        }));
+        const dbChunks = await prisma.knowledgeChunk.findMany({
+          where: whereClause,
+          include: {
+            document: {
+              select: { fileName: true, status: true }
+            }
+          }
+        });
+
+        if (dbChunks && dbChunks.length > 0) {
+          poolChunks = dbChunks.map(c => ({
+            id: c.id,
+            documentId: c.documentId,
+            category: c.category || 'General',
+            content: c.content,
+            isApproved: c.isApproved,
+            isEnabled: c.isEnabled,
+            metadata: c.metadata,
+            citation: (c.metadata as any)?.citation || c.document.fileName
+          }));
+        }
+        dbCircuitBreaker.recordSuccess();
+      } catch (err: any) {
+        dbCircuitBreaker.recordError(err);
+        // Database unavailable, fallback gracefully to in-memory dataset
       }
-    } catch {
-      // Database unavailable, fallback gracefully to in-memory dataset
     }
 
     // Always merge in-memory Materia Medica & SPG formulations to ensure 100% coverage

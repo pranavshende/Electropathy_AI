@@ -1,4 +1,5 @@
 import { prisma } from '../db/prisma.js';
+import { dbCircuitBreaker } from '../db/circuitBreaker.js';
 
 export interface StructuredPatientProfile {
   id: string; // Patient User ID or Primary Case ID
@@ -40,6 +41,10 @@ class PatientContextService {
    * Handles ambiguous matches by returning all candidates.
    */
   async searchPatients(query: string, limit = 10) {
+    if (!dbCircuitBreaker.isDbAvailable()) {
+      return { total: 0, candidates: [] };
+    }
+
     try {
       const q = query.trim();
       if (!q) {
@@ -109,6 +114,10 @@ class PatientContextService {
     contactNumber?: string;
     patientName?: string;
   }): Promise<StructuredPatientProfile | null> {
+    if (!dbCircuitBreaker.isDbAvailable()) {
+      return null;
+    }
+
     try {
       let targetCase: any = null;
       let allCasesForPatient: any[] = [];

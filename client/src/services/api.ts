@@ -385,6 +385,68 @@ class ApiService {
     return res.json();
   }
 
+  // --- Patient Profiling & Medical History Management ---
+
+  async adminGetPatientProfiles(params: {
+    search?: string;
+    status?: string;
+    minAge?: number;
+    maxAge?: number;
+    symptom?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const query = new URLSearchParams({
+      search: params.search || '',
+      status: params.status || '',
+      minAge: params.minAge !== undefined ? String(params.minAge) : '',
+      maxAge: params.maxAge !== undefined ? String(params.maxAge) : '',
+      symptom: params.symptom || '',
+      page: String(params.page || 1),
+      limit: String(params.limit || 15),
+    }).toString();
+
+    const res = await fetch(`${API_BASE_URL}/admin/patient-profiles?${query}`, {
+      method: 'GET',
+      headers: this.getAdminHeaders(),
+    });
+    return res.json();
+  }
+
+  async adminGetPatientProfileDetails(patientId: string) {
+    const res = await fetch(`${API_BASE_URL}/admin/patient-profiles/${patientId}`, {
+      method: 'GET',
+      headers: this.getAdminHeaders(),
+    });
+    return res.json();
+  }
+
+  async adminVerifyPatientObservation(patientId: string, obsId: string, status: string, note?: string) {
+    const res = await fetch(`${API_BASE_URL}/admin/patient-profiles/${patientId}/observations/${obsId}/verify`, {
+      method: 'PATCH',
+      headers: this.getAdminHeaders(),
+      body: JSON.stringify({ status, note }),
+    });
+    return res.json();
+  }
+
+  async adminUpdatePatientProfile(patientId: string, data: any) {
+    const res = await fetch(`${API_BASE_URL}/admin/patient-profiles/${patientId}`, {
+      method: 'PATCH',
+      headers: this.getAdminHeaders(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  }
+
+  async adminReExtractPatientProfile(patientId: string) {
+    const res = await fetch(`${API_BASE_URL}/admin/patient-profiles/${patientId}/re-extract`, {
+      method: 'POST',
+      headers: this.getAdminHeaders(),
+    });
+    return res.json();
+  }
+
   // --- Patient AI Consultation ---
 
   async sendPatientChatMessage(conversationId: string, content: string, preferredLang?: string) {

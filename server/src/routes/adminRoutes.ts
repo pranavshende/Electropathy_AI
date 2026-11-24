@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { adminController } from '../controllers/adminController.js';
+import { patientProfileController } from '../controllers/patientProfileController.js';
 import { authenticate } from '../middlewares/authMiddleware.js';
 import { requireAdmin } from '../middlewares/adminMiddleware.js';
 
@@ -20,6 +21,13 @@ router.get('/conversations/:id', (req, res) => adminController.getConversationDe
 router.get('/patient-cases', (req, res) => adminController.getPatientCases(req, res));
 router.get('/patient-cases/:id', (req, res) => adminController.getPatientCaseDetails(req, res));
 router.get('/audit-logs', (req, res) => adminController.getAuditLogs(req, res));
+
+// Dedicated AI-Powered Patient Profiling & Medical History Management
+router.get('/patient-profiles', (req, res) => patientProfileController.listProfiles(req, res));
+router.get('/patient-profiles/:id', (req, res) => patientProfileController.getProfileDetails(req, res));
+router.patch('/patient-profiles/:id/observations/:obsId/verify', (req, res) => patientProfileController.verifyObservation(req, res));
+router.patch('/patient-profiles/:id', (req, res) => patientProfileController.updateProfile(req, res));
+router.post('/patient-profiles/:id/re-extract', (req, res) => patientProfileController.reExtractProfile(req, res));
 
 // Admin AI Chatbot & Clinical Decision Support Endpoints
 router.post('/chat', (req, res) => adminController.chat(req, res));

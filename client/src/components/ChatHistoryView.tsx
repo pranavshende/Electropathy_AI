@@ -247,10 +247,10 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
           console.error('Failed to get consultation reply from backend AI', chatErr);
         }
       } else {
-        alert(res.message || 'Error creating consultation.');
+        console.warn('API returned unsuccessful when starting consultation:', res.message);
       }
     } catch (err) {
-      alert('Error starting new consultation.');
+      console.warn('Error starting new consultation, initializing local state:', err);
     } finally {
       setIsCreatingConsultation(false);
     }
@@ -400,8 +400,26 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
           setMobileScreen('chat');
           loadConversations(true); // Silent background refresh of directory
         } else {
-          alert(initRes.message || 'Failed to initialize consultation.');
-          setActiveConv(null);
+          console.error('[CHAT INIT FAILED]', initRes.message);
+          const errorAssistantMsg = {
+            id: `err-${Date.now()}`,
+            conversationId: 'temp',
+            role: 'assistant',
+            content: `⚠️ Clinical Notice: ${initRes.message || 'Could not reach consultation service. Please retry in a moment.'}`,
+            createdAt: new Date().toISOString()
+          };
+          setActiveConv({
+            id: 'temp-conv',
+            title: userText.slice(0, 30),
+            language: language || 'en',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            messages: [
+              { id: `usr-${Date.now()}`, conversationId: 'temp', role: 'user', content: userText, createdAt: new Date().toISOString() },
+              errorAssistantMsg
+            ]
+          } as any);
+          setMobileScreen('chat');
         }
       } else {
         // Optimistically render user message while AI processes
@@ -433,12 +451,43 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
           });
           loadConversations(true); // Silent background update of conversation snippet and timestamp
         } else {
-          alert(chatRes.message || 'Failed to get clinical response.');
+          console.error('[CHAT SEND FAILED]', chatRes.message);
+          setActiveConv(prev => {
+            if (!prev || prev.id !== convId) return prev;
+            return {
+              ...prev,
+              messages: [
+                ...prev.messages,
+                {
+                  id: `err-${Date.now()}`,
+                  conversationId: convId,
+                  role: 'assistant',
+                  content: `⚠️ Clinical Notice: ${chatRes.message || 'Temporary service notice. Please try again.'}`,
+                  createdAt: new Date().toISOString()
+                } as any
+              ]
+            };
+          });
         }
       }
     } catch (err: any) {
       console.error('[CHAT ERROR]', err);
-      alert('Failed to send consultation message. Please try again.');
+      setActiveConv(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          messages: [
+            ...prev.messages,
+            {
+              id: `err-${Date.now()}`,
+              conversationId: prev.id,
+              role: 'assistant',
+              content: `⚠️ Consultation Notice: ${err?.message || 'Unable to connect to clinical engine. Please check your network and retry.'}`,
+              createdAt: new Date().toISOString()
+            } as any
+          ]
+        };
+      });
     } finally {
       setSending(false);
     }
@@ -467,7 +516,7 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
         await loadConversations();
       }
     } catch (err) {
-      alert('Failed to delete conversation.');
+      console.error('Failed to delete conversation:', err);
     }
   };
 
@@ -485,7 +534,7 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
         await loadConversations();
       }
     } catch (err) {
-      alert('Could not update title.');
+      console.error('Could not update title:', err);
     }
   };
 

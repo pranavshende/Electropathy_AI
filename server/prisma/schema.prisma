@@ -30,6 +30,7 @@ model User {
   patientCases   PatientCase[]
   conversations  Conversation[]
   auditLogs      AuditLog[]
+  patientProfile PatientProfile?
 
   @@map("users")
 }
@@ -307,4 +308,183 @@ model RemedyMapping {
   createdAt          DateTime       @default(now())
 
   @@map("remedy_mappings")
+}
+
+// ---------------------------------------------
+// 7. AI-Powered Patient Profiling & Medical History
+// ---------------------------------------------
+
+model PatientProfile {
+  id                 String                      @id @default(uuid())
+  userId             String?                     @unique
+  user               User?                       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  fullName           String                      @default("Anonymous Patient")
+  dateOfBirth        DateTime?
+  age                Int?
+  gender             String?                     // 'male', 'female', 'other', 'unspecified'
+  phone              String?
+  email              String?
+  location           String?
+  consentStatus      String                      @default("consented") // 'consented', 'revoked', 'pending'
+  profileStatus      String                      @default("active")    // 'active', 'needs_review', 'verified'
+  completenessScore  Int                         @default(10)          // 0 - 100%
+  primarySymptoms    String?                     // Comma-separated summary of chief complaints
+  lastInteractionAt  DateTime                    @default(now())
+  createdAt          DateTime                    @default(now())
+  updatedAt          DateTime                    @updatedAt
+
+  symptoms           PatientSymptom[]
+  medicalHistory     PatientMedicalHistory[]
+  medications        PatientMedication[]
+  allergies          PatientAllergy[]
+  lifestyles         PatientLifestyle[]
+  observations       PatientProfileObservation[]
+  historyEvents      PatientProfileHistory[]
+
+  @@index([fullName])
+  @@index([profileStatus, updatedAt(sort: Desc)])
+  @@map("patient_profiles")
+}
+
+model PatientSymptom {
+  id                   String         @id @default(uuid())
+  patientId            String
+  patient              PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  symptom              String
+  description          String?
+  severity             String?        // 'mild', 'moderate', 'severe'
+  duration             String?        // '2 weeks', '3 days', etc.
+  onsetDate            String?
+  currentStatus        String         @default("active") // 'active', 'improving', 'resolved', 'worsened', 'recurred'
+  originalLanguage     String?        @default("en")     // 'en', 'hi', 'mr'
+  originalStatement    String?        // Exact patient statement
+  sourceConversationId String?
+  sourceMessageId      String?
+  verificationStatus   String         @default("ai_extracted") // 'ai_extracted', 'patient_confirmed', 'practitioner_verified', 'needs_review', 'corrected'
+  extractionConfidence Float          @default(0.85)
+  recordedAt           DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  @@index([patientId, currentStatus])
+  @@map("patient_symptoms")
+}
+
+model PatientMedicalHistory {
+  id                   String         @id @default(uuid())
+  patientId            String
+  patient              PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  condition            String
+  description          String?
+  status               String         @default("historical") // 'current', 'historical', 'family_history', 'resolved'
+  onsetDate            String?
+  sourceConversationId String?
+  sourceMessageId      String?
+  originalStatement    String?
+  verificationStatus   String         @default("ai_extracted") // 'ai_extracted', 'patient_confirmed', 'practitioner_verified', 'needs_review', 'corrected'
+  extractionConfidence Float          @default(0.85)
+  recordedAt           DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  @@index([patientId, status])
+  @@map("patient_medical_history")
+}
+
+model PatientMedication {
+  id                   String         @id @default(uuid())
+  patientId            String
+  patient              PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  medicationName       String
+  condition            String?
+  dosage               String?
+  frequency            String?
+  duration             String?
+  medicationStatus     String         @default("current") // 'current', 'previous', 'stopped', 'adverse_reaction'
+  sideEffects          String?
+  treatmentOutcome     String?
+  sourceConversationId String?
+  sourceMessageId      String?
+  originalStatement    String?
+  verificationStatus   String         @default("ai_extracted") // 'ai_extracted', 'patient_confirmed', 'practitioner_verified', 'needs_review', 'corrected'
+  recordedAt           DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  @@index([patientId, medicationStatus])
+  @@map("patient_medications")
+}
+
+model PatientAllergy {
+  id                   String         @id @default(uuid())
+  patientId            String
+  patient              PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  allergen             String
+  reaction             String?
+  severity             String?        // 'mild', 'moderate', 'severe', 'anaphylactic'
+  sourceConversationId String?
+  sourceMessageId      String?
+  originalStatement    String?
+  verificationStatus   String         @default("ai_extracted") // 'ai_extracted', 'patient_confirmed', 'practitioner_verified', 'needs_review', 'corrected'
+  recordedAt           DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  @@index([patientId])
+  @@map("patient_allergies")
+}
+
+model PatientLifestyle {
+  id                   String         @id @default(uuid())
+  patientId            String
+  patient              PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  diet                 String?        // 'vegetarian', 'non-vegetarian', 'vegan', etc.
+  sleep                String?        // 'insomnia', '6 hours', etc.
+  physicalActivity     String?        // 'sedentary', 'active', etc.
+  substanceUse         String?        // 'tobacco', 'alcohol', 'none'
+  stressFactors        String?
+  sourceConversationId String?
+  sourceMessageId      String?
+  recordedAt           DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  @@index([patientId])
+  @@map("patient_lifestyles")
+}
+
+model PatientProfileObservation {
+  id                   String         @id @default(uuid())
+  patientId            String
+  patient              PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  category             String         // 'personal', 'symptom', 'medication', 'history', 'lifestyle', 'inquiry'
+  extractedInformation Json           // Full structured payload
+  originalStatement    String         // Patient exact statement
+  language             String         @default("en")
+  sourceConversationId String
+  sourceMessageId      String?
+  confidence           Float          @default(0.85)
+  verificationStatus   String         @default("ai_extracted") // 'ai_extracted', 'patient_confirmed', 'practitioner_verified', 'needs_review', 'corrected'
+  verificationNote     String?
+  verifiedBy           String?
+  verifiedAt           DateTime?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  @@index([patientId, category])
+  @@index([patientId, verificationStatus])
+  @@map("patient_profile_observations")
+}
+
+model PatientProfileHistory {
+  id                   String         @id @default(uuid())
+  patientId            String
+  patient              PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  eventType            String         // 'PROFILE_CREATED', 'SYMPTOM_REPORTED', 'SYMPTOM_UPDATED', 'MEDICATION_STARTED', 'MEDICATION_STOPPED', 'HISTORY_DISCLOSED', 'ALLERGY_ADDED', 'MANUAL_CORRECTION', 'PRACTITIONER_VERIFIED'
+  title                String
+  description          String
+  fieldName            String?
+  previousValue        Json?
+  updatedValue         Json?
+  sourceConversationId String?
+  sourceMessageId      String?
+  createdAt            DateTime       @default(now())
+
+  @@index([patientId, createdAt(sort: Desc)])
+  @@map("patient_profile_history")
 }

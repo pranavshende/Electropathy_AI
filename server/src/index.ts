@@ -6,6 +6,8 @@ import authRoutes from './routes/authRoutes.js';
 import patientRoutes from './routes/patientRoutes.js';
 import conversationRoutes from './routes/conversationRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import { prisma } from './db/prisma.js';
+import { dbCircuitBreaker } from './db/circuitBreaker.js';
 
 dotenv.config();
 
@@ -49,4 +51,15 @@ app.listen(Number(PORT), '0.0.0.0', () => {
   console.log(`📡 URL: http://0.0.0.0:${PORT}`);
   console.log(`🔐 Phone Number Auth API: http://0.0.0.0:${PORT}/api/auth`);
   console.log(`======================================================\n`);
+
+  // Non-blocking database connectivity check on startup
+  prisma.$queryRaw`SELECT 1`
+    .then(() => {
+      dbCircuitBreaker.recordSuccess();
+      console.log('✅ PostgreSQL database connection established.');
+    })
+    .catch((err) => {
+      dbCircuitBreaker.recordError(err);
+      console.warn('⚠️ Remote PostgreSQL unavailable. Database circuit breaker engaged (using zero-latency in-memory cache).');
+    });
 });

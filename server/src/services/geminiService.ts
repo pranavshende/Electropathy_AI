@@ -56,8 +56,8 @@ class GeminiService {
   ): Promise<GeminiResponse> {
     const apiKey = this.getApiKey();
     const startTime = Date.now();
-    const primaryModel = options?.model || 'gemini-robotics-er-2-preview';
-    const fallbackModels = ['gemini-3-flash-preview', 'gemini-3.5-flash', 'gemini-2.5-flash'];
+    const primaryModel = options?.model || 'gemini-2.5-flash';
+    const fallbackModels = ['gemini-robotics-er-2-preview'];
 
     const payload: any = {
       contents: [
@@ -88,7 +88,7 @@ class GeminiService {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
         const response = await axios.post(url, payload, {
           headers: { 'Content-Type': 'application/json' },
-          timeout: 12000 // 12s timeout for fast, seamless failover
+          timeout: 7000 // 7s timeout for ultra-fast failover
         });
 
         const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;

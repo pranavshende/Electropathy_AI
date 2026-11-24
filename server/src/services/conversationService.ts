@@ -1,4 +1,5 @@
 import { prisma } from '../db/prisma.js';
+import { dbCircuitBreaker } from '../db/circuitBreaker.js';
 
 class ConversationService {
   private inMemoryConversations: any[] = [];
@@ -8,6 +9,25 @@ class ConversationService {
    */
   async listUserConversations(userId: string, page = 1, limit = 20) {
     const skip = (page - 1) * limit;
+
+    if (!dbCircuitBreaker.isDbAvailable()) {
+      const filtered = this.inMemoryConversations.filter(c => c.userId === userId && !c.isDeleted);
+      return {
+        total: filtered.length,
+        page: 1,
+        limit,
+        totalPages: 1,
+        conversations: filtered.map(c => ({
+          id: c.id,
+          title: c.title,
+          language: c.language,
+          messageCount: c.messages?.length || 0,
+          lastMessage: c.messages?.[c.messages.length - 1] || null,
+          createdAt: c.createdAt,
+          updatedAt: c.updatedAt
+        }))
+      };
+    }
 
     try {
       const [total, conversations] = await Promise.all([
@@ -74,6 +94,26 @@ class ConversationService {
     const title = data.title?.trim() || (data.initialMessage ? data.initialMessage.slice(0, 40) + '...' : 'New Consultation');
     const language = data.language || 'en';
 
+    if (!dbCircuitBreaker.isDbAvailable()) {
+      const newConv = {
+        id: 'conv-' + Date.now().toString(36),
+        userId,
+        title,
+        language,
+        isDeleted: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        messages: data.initialMessage ? [{
+          id: 'msg-' + Date.now().toString(36),
+          role: 'user',
+          content: data.initialMessage,
+          createdAt: new Date()
+        }] : []
+      };
+      this.inMemoryConversations.unshift(newConv);
+      return newConv;
+    }
+
     try {
       return await prisma.$transaction(async (tx) => {
         const conv = await tx.conversation.create({
@@ -122,6 +162,10 @@ class ConversationService {
    * Get a conversation and its message history (Strict ownership check!)
    */
   async getConversation(userId: string, conversationId: string) {
+    if (!dbCircuitBreaker.isDbAvailable()) {
+      return this.inMemoryConversations.find(c => c.id === conversationId && c.userId === userId && !c.isDeleted) || null;
+    }
+
     try {
       const conv = await prisma.conversation.findFirst({
         where: {

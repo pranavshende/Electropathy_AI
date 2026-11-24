@@ -141,27 +141,29 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
     }
   }, [activeConv?.id, activeConv?.messages.length, sending]);
 
-  const loadConversations = async () => {
-    setLoadingList(true);
+  const loadConversations = async (silent = false) => {
+    if (!silent) setLoadingList(true);
     try {
       const res = await api.getConversations();
       if (res.success && res.conversations) {
         setConversations(res.conversations);
-        if (res.conversations.length > 0 && !activeConv) {
+        if (res.conversations.length > 0 && !activeConv && !silent) {
           selectConversation(res.conversations[0]!.id);
-        } else if (res.conversations.length === 0) {
+        } else if (res.conversations.length === 0 && !silent) {
           setActiveConv(null);
         }
-      } else {
+      } else if (!silent) {
         setConversations([]);
         setActiveConv(null);
       }
     } catch (err) {
       console.error('Failed to load conversation history', err);
-      setConversations([]);
-      setActiveConv(null);
+      if (!silent) {
+        setConversations([]);
+        setActiveConv(null);
+      }
     } finally {
-      setLoadingList(false);
+      if (!silent) setLoadingList(false);
     }
   };
 
@@ -252,7 +254,7 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
               ...prev,
               messages: [...prev.messages, chatRes.assistantMessage]
             } : null);
-            loadConversations();
+            loadConversations(true);
           }
         } catch (chatErr) {
           console.error('Failed to get consultation reply from backend AI', chatErr);
@@ -381,8 +383,9 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
       if (!convId) {
         const initRes = await api.initPatientChat(userText, language || user?.preferredLang || 'en');
         if (initRes.success && initRes.conversation) {
-          await loadConversations();
-          await selectConversation(initRes.conversation.id);
+          setActiveConv(initRes.conversation);
+          setMobileScreen('chat');
+          loadConversations(true); // Silent background refresh of directory
         } else {
           alert(initRes.message || 'Failed to initialize consultation.');
         }
@@ -403,8 +406,18 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
         // Call backend patient consultation endpoint (Gemini + Doctor Dataset + PostgreSQL live facts)
         const chatRes = await api.sendPatientChatMessage(convId, userText, language || user?.preferredLang || 'en');
         if (chatRes.success) {
-          await selectConversation(convId);
-          loadConversations();
+          // Seamlessly update messages without full conversation reload or loading spinner flicker
+          setActiveConv(prev => {
+            if (!prev || prev.id !== convId) return prev;
+            const withoutTemp = prev.messages.filter(m => m.id !== tempMsg.id);
+            const userM = chatRes.userMessage || tempMsg;
+            const assistantM = chatRes.assistantMessage;
+            return {
+              ...prev,
+              messages: assistantM ? [...withoutTemp, userM, assistantM] : [...withoutTemp, userM]
+            };
+          });
+          loadConversations(true); // Silent background update of conversation snippet and timestamp
         } else {
           alert(chatRes.message || 'Failed to get clinical response.');
         }

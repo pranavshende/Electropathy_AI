@@ -248,9 +248,14 @@ export class ConversationController {
         preferredLang: userLang
       });
 
+      const fullConversation = {
+        ...conv,
+        messages: [response.userMessage, response.assistantMessage].filter(Boolean)
+      };
+
       res.status(201).json({
         success: true,
-        conversation: conv,
+        conversation: fullConversation,
         ...response
       });
     } catch (error: any) {

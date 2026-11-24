@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
 import { MarkdownMessage } from './MarkdownMessage';
 import { FourBottleProtocolCard } from './FourBottleProtocolCard';
+import { ThinkingTimeline } from './ThinkingTimeline';
 import { 
   Bot, 
   User, 
@@ -867,11 +868,8 @@ I am your clinical assistant grounded in **PostgreSQL live patient records** and
               ))}
 
               {loading && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, backgroundColor: '#F8FAFC', borderRadius: 8, width: 'fit-content' }}>
-                  <Loader2 size={16} className="spin animate-spin" color="#0F4C81" />
-                  <span style={{ fontSize: 13, color: '#64748B' }}>
-                    Querying PostgreSQL live records & verifying with Dr. Wandhare's dataset...
-                  </span>
+                <div style={{ maxWidth: '85%' }}>
+                  <ThinkingTimeline isGenerating={loading} language="en" />
                 </div>
               )}
 

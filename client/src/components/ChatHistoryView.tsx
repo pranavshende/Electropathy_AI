@@ -32,6 +32,7 @@ import { User, PatientCase } from '../types';
 import { PatientIntakeWizard } from './PatientIntakeWizard';
 import { formatDisplayPhone } from '../utils/phone';
 import { useTranslation } from '../i18n/LanguageContext';
+import { ThinkingTimeline } from './ThinkingTimeline';
 
 interface ChatHistoryViewProps {
   user?: User | null;
@@ -63,6 +64,8 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const prevConvIdRef = useRef<string | null>(null);
+  const activeConvRef = useRef<ConversationDetail | null>(null);
+  activeConvRef.current = activeConv;
 
   const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
     if (!messagesContainerRef.current) return;
@@ -119,27 +122,11 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
     prevConvIdRef.current = activeConv.id;
 
     if (isNewConversation) {
-      // When opening or switching to a consultation:
-      // If the consultation is newly created or has <= 2 messages (e.g. intake profile),
-      // scroll to TOP so the patient clinical intake profile is completely readable without being cut off!
-      if (activeConv.messages.length <= 2) {
-        scrollToTop();
-      } else {
-        // Multi-turn consultation: scroll cleanly to latest messages without jarring animation
-        scrollToBottom('auto');
-      }
+      scrollToBottom('auto');
     } else {
-      // Same consultation: a message was added or bot is responding
-      const el = messagesContainerRef.current;
-      if (el) {
-        // Only auto-scroll if user is already near bottom (within 160px) or while sending
-        const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 160;
-        if (isNearBottom || sending) {
-          scrollToBottom('smooth');
-        }
-      }
+      scrollToBottom('smooth');
     }
-  }, [activeConv?.id, activeConv?.messages.length, sending]);
+  }, [activeConv?.id, activeConv?.messages?.length, sending]);
 
   const loadConversations = async (silent = false) => {
     if (!silent) setLoadingList(true);
@@ -147,7 +134,7 @@ export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
       const res = await api.getConversations();
       if (res.success && res.conversations) {
         setConversations(res.conversations);
-        if (res.conversations.length > 0 && !activeConv && !silent) {
+        if (res.conversations.length > 0 && !activeConvRef.current && !silent) {
           selectConversation(res.conversations[0]!.id);
         } else if (res.conversations.length === 0 && !silent) {
           setActiveConv(null);
@@ -381,13 +368,40 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
 
       // If no active conversation, initialize consultation atomically with backend AI
       if (!convId) {
+        // Optimistically render initial user message immediately
+        const tempMsg = {
+          id: `temp-${Date.now()}`,
+          conversationId: 'temp',
+          role: 'user',
+          content: userText,
+          createdAt: new Date().toISOString()
+        };
+        setActiveConv({
+          id: 'temp',
+          title: userText.slice(0, 35),
+          userId: user?.id || 'patient',
+          language: (language as any) || 'en',
+          isDeleted: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          messages: [tempMsg as any]
+        });
+
         const initRes = await api.initPatientChat(userText, language || user?.preferredLang || 'en');
         if (initRes.success && initRes.conversation) {
-          setActiveConv(initRes.conversation);
+          prevConvIdRef.current = initRes.conversation.id;
+          const fullConv = {
+            ...initRes.conversation,
+            messages: (initRes.conversation.messages && initRes.conversation.messages.length > 0)
+              ? initRes.conversation.messages
+              : [initRes.userMessage, initRes.assistantMessage].filter(Boolean)
+          };
+          setActiveConv(fullConv as any);
           setMobileScreen('chat');
           loadConversations(true); // Silent background refresh of directory
         } else {
           alert(initRes.message || 'Failed to initialize consultation.');
+          setActiveConv(null);
         }
       } else {
         // Optimistically render user message while AI processes
@@ -1361,35 +1375,26 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
             })
           )}
 
-          {/* Sending Indicator */}
+          {/* Sending Indicator - Reasoning Timeline like Antigravity & ChatGPT */}
           {sending && (
-            <div style={{ display: 'flex', gap: '12px', alignSelf: 'flex-start', maxWidth: '80%' }}>
+            <div style={{ display: 'flex', gap: '12px', alignSelf: 'flex-start', width: '100%', maxWidth: '85%' }}>
               <div style={{
                 width: '36px',
                 height: '36px',
-                borderRadius: '10px',
-                background: 'linear-gradient(135deg, #0F4C81 0%, #00A896 100%)',
-                color: '#FFFFFF',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #090D16 0%, #0F172A 100%)',
+                color: '#38BDF8',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                flexShrink: 0
+                flexShrink: 0,
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)'
               }}>
                 <Bot size={20} />
               </div>
-              <div style={{
-                backgroundColor: '#FFFFFF',
-                padding: '12px 18px',
-                borderRadius: '16px 16px 16px 4px',
-                border: '1px solid #E2E8F0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                color: '#64748B',
-                fontSize: '0.84rem'
-              }}>
-                <Loader2 className="animate-spin" size={16} color="#00A896" />
-                <span>{language === 'hi' ? 'इलेक्ट्रोपैथी उपाय प्रोटोकॉल तैयार किया जा रहा है...' : language === 'mr' ? 'इलेक्ट्रोपॅथी औषध योजना तयार करत आहे...' : 'Formulating Electropathy remedy protocol...'}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <ThinkingTimeline isGenerating={sending} language={language} />
               </div>
             </div>
           )}

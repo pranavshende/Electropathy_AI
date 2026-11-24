@@ -306,94 +306,218 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 20px 80px' }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
+        gap: '36px',
+        alignItems: 'start'
+      }}>
         {/* ======================================================== */}
         {/* LEFT COLUMN: NEXT ERA ADVANCEMENTS & DARK FEATURE CARD   */}
         {/* ======================================================== */}
-        <div className="lg:col-span-7 flex flex-col gap-6">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {/* Eyebrow Pill */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-50/80 px-3.5 py-1.5 text-xs font-bold text-sky-800 backdrop-blur-md w-fit">
-            <span className="flex h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            borderRadius: '999px',
+            border: '1px solid rgba(14, 165, 233, 0.3)',
+            backgroundColor: 'rgba(240, 249, 255, 0.85)',
+            padding: '6px 14px',
+            fontSize: '0.75rem',
+            fontWeight: 800,
+            color: '#0369A1',
+            backdropFilter: 'blur(8px)',
+            width: 'fit-content'
+          }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#0284C7' }} />
             <span>AI-Driven Precision • Count Cesare Mattei System</span>
           </div>
 
           {/* Editorial Display Headline */}
           <div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.08]">
+            <h1 style={{
+              fontSize: 'clamp(2rem, 4vw, 3.2rem)',
+              fontWeight: 900,
+              letterSpacing: '-0.03em',
+              color: '#090D16',
+              lineHeight: 1.1,
+              margin: '0 0 12px'
+            }}>
               Next Era Of Medical <br />
-              <span className="bg-gradient-to-r from-sky-600 via-cyan-500 to-teal-500 bg-clip-text text-transparent">
+              <span style={{
+                background: 'linear-gradient(135deg, #0284C7 0%, #00F2FE 50%, #00A896 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
                 Advancements
               </span>
             </h1>
-            <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed max-w-xl">
+            <p style={{
+              fontSize: '0.92rem',
+              color: '#475569',
+              lineHeight: 1.6,
+              maxWidth: '560px',
+              margin: 0
+            }}>
               AI-driven diagnostics and personalized plant electropathy converge. Explore a future where cellular polarity balancing, organ-specific botanicals, and real-time clinical safety gates take center stage.
             </p>
           </div>
 
           {/* Social Proof & Live Telemetry Pill */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center -space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-sky-500 to-cyan-400 text-white font-bold text-xs ring-2 ring-white">AW</div>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-500 to-teal-400 text-white font-bold text-xs ring-2 ring-white">CM</div>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 text-white font-bold text-xs ring-2 ring-white">EP</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #0284C7 0%, #38BDF8 100%)', color: '#FFF', fontWeight: 800, fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #FFF', zIndex: 3 }}>AW</div>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #00A896 0%, #00F2FE 100%)', color: '#FFF', fontWeight: 800, fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #FFF', marginLeft: '-8px', zIndex: 2 }}>CM</div>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #059669 0%, #34D399 100%)', color: '#FFF', fontWeight: 800, fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #FFF', marginLeft: '-8px', zIndex: 1 }}>EP</div>
             </div>
-            <div className="rounded-full border border-slate-200/80 bg-white/80 px-3.5 py-1 text-xs font-bold text-slate-700 shadow-xs backdrop-blur-sm">
-              <span className="text-sky-600 font-extrabold">1.5K+</span> Verified Clinical Consultations
+            <div style={{
+              borderRadius: '999px',
+              border: '1px solid rgba(203, 213, 225, 0.8)',
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              padding: '6px 14px',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              color: '#334155',
+              backdropFilter: 'blur(8px)'
+            }}>
+              <span style={{ color: '#0284C7', fontWeight: 800 }}>1.5K+</span> Verified Clinical Consultations
             </div>
           </div>
 
-          {/* The High-Contrast Precision Dark Feature Card (Inspired by Image 1) */}
-          <div className="rounded-3xl border border-white/10 bg-slate-950 p-6 sm:p-8 text-white shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-sky-500/10 blur-3xl pointer-events-none" />
-            <div className="relative z-10">
-              <div className="text-[11px] font-bold tracking-widest uppercase text-cyan-400 mb-2">
+          {/* The High-Contrast Precision Dark Feature Card */}
+          <div 
+            className="medical-dark-feature-card"
+            style={{
+              borderRadius: '24px',
+              backgroundColor: '#090D16',
+              padding: '28px 24px',
+              color: '#FFFFFF',
+              boxShadow: '0 20px 40px -10px rgba(9, 13, 22, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            <div style={{ position: 'relative', zIndex: 2 }}>
+              <div style={{
+                fontSize: '0.7rem',
+                fontWeight: 800,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: '#38BDF8',
+                marginBottom: '8px'
+              }}>
                 Precision Tailoring For Optimal Healing
               </div>
-              <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white mb-3 leading-snug">
+              <h3 style={{
+                fontSize: '1.35rem',
+                fontWeight: 900,
+                letterSpacing: '-0.02em',
+                color: '#FFFFFF',
+                marginBottom: '10px',
+                lineHeight: 1.25
+              }}>
                 ARE YOU READY TO REDEFINE YOUR HEALTH JOURNEY?
               </h3>
-              <p className="text-sm text-slate-300 leading-relaxed max-w-lg mb-6">
+              <p style={{
+                fontSize: '0.82rem',
+                color: '#94A3B8',
+                lineHeight: 1.5,
+                maxWidth: '520px',
+                marginBottom: '20px'
+              }}>
                 Experience the fusion of 38 Core Remedy-States, 60 SPG Botanical Organ Actions, and dynamic 4-bottle protocol tailoring as we chart a course into the future of natural medicine.
               </p>
 
-              {/* Interactive Pill Badges with ↗ (Direct inspiration from Image 1) */}
-              <div className="flex flex-wrap gap-2.5">
+              {/* Interactive Pill Badges with ↗ */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 <button
                   type="button"
                   onClick={() => setPortal('admin')}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold text-slate-100 backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/30 cursor-pointer"
+                  className="medical-pill-btn"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    borderRadius: '999px',
+                    border: '1px solid rgba(255, 255, 255, 0.18)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                    padding: '8px 16px',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    color: '#F8FAFC',
+                    cursor: 'pointer'
+                  }}
                 >
                   <span>Dual-Table Pharmacopoeia (PDF Verified)</span>
-                  <span className="text-cyan-400">↗</span>
+                  <span style={{ color: '#00F2FE' }}>↗</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setPortal('admin')}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold text-slate-100 backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/30 cursor-pointer"
+                  className="medical-pill-btn"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    borderRadius: '999px',
+                    border: '1px solid rgba(255, 255, 255, 0.18)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                    padding: '8px 16px',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    color: '#F8FAFC',
+                    cursor: 'pointer'
+                  }}
                 >
                   <span>4-Bottle Mattei Optimizer</span>
-                  <span className="text-cyan-400">↗</span>
+                  <span style={{ color: '#00F2FE' }}>↗</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => switchMode('password_login')}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold text-slate-100 backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/30 cursor-pointer"
+                  className="medical-pill-btn"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    borderRadius: '999px',
+                    border: '1px solid rgba(255, 255, 255, 0.18)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                    padding: '8px 16px',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    color: '#F8FAFC',
+                    cursor: 'pointer'
+                  }}
                 >
                   <span>Clinical Safety Gate (7 Red Flags)</span>
-                  <span className="text-cyan-400">↗</span>
+                  <span style={{ color: '#00F2FE' }}>↗</span>
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-            {/* ======================================================== */}
-      {/* RIGHT COLUMN: ELEVATED FROSTED GLASS AUTH CARD            */}
-      {/* ======================================================== */}
-      <div className="lg:col-span-5 rounded-3xl border border-white/80 bg-white/85 p-6 sm:p-8 shadow-xl shadow-sky-500/5 backdrop-blur-xl ring-1 ring-slate-900/5">
+        {/* ======================================================== */}
+        {/* RIGHT COLUMN: ELEVATED FROSTED GLASS AUTH CARD            */}
+        {/* ======================================================== */}
+        <div 
+          className="medical-glass-card"
+          style={{
+            borderRadius: '24px',
+            border: '1px solid rgba(186, 230, 253, 0.8)',
+            backgroundColor: 'rgba(255, 255, 255, 0.92)',
+            padding: '28px 24px',
+            boxShadow: '0 20px 45px -15px rgba(15, 23, 42, 0.08), 0 0 25px rgba(56, 189, 248, 0.08)',
+            backdropFilter: 'blur(24px)'
+          }}
+        >
         
         {/* ======================================================== */}
         {/* PERSONA SWITCHER: PATIENT LOGIN vs ADMIN PORTAL          */}
@@ -1424,47 +1548,80 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div 
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}
+        >
           {/* Card 1 */}
-          <div className="rounded-3xl border border-white/80 bg-white/80 p-6 shadow-sm hover:shadow-md transition-all backdrop-blur-md ring-1 ring-slate-900/5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 mb-4 ring-1 ring-sky-500/20">
-              <Brain className="h-6 w-6" />
+          <div 
+            className="medical-glass-card rounded-3xl"
+            style={{
+              borderRadius: '24px',
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              padding: '24px',
+              border: '1px solid rgba(186, 230, 253, 0.6)',
+              backdropFilter: 'blur(16px)',
+              boxShadow: '0 4px 16px rgba(15, 23, 42, 0.03)'
+            }}
+          >
+            <div style={{ display: 'flex', width: '44px', height: '44px', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', backgroundColor: '#E0F2FE', color: '#0284C7', marginBottom: '14px' }}>
+              <Brain size={22} />
             </div>
-            <h3 className="text-base font-bold text-slate-900 mb-2">Dual-Table Pharmacopoeia</h3>
-            <p className="text-xs text-slate-600 leading-relaxed mb-4">
+            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#090D16', marginBottom: '8px' }}>Dual-Table Pharmacopoeia</h3>
+            <p style={{ fontSize: '0.78rem', color: '#64748B', lineHeight: 1.5, marginBottom: '16px' }}>
               Integrates 38 Core Remedy-States with 60 SPG Botanical Organ Actions without forced table conflation.
             </p>
-            <div className="text-[11px] font-bold text-sky-600 flex items-center gap-1">
+            <div style={{ fontSize: '0.74rem', fontWeight: 800, color: '#0284C7', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span>98 Distinct Documented Formulations</span>
               <span>→</span>
             </div>
           </div>
 
           {/* Card 2 */}
-          <div className="rounded-3xl border border-white/80 bg-white/80 p-6 shadow-sm hover:shadow-md transition-all backdrop-blur-md ring-1 ring-slate-900/5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-600 mb-4 ring-1 ring-cyan-500/20">
-              <Activity className="h-6 w-6" />
+          <div 
+            className="medical-glass-card rounded-3xl"
+            style={{
+              borderRadius: '24px',
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              padding: '24px',
+              border: '1px solid rgba(186, 230, 253, 0.6)',
+              backdropFilter: 'blur(16px)',
+              boxShadow: '0 4px 16px rgba(15, 23, 42, 0.03)'
+            }}
+          >
+            <div style={{ display: 'flex', width: '44px', height: '44px', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', backgroundColor: '#CFFAFE', color: '#0891B2', marginBottom: '14px' }}>
+              <Activity size={22} />
             </div>
-            <h3 className="text-base font-bold text-slate-900 mb-2">State–Organ Convergence</h3>
-            <p className="text-xs text-slate-600 leading-relaxed mb-4">
+            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#090D16', marginBottom: '8px' }}>State–Organ Convergence</h3>
+            <p style={{ fontSize: '0.78rem', color: '#64748B', lineHeight: 1.5, marginBottom: '16px' }}>
               Cross-references symptoms across 8 body systems, 12 pathological mechanisms, and cellular tissue affinities.
             </p>
-            <div className="text-[11px] font-bold text-cyan-600 flex items-center gap-1">
+            <div style={{ fontSize: '0.74rem', fontWeight: 800, color: '#0891B2', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span>Category A, B, C Evidence Tiers</span>
               <span>→</span>
             </div>
           </div>
 
           {/* Card 3 */}
-          <div className="rounded-3xl border border-white/80 bg-white/80 p-6 shadow-sm hover:shadow-md transition-all backdrop-blur-md ring-1 ring-slate-900/5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-50 text-teal-600 mb-4 ring-1 ring-teal-500/20">
-              <Sparkles className="h-6 w-6" />
+          <div 
+            className="medical-glass-card rounded-3xl"
+            style={{
+              borderRadius: '24px',
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              padding: '24px',
+              border: '1px solid rgba(186, 230, 253, 0.6)',
+              backdropFilter: 'blur(16px)',
+              boxShadow: '0 4px 16px rgba(15, 23, 42, 0.03)'
+            }}
+          >
+            <div style={{ display: 'flex', width: '44px', height: '44px', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', backgroundColor: '#CCFBF1', color: '#0D9488', marginBottom: '14px' }}>
+              <Sparkles size={22} />
             </div>
-            <h3 className="text-base font-bold text-slate-900 mb-2">4-Bottle Protocol Dynamics</h3>
-            <p className="text-xs text-slate-600 leading-relaxed mb-4">
+            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#090D16', marginBottom: '8px' }}>4-Bottle Protocol Dynamics</h3>
+            <p style={{ fontSize: '0.78rem', color: '#64748B', lineHeight: 1.5, marginBottom: '16px' }}>
               Generates balanced Option A and Option B formulations with exact dilution dynamics and electric polarity matching.
             </p>
-            <div className="text-[11px] font-bold text-teal-600 flex items-center gap-1">
+            <div style={{ fontSize: '0.74rem', fontWeight: 800, color: '#0D9488', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span>D1–D3 Acute & D6–D30 Recovery</span>
               <span>→</span>
             </div>

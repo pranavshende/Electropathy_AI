@@ -4,12 +4,14 @@ import { PatientCase, User } from '../types';
 import { Search, FileText, Calendar, MapPin, User as UserIcon, ChevronRight, Eye, ShieldCheck, Plus, Edit3, X } from 'lucide-react';
 import { formatDisplayPhone } from '../utils/phone';
 import { PatientIntakeWizard } from './PatientIntakeWizard';
+import { useTranslation } from '../i18n/LanguageContext';
 
 interface CaseHistoryListProps {
   user?: User | null;
 }
 
 export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
+  const { t, language } = useTranslation();
   const [cases, setCases] = useState<PatientCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -87,7 +89,7 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
             margin: 0,
             lineHeight: 1.15
           }}>
-            {isPractitioner ? 'RECORDED PATIENT HISTORIES' : 'MY HEALTH RECORDS'}
+            {isPractitioner ? (language === 'hi' ? 'चिकित्सक रोगी इतिहास' : language === 'mr' ? 'वैद्यकीय रुग्ण इतिहास' : 'RECORDED PATIENT HISTORIES') : t.records.title}
           </h2>
 
           <p style={{ color: '#64748B', fontSize: '0.84rem', marginTop: '6px' }}>
@@ -95,7 +97,7 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
               ? `${cases.length} Total Clinical Records Recorded Under Your Practice`
               : user 
                 ? `Confidential records registered to ID: ${formatDisplayPhone(user.mobileNumber)}`
-                : 'Your confidential clinical intake records'}
+                : t.records.subtitle}
           </p>
         </div>
 
@@ -104,7 +106,7 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
             <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
             <input
               type="text"
-              placeholder="Search complaint, patient, date..."
+              placeholder={t.records.searchPlaceholder}
               style={{
                 width: '100%',
                 padding: '9px 14px 9px 38px',

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { PatientCase, User } from '../types';
+import { useTranslation } from '../i18n/LanguageContext';
 import { 
   ClipboardList, 
   User as UserIcon, 
@@ -33,6 +34,7 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({
   title,
   submitButtonText
 }) => {
+  const { t, language } = useTranslation();
   const [currentStep, setCurrentStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [successCase, setSuccessCase] = useState<PatientCase | null>(null);
@@ -266,12 +268,12 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({
   }
 
   const steps = [
-    { num: 1, label: '01', title: 'Demographics', icon: UserIcon },
-    { num: 2, label: '02', title: 'Chief Complaints', icon: AlertCircle },
-    { num: 3, label: '03', title: 'Present Illness', icon: Stethoscope },
-    { num: 4, label: '04', title: 'Medical History', icon: HeartPulse },
-    { num: 5, label: '05', title: 'Lifestyle & Vitals', icon: Activity },
-    { num: 6, label: '06', title: 'Electropathy Assessment', icon: ClipboardList }
+    { num: 1, label: '01', title: t.intake.step1Title, icon: UserIcon },
+    { num: 2, label: '02', title: t.intake.step2Title, icon: AlertCircle },
+    { num: 3, label: '03', title: t.intake.step3Title, icon: Stethoscope },
+    { num: 4, label: '04', title: t.intake.step4Title, icon: HeartPulse },
+    { num: 5, label: '05', title: t.intake.step5Title, icon: Activity },
+    { num: 6, label: '06', title: language === 'hi' ? 'इलेक्ट्रोपैथी मूल्यांकन' : language === 'mr' ? 'इलेक्ट्रोपॅथी मूल्यमापन' : 'Electropathy Assessment', icon: ClipboardList }
   ];
 
   const wizardTitle = title || (initialCase ? 'Edit Patient Clinical History' : 'Clinical Patient History Intake');
@@ -786,7 +788,7 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({
             disabled={currentStep === 1}
           >
             <ArrowLeft size={14} />
-            <span>Previous Step</span>
+            <span>{t.intake.prevStep}</span>
           </button>
         </div>
 
@@ -816,7 +818,7 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({
               boxShadow: '0 4px 14px rgba(9, 13, 22, 0.25)'
             }}
           >
-            <span>Next: {steps[currentStep]?.title}</span>
+            <span>{t.intake.nextStep}: {steps[currentStep]?.title}</span>
             <ArrowRight size={15} color="#38BDF8" />
           </button>
         ) : (

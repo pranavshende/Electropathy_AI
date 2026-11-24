@@ -7,6 +7,7 @@ import {
   ElectropathySPGFormulation,
   getSpgFormulationsByCoreCode
 } from '../data/electropathy/index.js';
+import { multilingualNlpService, SupportedLanguage } from './multilingualNlpService.js';
 
 export interface RetrievedKnowledgeChunk {
   id: string;
@@ -258,16 +259,23 @@ ${item.citation}`;
   /**
    * Retrieves matching approved and enabled knowledge records in real-time.
    * Leverages PostgreSQL when accessible, with fallback to in-memory verified Materia Medica.
-   * Computes multi-attribute clinical scoring (Remedy codes, organ axes, dominant states,
-   * SPG botanical components, and electro-polarities).
+   * Supports Multilingual NLP: Hindi, Marathi, English, Hinglish with cross-lingual expansion.
    */
   async findMatchingKnowledge(
     queryText: string,
-    options?: { category?: string; limit?: number; preferredPolarity?: string }
+    options?: { category?: string; limit?: number; preferredPolarity?: string; targetLang?: SupportedLanguage }
   ): Promise<RetrievedKnowledgeChunk[]> {
     const limit = options?.limit || 5;
     const cleanQuery = queryText.toLowerCase().trim();
     if (!cleanQuery) return [];
+
+    // Multilingual cross-lingual expansion and Unicode tokenization
+    const expanded = multilingualNlpService.expandQuery(cleanQuery, options?.targetLang);
+    const unicodeTokens = multilingualNlpService.tokenizeUnicode(cleanQuery);
+    const combinedTokens = Array.from(new Set([
+      ...unicodeTokens,
+      ...expanded.searchKeywords.map(k => k.toLowerCase())
+    ]));
 
     let poolChunks: RetrievedKnowledgeChunk[] = [];
 
@@ -318,21 +326,18 @@ ${item.citation}`;
       }
     }
 
-    // Keyword tokens extraction
-    const stopWords = new Set(['the', 'and', 'for', 'with', 'from', 'have', 'has', 'patient', 'years', 'old', 'what', 'give', 'how', 'when', 'does', 'take', 'need', 'suggest']);
-    const queryTokens = cleanQuery
-      .replace(/[^\w\s\.\-]/g, ' ')
-      .split(/\s+/)
-      .filter(t => t.length >= 2 && !stopWords.has(t));
+    // Multi-factor Clinical Relevance Scoring with Cross-Lingual Capabilities
+    const targetRemedies = new Set(expanded.entities.remedies.map(r => r.toUpperCase()));
+    const targetOrgans = expanded.entities.organs.map(o => o.toLowerCase());
+    const targetSymptoms = expanded.entities.symptoms.map(s => s.toLowerCase());
 
-    // Multi-factor Clinical Relevance Scoring
     const scoredChunks = poolChunks.map((chunk) => {
       let score = 0;
       const contentLower = chunk.content.toLowerCase();
       const meta = (chunk.metadata as any) || {};
 
       const conditionLower = (meta.conditionOrTitle || '').toLowerCase();
-      const remedyCode = (meta.code || meta.sourceCode || '').toLowerCase();
+      const remedyCode = (meta.code || meta.sourceCode || '').toUpperCase();
       const remedyName = (meta.name || meta.medicineName || '').toLowerCase();
       const organAxis = (meta.organAxis || meta.primarySphere || '').toLowerCase();
       const dominantState = (meta.dominantState || '').toLowerCase();
@@ -341,11 +346,15 @@ ${item.citation}`;
       const physiologicalAction = (meta.organPhysiologicalAction || meta.corePhysiologicalRole || '').toLowerCase();
       const symptomsList: string[] = Array.isArray(meta.symptoms) ? meta.symptoms : [];
 
-      // 1. Direct Remedy Code Match (e.g. S1, S6, C4, A2, R.E., B.E., APP)
+      // 1. Direct Remedy Code Match & Cross-Lingual Affinities (e.g. S1, S5, S6, C4, A2, R.E., B.E., APP)
       if (remedyCode) {
         const codeNormalized = remedyCode.replace(/\./g, '');
-        const queryNormalized = cleanQuery.replace(/\./g, '');
-        // Word boundary check for remedy code
+        const queryNormalized = cleanQuery.replace(/\./g, '').toUpperCase();
+
+        if (targetRemedies.has(remedyCode) || targetRemedies.has(codeNormalized)) {
+          score += 70; // Direct affinity match from Hindi/Marathi/Hinglish organ/symptom term
+        }
+
         const codeRegex = new RegExp(`\\b${remedyCode.replace('.', '\\.')}\\b`, 'i');
         const normRegex = new RegExp(`\\b${codeNormalized}\\b`, 'i');
         if (codeRegex.test(cleanQuery) || normRegex.test(queryNormalized)) {
@@ -358,25 +367,30 @@ ${item.citation}`;
         score += 50;
       }
 
-      // 3. Organ Axis & Tissue Affinity Match
+      // 3. Organ Axis & Tissue Affinity Match (including cross-lingual organ mappings)
       if (organAxis) {
-        for (const token of queryTokens) {
+        for (const organ of targetOrgans) {
+          if (organAxis.includes(organ)) {
+            score += 45;
+          }
+        }
+        for (const token of combinedTokens) {
           if (token.length > 3 && organAxis.includes(token)) {
-            score += 35;
+            score += 30;
           }
         }
       }
 
       // 4. Dominant & Secondary Pathophysiological States
       if (dominantState) {
-        for (const token of queryTokens) {
+        for (const token of combinedTokens) {
           if (token.length > 3 && dominantState.includes(token)) {
             score += 30;
           }
         }
       }
       if (secondaryStates) {
-        for (const token of queryTokens) {
+        for (const token of combinedTokens) {
           if (token.length > 3 && secondaryStates.includes(token)) {
             score += 20;
           }
@@ -385,7 +399,7 @@ ${item.citation}`;
 
       // 5. Physiological Action & Targets
       if (physiologicalAction) {
-        for (const token of queryTokens) {
+        for (const token of combinedTokens) {
           if (token.length > 3 && physiologicalAction.includes(token)) {
             score += 15;
           }
@@ -393,15 +407,20 @@ ${item.citation}`;
       }
 
       // 6. Direct Protocol / Condition Title & Symptoms Match
-      if (conditionLower && cleanQuery.includes(conditionLower)) {
+      if (conditionLower && (cleanQuery.includes(conditionLower) || expanded.normalizedEnglishQuery.toLowerCase().includes(conditionLower))) {
         score += 45;
       }
       for (const symptom of symptomsList) {
         const sLower = symptom.toLowerCase();
+        for (const ts of targetSymptoms) {
+          if (sLower.includes(ts) || ts.includes(sLower)) {
+            score += 40;
+          }
+        }
         if (cleanQuery.includes(sLower) || sLower.includes(cleanQuery)) {
           score += 35;
         } else {
-          for (const token of queryTokens) {
+          for (const token of combinedTokens) {
             if (token.length > 3 && sLower.includes(token)) score += 10;
           }
         }
@@ -415,7 +434,7 @@ ${item.citation}`;
       }
 
       // 8. General Content Token Hits
-      for (const token of queryTokens) {
+      for (const token of combinedTokens) {
         if (token.length > 2 && contentLower.includes(token)) {
           score += 4;
         }

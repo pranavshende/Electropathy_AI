@@ -31,12 +31,14 @@ import {
 import { User, PatientCase } from '../types';
 import { PatientIntakeWizard } from './PatientIntakeWizard';
 import { formatDisplayPhone } from '../utils/phone';
+import { useTranslation } from '../i18n/LanguageContext';
 
 interface ChatHistoryViewProps {
   user?: User | null;
 }
 
 export const ChatHistoryView: React.FC<ChatHistoryViewProps> = ({ user }) => {
+  const { t, language } = useTranslation();
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [activeConv, setActiveConv] = useState<ConversationDetail | null>(null);
   const [loadingList, setLoadingList] = useState(true);
@@ -244,7 +246,7 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
 
         // Query real backend AI consultation grounded with Gemini & Doctor's dataset
         try {
-          const chatRes = await api.sendPatientChatMessage(newId, initialMsg, user?.preferredLang);
+          const chatRes = await api.sendPatientChatMessage(newId, initialMsg, language || user?.preferredLang || 'en');
           if (chatRes.success && chatRes.assistantMessage) {
             setActiveConv(prev => prev && prev.id === newId ? {
               ...prev,
@@ -377,7 +379,7 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
 
       // If no active conversation, initialize consultation atomically with backend AI
       if (!convId) {
-        const initRes = await api.initPatientChat(userText, user?.preferredLang);
+        const initRes = await api.initPatientChat(userText, language || user?.preferredLang || 'en');
         if (initRes.success && initRes.conversation) {
           await loadConversations();
           await selectConversation(initRes.conversation.id);
@@ -399,7 +401,7 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
         } : null);
 
         // Call backend patient consultation endpoint (Gemini + Doctor Dataset + PostgreSQL live facts)
-        const chatRes = await api.sendPatientChatMessage(convId, userText, user?.preferredLang);
+        const chatRes = await api.sendPatientChatMessage(convId, userText, language || user?.preferredLang || 'en');
         if (chatRes.success) {
           await selectConversation(convId);
           loadConversations();
@@ -1374,7 +1376,7 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
                 fontSize: '0.84rem'
               }}>
                 <Loader2 className="animate-spin" size={16} color="#00A896" />
-                <span>Formulating Electropathy remedy protocol...</span>
+                <span>{language === 'hi' ? 'इलेक्ट्रोपैथी उपाय प्रोटोकॉल तैयार किया जा रहा है...' : language === 'mr' ? 'इलेक्ट्रोपॅथी औषध योजना तयार करत आहे...' : 'Formulating Electropathy remedy protocol...'}</span>
               </div>
             </div>
           )}
@@ -1401,13 +1403,23 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
               WebkitOverflowScrolling: 'touch'
             }}
           >
-            {[
+            {(language === 'hi' ? [
+              { icon: '🌿', title: 'लसीका S1/L1', query: 'लसीका संकुलन के लिए प्रोटोकॉल (S1, L1, NE)' },
+              { icon: '⚡', title: 'बुखार (F1 + A2)', query: 'बुखार प्रोटोकॉल: फेब्रिफ्यूगो-1 (F1) और एंजियोइटिको-2 (A2)' },
+              { icon: '💧', title: 'डायल्यूशन मैट्रिक्स D1-D30', query: 'तीव्र बनाम पुरानी स्थितियों के लिए डायल्यूशन नियम' },
+              { icon: '🫁', title: 'खांसी प्रोटोकॉल (P1)', query: 'ब्रोंकियल और ऐंठन वाली खांसी के लिए पेटोरेल-1 (P1) प्रोटोकॉल' }
+            ] : language === 'mr' ? [
+              { icon: '🌿', title: 'लसिका S1/L1', query: 'लसिका संकुलनासाठी प्रोटोकॉल (S1, L1, NE)' },
+              { icon: '⚡', title: 'ताप (F1 + A2)', query: 'ताप प्रोटोकॉल: फेब्रिफ्युगो-१ (F1) आणि अँजियोइटिको-२ (A2)' },
+              { icon: '💧', title: 'डायल्यूशन मॅट्रिक्स D1-D30', query: 'तीव्र विरूद्ध जुनाट आजारांसाठी डायल्यूशन नियम' },
+              { icon: '🫁', title: 'खोकला (P1)', query: 'खोकल्यासाठी पेटोरेल-१ (P1) प्रोटोकॉल' }
+            ] : [
               { icon: '🌿', title: 'Lymphatic S1/L1', query: 'Protocol for Lymphatic Congestion (S1, L1, NE)' },
               { icon: '🩺', title: 'Temperament Assessment', query: 'How to assess Lymphatic vs Sanguine Temperament?' },
               { icon: '⚡', title: 'Fever (F1 + A2)', query: 'Fever Protocol: Febrifugo-1 (F1) and Angioitico-2 (A2)' },
               { icon: '💧', title: 'Dilution Matrix D1-D30', query: 'Dilution Matrix rules for acute vs chronic conditions' },
               { icon: '🫁', title: 'Bronchial Cough (P1)', query: 'Pettorale-1 (P1) protocol for bronchial and spasmodic cough' }
-            ].map((chip, idx) => (
+            ]).map((chip, idx) => (
               <button
                 key={idx}
                 type="button"
@@ -1465,7 +1477,7 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
             <input
               ref={inputRef}
               type="text"
-              placeholder="Ask an Electropathy query, remedy recommendation, or patient symptom inquiry..."
+              placeholder={t.chat.placeholder}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               disabled={sending}

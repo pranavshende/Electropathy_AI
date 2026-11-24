@@ -1,11 +1,14 @@
 import React from 'react';
 import { AlertTriangle, ShieldCheck } from 'lucide-react';
+import { useTranslation } from '../i18n/LanguageContext';
 
 interface MedicalDisclaimerProps {
   compact?: boolean;
 }
 
 export const MedicalDisclaimer: React.FC<MedicalDisclaimerProps> = ({ compact = false }) => {
+  const { t } = useTranslation();
+
   if (compact) {
     return (
       <footer style={{
@@ -46,11 +49,11 @@ export const MedicalDisclaimer: React.FC<MedicalDisclaimerProps> = ({ compact = 
             <AlertTriangle size={14} color="#D97706" />
           </div>
           <div style={{ fontSize: '0.72rem' }}>
-            <strong style={{ color: '#92400E' }}>Medical Notice:</strong> Electropathy AI is an informational decision-support platform built exclusively from verified datasets authorized by Dr. Ashish Wandhare. Final medical judgment resides solely with the licensed practitioner.
+            <strong style={{ color: '#92400E' }}>{t.disclaimer.noticeTitle} </strong>{t.disclaimer.compactText}
           </div>
         </div>
         <div style={{ marginTop: '6px', fontSize: '0.68rem', color: '#94A3B8', fontWeight: 500 }}>
-          © 2026 Electropathy AI • Developed by NKSKILLEDGE PRIVATE LIMITED for Dr. Ashish Wandhare • All Rights Reserved.
+          {t.disclaimer.copyright}
         </div>
       </footer>
     );
@@ -97,12 +100,12 @@ export const MedicalDisclaimer: React.FC<MedicalDisclaimerProps> = ({ compact = 
           <AlertTriangle size={16} color="#D97706" />
         </div>
         <div style={{ fontSize: '0.78rem' }}>
-          <strong style={{ color: '#92400E' }}>Clinical Practice Notice:</strong> Electropathy AI is an informational clinical decision-support application built exclusively from verified datasets authorized by Dr. Ashish Wandhare. It does not provide autonomous diagnosis or unsupervised prescription. Final medical judgment resides solely with the licensed practitioner.
+          <strong style={{ color: '#92400E' }}>{t.disclaimer.fullNoticeTitle} </strong>{t.disclaimer.fullText}
         </div>
       </div>
       <div style={{ marginTop: '14px', fontSize: '0.72rem', color: '#94A3B8', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
         <ShieldCheck size={14} color="#00F2FE" />
-        <span>© 2026 Electropathy AI • Developed by NKSKILLEDGE PRIVATE LIMITED for Dr. Ashish Wandhare • All Rights Reserved.</span>
+        <span>{t.disclaimer.copyright}</span>
       </div>
     </footer>
   );

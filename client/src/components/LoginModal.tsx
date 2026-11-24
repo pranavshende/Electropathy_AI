@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { User } from '../types';
+import { useTranslation } from '../i18n/LanguageContext';
 import { 
   Phone, 
   Lock, 
@@ -32,6 +33,8 @@ interface LoginModalProps {
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSuccess, initialPortal = 'patient' }) => {
+  const { t, language } = useTranslation();
+
   // Persona switcher: 'patient' vs 'admin'
   const [portal, setPortal] = useState<'patient' | 'admin'>(initialPortal);
   
@@ -48,7 +51,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
   const [newPassword, setNewPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [userType, setUserType] = useState('patient');
-  const [preferredLang, setPreferredLang] = useState('en');
+  const [preferredLang, setPreferredLang] = useState(language || 'en');
+
+  useEffect(() => {
+    if (language) {
+      setPreferredLang(language);
+    }
+  }, [language]);
 
   // Form Fields - Admin
   const [adminEmail, setAdminEmail] = useState('admin@electropathy.ai');
@@ -328,7 +337,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
             width: 'fit-content'
           }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#0284C7' }} />
-            <span>AI-Driven Precision • Count Cesare Mattei System</span>
+            <span>{t.hero.eyebrow}</span>
           </div>
 
           {/* Editorial Display Headline */}
@@ -341,13 +350,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
               lineHeight: 1.1,
               margin: '0 0 12px'
             }}>
-              Next Era Of Medical <br />
+              {t.hero.title1} <br />
               <span style={{
                 background: 'linear-gradient(135deg, #0284C7 0%, #00F2FE 50%, #00A896 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
               }}>
-                Advancements
+                {t.hero.title2}
               </span>
             </h1>
             <p style={{
@@ -357,7 +366,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
               maxWidth: '560px',
               margin: 0
             }}>
-              AI-driven diagnostics and personalized plant electropathy converge. Explore a future where cellular polarity balancing, organ-specific botanicals, and real-time clinical safety gates take center stage.
+              {t.hero.subtitle}
             </p>
           </div>
 
@@ -378,7 +387,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
               color: '#334155',
               backdropFilter: 'blur(8px)'
             }}>
-              <span style={{ color: '#0284C7', fontWeight: 800 }}>1.5K+</span> Verified Clinical Consultations
+              <span style={{ color: '#0284C7', fontWeight: 800 }}>{language === 'hi' ? '१,५००+' : language === 'mr' ? '१,५००+' : '1.5K+'}</span> {t.hero.consultationsCount}
             </div>
           </div>
 
@@ -405,7 +414,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
                 color: '#38BDF8',
                 marginBottom: '8px'
               }}>
-                Precision Tailoring For Optimal Healing
+                {t.hero.precisionSub}
               </div>
               <h3 style={{
                 fontSize: '1.35rem',
@@ -415,7 +424,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
                 marginBottom: '10px',
                 lineHeight: 1.25
               }}>
-                ARE YOU READY TO REDEFINE YOUR HEALTH JOURNEY?
+                {t.hero.darkCardTitle}
               </h3>
               <p style={{
                 fontSize: '0.82rem',
@@ -424,7 +433,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
                 maxWidth: '520px',
                 marginBottom: '20px'
               }}>
-                Experience the fusion of 38 Core Remedy-States, 60 SPG Botanical Organ Actions, and dynamic 4-bottle protocol tailoring as we chart a course into the future of natural medicine.
+                {t.hero.darkCardDesc}
               </p>
 
               {/* Interactive Pill Badges with ↗ */}
@@ -447,7 +456,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
                     cursor: 'pointer'
                   }}
                 >
-                  <span>Dual-Table Pharmacopoeia (PDF Verified)</span>
+                  <span>{t.hero.dualTablePill}</span>
                   <span style={{ color: '#00F2FE' }}>↗</span>
                 </button>
 
@@ -469,7 +478,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
                     cursor: 'pointer'
                   }}
                 >
-                  <span>4-Bottle Mattei Optimizer</span>
+                  <span>{t.hero.optimizerPill}</span>
                   <span style={{ color: '#00F2FE' }}>↗</span>
                 </button>
 
@@ -491,7 +500,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
                     cursor: 'pointer'
                   }}
                 >
-                  <span>Clinical Safety Gate (7 Red Flags)</span>
+                  <span>{t.hero.safetyGate}</span>
                   <span style={{ color: '#00F2FE' }}>↗</span>
                 </button>
               </div>
@@ -1160,7 +1169,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
                       <select
                         className="input-field"
                         value={preferredLang}
-                        onChange={(e) => setPreferredLang(e.target.value)}
+                        onChange={(e) => setPreferredLang(e.target.value as 'en' | 'hi' | 'mr')}
                         style={{ borderRadius: '8px', padding: '4px 8px', height: '32px', fontSize: '0.82rem' }}
                       >
                         <option value="en">English</option>
@@ -1532,14 +1541,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
           <div>
             <div className="text-xs font-bold uppercase tracking-widest text-sky-600 mb-1 flex items-center gap-1.5">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>Count Cesare Mattei Principles & Modern AI</span>
+              <span>{t.pathways.eyebrow}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-              YOUR PATH TO BALANCED POLARITY & CELLULAR HEALING
+              {t.pathways.heading}
             </h2>
           </div>
           <p className="text-sm text-slate-600 max-w-md">
-            A comprehensive clinical knowledge base and state-organ convergence engine designed to restore physiological equilibrium naturally.
+            {t.pathways.desc}
           </p>
         </div>
 
@@ -1562,12 +1571,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
             <div style={{ display: 'flex', width: '44px', height: '44px', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', backgroundColor: '#E0F2FE', color: '#0284C7', marginBottom: '14px' }}>
               <Brain size={22} />
             </div>
-            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#090D16', marginBottom: '8px' }}>Dual-Table Pharmacopoeia</h3>
+            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#090D16', marginBottom: '8px' }}>{t.pathways.card1Title}</h3>
             <p style={{ fontSize: '0.78rem', color: '#64748B', lineHeight: 1.5, marginBottom: '16px' }}>
-              Integrates 38 Core Remedy-States with 60 SPG Botanical Organ Actions without forced table conflation.
+              {t.pathways.card1Desc}
             </p>
             <div style={{ fontSize: '0.74rem', fontWeight: 800, color: '#0284C7', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>98 Distinct Documented Formulations</span>
+              <span>{t.pathways.card1Meta}</span>
               <span>→</span>
             </div>
           </div>
@@ -1587,12 +1596,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
             <div style={{ display: 'flex', width: '44px', height: '44px', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', backgroundColor: '#CFFAFE', color: '#0891B2', marginBottom: '14px' }}>
               <Activity size={22} />
             </div>
-            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#090D16', marginBottom: '8px' }}>State–Organ Convergence</h3>
+            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#090D16', marginBottom: '8px' }}>{t.pathways.card2Title}</h3>
             <p style={{ fontSize: '0.78rem', color: '#64748B', lineHeight: 1.5, marginBottom: '16px' }}>
-              Cross-references symptoms across 8 body systems, 12 pathological mechanisms, and cellular tissue affinities.
+              {t.pathways.card2Desc}
             </p>
             <div style={{ fontSize: '0.74rem', fontWeight: 800, color: '#0891B2', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>Category A, B, C Evidence Tiers</span>
+              <span>{t.pathways.card2Meta}</span>
               <span>→</span>
             </div>
           </div>
@@ -1612,12 +1621,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
             <div style={{ display: 'flex', width: '44px', height: '44px', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', backgroundColor: '#CCFBF1', color: '#0D9488', marginBottom: '14px' }}>
               <Sparkles size={22} />
             </div>
-            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#090D16', marginBottom: '8px' }}>4-Bottle Protocol Dynamics</h3>
+            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#090D16', marginBottom: '8px' }}>{t.pathways.card3Title}</h3>
             <p style={{ fontSize: '0.78rem', color: '#64748B', lineHeight: 1.5, marginBottom: '16px' }}>
-              Generates balanced Option A and Option B formulations with exact dilution dynamics and electric polarity matching.
+              {t.pathways.card3Desc}
             </p>
             <div style={{ fontSize: '0.74rem', fontWeight: 800, color: '#0D9488', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>D1–D3 Acute & D6–D30 Recovery</span>
+              <span>{t.pathways.card3Meta}</span>
               <span>→</span>
             </div>
           </div>

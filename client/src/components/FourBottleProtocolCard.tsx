@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Zap, Droplets, Sparkles, AlertCircle, RefreshCw, Layers } from 'lucide-react';
+import { useTranslation } from '../i18n/LanguageContext';
 
 export interface ProtocolBottleItem {
   bottleNumber: 1 | 2 | 3 | 4;
@@ -50,6 +51,7 @@ interface FourBottleProtocolCardProps {
 }
 
 export const FourBottleProtocolCard: React.FC<FourBottleProtocolCardProps> = ({ dualProtocol }) => {
+  const { t } = useTranslation();
   const [activeOption, setActiveOption] = useState<'A' | 'B'>('A');
 
   const currentProtocol = activeOption === 'A' ? dualProtocol.optionA : (dualProtocol.optionB || dualProtocol.optionA);
@@ -60,7 +62,7 @@ export const FourBottleProtocolCard: React.FC<FourBottleProtocolCardProps> = ({ 
       <div className="my-4 rounded-xl border border-red-500/40 bg-red-950/20 p-5 backdrop-blur-sm">
         <div className="flex items-center gap-3 text-red-400">
           <AlertCircle className="h-6 w-6 shrink-0" />
-          <h4 className="text-lg font-bold">Clinical Safety Intercept Active</h4>
+          <h4 className="text-lg font-bold">{t.protocol.safetyIntercept}</h4>
         </div>
         <p className="mt-2 text-sm leading-relaxed text-red-200">
           {currentProtocol.practitionerNotice}
@@ -130,7 +132,7 @@ export const FourBottleProtocolCard: React.FC<FourBottleProtocolCardProps> = ({ 
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                Option A (Primary)
+                {t.protocol.optionA}
               </button>
               <button
                 type="button"
@@ -141,7 +143,7 @@ export const FourBottleProtocolCard: React.FC<FourBottleProtocolCardProps> = ({ 
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                Option B (Alternative)
+                {t.protocol.optionB}
               </button>
             </div>
           )}
@@ -159,7 +161,7 @@ export const FourBottleProtocolCard: React.FC<FourBottleProtocolCardProps> = ({ 
               {/* Bottle Header */}
               <div className="flex items-center justify-between border-b border-slate-800/60 pb-2.5">
                 <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-900/80 px-2 py-0.5 text-xs font-bold text-indigo-400 ring-1 ring-slate-700">
-                  Bottle {bottle.bottleNumber}
+                  {t.protocol.bottleTitle} {bottle.bottleNumber}
                 </span>
                 <span className="text-[11px] font-medium text-emerald-400">
                   {bottle.recommendedDilution}

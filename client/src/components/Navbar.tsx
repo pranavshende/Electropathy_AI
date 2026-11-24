@@ -2,6 +2,8 @@ import React from 'react';
 import { User } from '../types';
 import { Activity, User as UserIcon, LogOut, FolderOpen, MessageSquare, Sparkles, Shield, ArrowUpRight } from 'lucide-react';
 import { formatDisplayPhone } from '../utils/phone';
+import { useTranslation } from '../i18n/LanguageContext';
+import { Language } from '../i18n/translations';
 
 interface NavbarProps {
   user: User | null;
@@ -20,6 +22,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   onTabChange,
 }) => {
+  const { t, language, setLanguage } = useTranslation();
+
+  const handleLangSelect = (lang: Language) => {
+    setLanguage(lang);
+    onLanguageChange(lang);
+  };
+
+  const activeLanguage = (language || currentLang || 'en') as Language;
+
   return (
     <>
       <header className="nav-header">
@@ -52,15 +63,15 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span className="nav-logo-text">
-                Electropathy<span style={{
+                {activeLanguage === 'hi' ? 'इलेक्ट्रोपैथी' : activeLanguage === 'mr' ? 'इलेक्ट्रोपॅथी' : 'Electropathy'}<span style={{
                   background: 'linear-gradient(135deg, #0284C7 0%, #00A896 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent'
-                }}>AI</span>
+                }}>{activeLanguage === 'en' ? 'AI' : ' एआई'}</span>
               </span>
 
               <span className="nav-badge-pill">
-                v2026 Engine
+                {t.common.engineBadge}
               </span>
             </div>
           </div>
@@ -97,7 +108,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }}
               >
                 <MessageSquare size={14} color={activeTab === 'chat' ? '#38BDF8' : '#64748B'} />
-                <span>AI Consultations</span>
+                <span>{t.navbar.consultations}</span>
               </button>
 
               <button
@@ -121,7 +132,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }}
               >
                 <FolderOpen size={14} color={activeTab === 'records' ? '#38BDF8' : '#64748B'} />
-                <span>Health Records</span>
+                <span>{t.navbar.records}</span>
               </button>
             </nav>
           ) : (
@@ -146,7 +157,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 color: '#0369A1'
               }}>
                 <Sparkles size={12} color="#0284C7" />
-                <span>Dual-Table Materia Medica</span>
+                <span>{t.navbar.dualTable}</span>
               </div>
 
               <div style={{
@@ -162,7 +173,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 color: '#065F46'
               }}>
                 <Shield size={12} color="#059669" />
-                <span>4-Bottle Mattei Optimizer</span>
+                <span>{t.navbar.optimizer}</span>
               </div>
             </div>
           )}
@@ -172,14 +183,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Language Switcher Capsule */}
             <div className="nav-lang-switcher">
               {(['en', 'hi', 'mr'] as const).map(lang => {
-                const isSelected = currentLang === lang;
+                const isSelected = activeLanguage === lang;
                 const label = lang === 'en' ? 'EN' : lang === 'hi' ? 'हिं' : 'मरा';
                 return (
                   <button
                     key={lang}
                     type="button"
-                    onClick={() => onLanguageChange(lang)}
+                    onClick={() => handleLangSelect(lang)}
                     className={`nav-lang-btn ${isSelected ? 'active' : ''}`}
+                    title={lang === 'en' ? 'English' : lang === 'hi' ? 'हिंदी (Hindi)' : 'मराठी (Marathi)'}
                   >
                     {label}
                   </button>
@@ -219,7 +231,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       {user.fullName || formatDisplayPhone(user.mobileNumber)}
                     </div>
                     <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#059669' }}>
-                      Verified Patient
+                      {t.common.verifiedPatient}
                     </div>
                   </div>
                 </div>
@@ -227,7 +239,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   type="button"
                   onClick={onLogout}
-                  title="Sign out"
+                  title={t.common.signOut}
                   style={{
                     width: '32px',
                     height: '32px',
@@ -260,8 +272,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 href="#login"
                 className="nav-access-portal-btn"
               >
-                <span className="full-text">Access Portal</span>
-                <span className="short-text">Portal</span>
+                <span className="full-text">{t.navbar.accessPortal}</span>
+                <span className="short-text">{t.navbar.portalShort}</span>
                 <ArrowUpRight size={13} color="#00F2FE" />
               </a>
             )}
@@ -278,7 +290,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className={`mobile-bottom-tab-btn ${activeTab === 'chat' ? 'active' : ''}`}
           >
             <MessageSquare size={16} color={activeTab === 'chat' ? '#38BDF8' : '#64748B'} />
-            <span>Consultations</span>
+            <span>{t.navbar.consultations}</span>
           </button>
 
           <button
@@ -287,7 +299,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className={`mobile-bottom-tab-btn ${activeTab === 'records' ? 'active' : ''}`}
           >
             <FolderOpen size={16} color={activeTab === 'records' ? '#38BDF8' : '#64748B'} />
-            <span>Health Records</span>
+            <span>{t.navbar.records}</span>
           </button>
         </nav>
       )}

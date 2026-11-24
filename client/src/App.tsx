@@ -8,6 +8,8 @@ import { AdminPortal } from './components/AdminPortal';
 import { MedicalDisclaimer } from './components/MedicalDisclaimer';
 import { api } from './services/api';
 import { User, PatientCase } from './types';
+import { LanguageProvider } from './i18n/LanguageContext';
+import { Language } from './i18n/translations';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -104,54 +106,56 @@ export default function App() {
   }
 
   return (
-    <div style={{ 
-      height: isChatActive ? '100vh' : undefined,
-      minHeight: '100vh',
-      maxHeight: isChatActive ? '100vh' : undefined,
-      overflow: isChatActive ? 'hidden' : 'auto',
-      display: 'flex', 
-      flexDirection: 'column' 
-    }}>
-      <Navbar
-        user={user}
-        currentLang={currentLang}
-        onLanguageChange={(lang) => setCurrentLang(lang)}
-        onLogout={handleLogout}
-        activeTab={activeTab}
-        onTabChange={(tab) => setActiveTab(tab)}
-      />
+    <LanguageProvider initialLang={currentLang as Language} onLanguageChanged={(lang) => setCurrentLang(lang)}>
+      <div style={{ 
+        height: isChatActive ? '100vh' : undefined,
+        minHeight: '100vh',
+        maxHeight: isChatActive ? '100vh' : undefined,
+        overflow: isChatActive ? 'hidden' : 'auto',
+        display: 'flex', 
+        flexDirection: 'column' 
+      }}>
+        <Navbar
+          user={user}
+          currentLang={currentLang}
+          onLanguageChange={(lang) => setCurrentLang(lang)}
+          onLogout={handleLogout}
+          activeTab={activeTab}
+          onTabChange={(tab) => setActiveTab(tab)}
+        />
 
-      <main 
-        className={`app-main-content ${user ? 'has-user' : ''}`}
-        style={{ 
-          flex: 1, 
-          minHeight: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: isChatActive ? 'hidden' : 'visible',
-          padding: !user ? '8px 16px 0' : isChatActive ? '8px 16px 8px' : '20px' 
-        }}
-      >
-        {!user ? (
-          <LoginModal 
-            onSuccess={handleLoginSuccess} 
-            onAdminSuccess={handleAdminSuccess}
-          />
-        ) : (
-          <>
-            {activeTab === 'records' && (
-              <CaseHistoryList key={user.id} user={user} />
-            )}
-            {activeTab === 'chat' && (
-              <ChatHistoryView key={user.id} user={user} />
-            )}
-          </>
+        <main 
+          className={`app-main-content ${user ? 'has-user' : ''}`}
+          style={{ 
+            flex: 1, 
+            minHeight: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: isChatActive ? 'hidden' : 'visible',
+            padding: !user ? '8px 16px 0' : isChatActive ? '8px 16px 8px' : '20px' 
+          }}
+        >
+          {!user ? (
+            <LoginModal 
+              onSuccess={handleLoginSuccess} 
+              onAdminSuccess={handleAdminSuccess}
+            />
+          ) : (
+            <>
+              {activeTab === 'records' && (
+                <CaseHistoryList key={user.id} user={user} />
+              )}
+              {activeTab === 'chat' && (
+                <ChatHistoryView key={user.id} user={user} />
+              )}
+            </>
+          )}
+        </main>
+
+        {!isChatActive && (
+          <MedicalDisclaimer compact={!user} />
         )}
-      </main>
-
-      {!isChatActive && (
-        <MedicalDisclaimer compact={!user} />
-      )}
-    </div>
+      </div>
+    </LanguageProvider>
   );
 }

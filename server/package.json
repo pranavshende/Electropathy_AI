@@ -11,7 +11,15 @@
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "seed:admin": "tsx src/scripts/seedAdmin.ts"
+    "seed:admin": "tsx src/scripts/seedAdmin.ts",
+    "seed:materia-medica": "tsx src/scripts/seedElectropathyMateriaMedica.ts",
+    "test:rag": "tsx src/tests/electropathyRagTest.ts",
+    "report:stage1": "tsx src/scripts/generateStage1Report.ts",
+    "test:stage1": "tsx src/tests/stage1DualTableTest.ts",
+    "test:stage2": "tsx src/tests/stage2MappingMatrixTest.ts",
+    "test:stage3-4": "tsx src/tests/stage3And4Test.ts",
+    "test:stage5-6": "tsx src/tests/stage5And6Test.ts",
+    "test:apis": "tsx src/tests/allApisTest.ts"
   },
   "keywords": [],
   "author": "",

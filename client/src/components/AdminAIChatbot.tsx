@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
 import { MarkdownMessage } from './MarkdownMessage';
+import { FourBottleProtocolCard } from './FourBottleProtocolCard';
 import { 
   Bot, 
   User, 
@@ -41,6 +42,9 @@ interface ChatMessage {
   timestamp: Date;
   patientProfile?: any;
   doctorDatasetMatches?: any[];
+  dualProtocol?: any;
+  convergence?: any;
+  diseaseStateResolution?: any;
   missingInformation?: string[];
   criticalSafetyAlerts?: string[];
   model?: string;
@@ -67,6 +71,8 @@ export const AdminAIChatbot: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'chat' | 'knowledge'>('chat');
   const [knowledgeList, setKnowledgeList] = useState<any[]>([]);
   const [loadingKnowledge, setLoadingKnowledge] = useState(false);
+  const [knowledgeSearch, setKnowledgeSearch] = useState('');
+  const [knowledgeCategoryFilter, setKnowledgeCategoryFilter] = useState<'All' | 'MateriaMedica' | 'SPG_Botanicals' | 'TreatmentProtocols'>('All');
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -176,6 +182,9 @@ I am your clinical assistant grounded in **PostgreSQL live patient records** and
           timestamp: new Date(),
           patientProfile: res.patientProfile,
           doctorDatasetMatches: res.doctorDatasetMatches,
+          dualProtocol: res.dualProtocol,
+          convergence: res.convergence,
+          diseaseStateResolution: res.diseaseStateResolution,
           missingInformation: res.missingInformation,
           criticalSafetyAlerts: res.criticalSafetyAlerts,
           model: res.model,
@@ -206,7 +215,7 @@ I am your clinical assistant grounded in **PostgreSQL live patient records** and
   const loadKnowledgeChunks = async () => {
     setLoadingKnowledge(true);
     try {
-      const res = await api.getAdminKnowledge(1, 50);
+      const res = await api.getAdminKnowledge(1, 150);
       if (res.success && res.chunks) {
         setKnowledgeList(res.chunks);
       }
@@ -357,6 +366,61 @@ I am your clinical assistant grounded in **PostgreSQL live patient records** and
             </button>
           </div>
 
+          {/* Search & Category Filter Controls */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16, alignItems: 'center' }}>
+            <div style={{ position: 'relative', flex: '1 1 260px' }}>
+              <Search size={14} style={{ position: 'absolute', left: 10, top: 10, color: '#94A3B8' }} />
+              <input
+                type="text"
+                value={knowledgeSearch}
+                onChange={(e) => setKnowledgeSearch(e.target.value)}
+                placeholder="Search remedies (S1, C4, RE), organ axes, plants, or symptoms..."
+                style={{
+                  width: '100%',
+                  padding: '7px 12px 7px 32px',
+                  borderRadius: 6,
+                  border: '1px solid #CBD5E1',
+                  fontSize: 13,
+                  outline: 'none'
+                }}
+              />
+              {knowledgeSearch && (
+                <button
+                  onClick={() => setKnowledgeSearch('')}
+                  style={{ position: 'absolute', right: 8, top: 8, background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8' }}
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {[
+                { id: 'All', label: `All Chunks (${knowledgeList.length})` },
+                { id: 'MateriaMedica', label: 'Materia Medica (38 Core)' },
+                { id: 'SPG_Botanicals', label: 'SPG Botanicals (60)' },
+                { id: 'TreatmentProtocols', label: 'Clinical Protocols' }
+              ].map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setKnowledgeCategoryFilter(f.id as any)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 6,
+                    border: knowledgeCategoryFilter === f.id ? '1px solid #0F4C81' : '1px solid #E2E8F0',
+                    backgroundColor: knowledgeCategoryFilter === f.id ? '#0F4C81' : '#FFFFFF',
+                    color: knowledgeCategoryFilter === f.id ? '#FFFFFF' : '#475569',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {loadingKnowledge ? (
             <div style={{ textAlign: 'center', padding: 40, color: '#64748B' }}>
               <Loader2 size={28} className="spin" style={{ margin: '0 auto 12px' }} />
@@ -364,53 +428,115 @@ I am your clinical assistant grounded in **PostgreSQL live patient records** and
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 16 }}>
-              {knowledgeList.map((chunk, idx) => (
-                <div key={chunk.id || idx} style={{
-                  border: '1px solid #E2E8F0',
-                  borderRadius: 10,
-                  padding: 16,
-                  backgroundColor: '#F8FAFC',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 8
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <span style={{ 
-                      fontSize: 11, 
-                      fontWeight: 700, 
-                      color: '#0284C7', 
-                      backgroundColor: '#E0F2FE', 
-                      padding: '2px 8px', 
-                      borderRadius: 12 
+              {knowledgeList
+                .filter(chunk => {
+                  if (knowledgeCategoryFilter !== 'All' && chunk.category !== knowledgeCategoryFilter) return false;
+                  if (!knowledgeSearch.trim()) return true;
+                  const q = knowledgeSearch.toLowerCase();
+                  const title = (chunk.metadata?.name || chunk.metadata?.medicineName || chunk.metadata?.conditionOrTitle || '').toLowerCase();
+                  const code = (chunk.metadata?.code || chunk.metadata?.sourceCode || '').toLowerCase();
+                  const organ = (chunk.metadata?.organAxis || chunk.metadata?.primarySphere || '').toLowerCase();
+                  const plant = (chunk.metadata?.medicineName || '').toLowerCase();
+                  const content = (chunk.content || '').toLowerCase();
+                  return title.includes(q) || code.includes(q) || organ.includes(q) || plant.includes(q) || content.includes(q);
+                })
+                .map((chunk, idx) => {
+                  const meta = chunk.metadata || {};
+                  const isMateria = chunk.category === 'MateriaMedica';
+                  const isSPG = chunk.category === 'SPG_Botanicals';
+                  const title = meta.name
+                    ? `${meta.name} (${meta.code})`
+                    : meta.medicineName
+                    ? `${meta.medicineName} (SPG: ${meta.sourceCode})`
+                    : (meta.conditionOrTitle || 'Electropathy Protocol');
+
+                  const isPositive = (meta.polarity || '').includes('+') || (meta.polarity || '').toLowerCase().includes('positive');
+                  const isNegative = (meta.polarity || '').includes('–') || (meta.polarity || '').includes('-') || (meta.polarity || '').toLowerCase().includes('negative');
+
+                  return (
+                    <div key={chunk.id || idx} style={{
+                      border: '1px solid #E2E8F0',
+                      borderRadius: 10,
+                      padding: 16,
+                      backgroundColor: '#F8FAFC',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 8
                     }}>
-                      {chunk.category || 'Clinical Protocol'}
-                    </span>
-                    <span style={{ fontSize: 11, color: '#94A3B8' }}>Chunk #{idx + 1}</span>
-                  </div>
-                  <h4 style={{ margin: '4px 0', fontSize: 14, fontWeight: 700, color: '#1E293B' }}>
-                    {chunk.metadata?.conditionOrTitle || 'Electropathy Protocol'}
-                  </h4>
-                  <pre style={{ 
-                    margin: 0, 
-                    fontSize: 12, 
-                    color: '#334155', 
-                    whiteSpace: 'pre-wrap', 
-                    fontFamily: 'inherit',
-                    backgroundColor: '#FFFFFF',
-                    padding: 10,
-                    borderRadius: 6,
-                    border: '1px solid #E2E8F0',
-                    maxHeight: 180,
-                    overflowY: 'auto'
-                  }}>
-                    {chunk.content}
-                  </pre>
-                  <div style={{ fontSize: 11, color: '#64748B', display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                    <span>Ref: {chunk.metadata?.citation || chunk.fileName}</span>
-                    <span style={{ color: '#16A34A', fontWeight: 600 }}>✔ Approved & Active</span>
-                  </div>
-                </div>
-              ))}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 6 }}>
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                          <span style={{ 
+                            fontSize: 11, 
+                            fontWeight: 700, 
+                            color: isMateria ? '#047857' : isSPG ? '#6D28D9' : '#0284C7', 
+                            backgroundColor: isMateria ? '#D1FAE5' : isSPG ? '#EDE9FE' : '#E0F2FE', 
+                            padding: '2px 8px', 
+                            borderRadius: 12 
+                          }}>
+                            {chunk.category || 'Clinical Protocol'}
+                          </span>
+                          {meta.polarity && (
+                            <span style={{
+                              fontSize: 11,
+                              fontWeight: 600,
+                              color: isPositive ? '#B91C1C' : isNegative ? '#1D4ED8' : '#475569',
+                              backgroundColor: isPositive ? '#FEE2E2' : isNegative ? '#DBEAFE' : '#F1F5F9',
+                              padding: '2px 8px',
+                              borderRadius: 12
+                            }}>
+                              Polarity: {meta.polarity}
+                            </span>
+                          )}
+                          {meta.protocolPosition && (
+                            <span style={{
+                              fontSize: 11,
+                              fontWeight: 600,
+                              color: '#B45309',
+                              backgroundColor: '#FEF3C7',
+                              padding: '2px 8px',
+                              borderRadius: 12
+                            }}>
+                              {meta.protocolPosition}
+                            </span>
+                          )}
+                        </div>
+                        <span style={{ fontSize: 11, color: '#94A3B8' }}>Chunk #{idx + 1}</span>
+                      </div>
+
+                      <h4 style={{ margin: '2px 0', fontSize: 14, fontWeight: 700, color: '#1E293B' }}>
+                        {title}
+                      </h4>
+
+                      {meta.organAxis && (
+                        <div style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>
+                          Organ Axis: <span style={{ color: '#0F4C81' }}>{meta.organAxis}</span>
+                        </div>
+                      )}
+
+                      <pre style={{ 
+                        margin: 0, 
+                        fontSize: 12, 
+                        color: '#334155', 
+                        whiteSpace: 'pre-wrap', 
+                        fontFamily: 'inherit',
+                        backgroundColor: '#FFFFFF',
+                        padding: 10,
+                        borderRadius: 6,
+                        border: '1px solid #E2E8F0',
+                        maxHeight: 180,
+                        overflowY: 'auto'
+                      }}>
+                        {chunk.content}
+                      </pre>
+                      <div style={{ fontSize: 11, color: '#64748B', display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '75%' }}>
+                          Ref: {meta.citation || chunk.fileName}
+                        </span>
+                        <span style={{ color: '#16A34A', fontWeight: 600, flexShrink: 0 }}>✔ Approved & Active</span>
+                      </div>
+                    </div>
+                  );
+                })}
             </div>
           )}
         </div>
@@ -644,6 +770,13 @@ I am your clinical assistant grounded in **PostgreSQL live patient records** and
                   >
                     {/* Render Text Content with full Markdown formatting */}
                     <MarkdownMessage content={msg.text} isUser={msg.sender === 'admin'} />
+
+                    {/* Interactive Count Cesare Mattei 4-Bottle Protocol Card */}
+                    {msg.sender === 'ai' && msg.dualProtocol && (
+                      <div style={{ marginTop: 14 }}>
+                        <FourBottleProtocolCard dualProtocol={msg.dualProtocol} />
+                      </div>
+                    )}
 
                     {/* Metadata Badges for AI Responses */}
                     {msg.sender === 'ai' && (

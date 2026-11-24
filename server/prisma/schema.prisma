@@ -192,3 +192,119 @@ model AuditLog {
   @@index([action, createdAt(sort: Desc)])
   @@map("audit_logs")
 }
+
+// ---------------------------------------------
+// 6. v2026 Dual-Table Engine & Registries (Stage 1)
+// ---------------------------------------------
+
+model RemedyIdentity {
+  id               String              @id @default(uuid())
+  canonicalCode    String              @unique // S1, S2, C4, RE, BE, APP, etc.
+  canonicalName    String
+  remedyGroup      String              // Scrofoloso, Canceroso, etc.
+  compoundType     String              @default("original") // 'original', 'compound', 'auxiliary', 'electricity'
+  identityStatus   String              @default("verified_core") // 'verified_core', 'supplementary_unmatched'
+  identityEvidence String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  coreRecord       CoreRemedyState?
+  organRecords     OrganActionRecord[]
+  mappings         RemedyMapping[]
+
+  @@map("remedy_identities")
+}
+
+model SourceRegistry {
+  id               String              @id @default(uuid())
+  sourceCode       String              @unique // 'SRC-MATTEI-CORE-2026', 'SRC-AJIT-SPG-PDF-2026'
+  title            String
+  sourceType       String              // 'master_table_excel', 'scanned_pdf', 'clinical_protocol'
+  version          String
+  originalCitation String
+  extractionMethod String              // 'author_curated', 'ocr_transcribed'
+  reviewStatus     String              // 'approved', 'transcribed_unvalidated'
+  reviewedBy       String?
+  reviewedAt       DateTime?
+  createdAt        DateTime            @default(now())
+
+  coreRecords      CoreRemedyState[]
+  organRecords     OrganActionRecord[]
+  mappings         RemedyMapping[]
+
+  @@map("source_registries")
+}
+
+model CoreRemedyState {
+  id                         String         @id @default(uuid())
+  remedyId                   String         @unique
+  remedy                     RemedyIdentity @relation(fields: [remedyId], references: [id], onDelete: Cascade)
+  officialCode               String
+  officialName               String
+  remedyGroup                String
+  polarity                   String
+  organAxis                  String
+  tissueAffinity             String
+  primarySphere              String
+  secondarySphere            String
+  dominantState              String
+  secondaryStates            String
+  corePhysiologicalRole      String
+  functionalKeywords         String
+  pathophysiologicalTarget   String
+  physiologicalEffectSummary String
+  suggestedProtocolRole      String
+  preferredStage             String
+  protocolPosition           String
+  externalLocalUse           String?
+  organPolarityLink          String?
+  electroPhysiologicalEffect String?
+  colorSymbolism             String?
+  remarks                    String?
+  validationStatus           String         @default("Verified")
+  sourceId                   String
+  source                     SourceRegistry @relation(fields: [sourceId], references: [id])
+  createdAt                  DateTime       @default(now())
+  updatedAt                  DateTime       @updatedAt
+
+  @@map("core_remedy_states")
+}
+
+model OrganActionRecord {
+  id                    String          @id @default(uuid())
+  remedyId              String?
+  remedy                RemedyIdentity? @relation(fields: [remedyId], references: [id], onDelete: SetNull)
+  sourceEntryNo         Int
+  sourceRemedyCode      String
+  sourceRemedyName      String
+  sourceGroup           String
+  sourceOrganActionText String
+  pdfPage               Int
+  identityStatus        String          // 'matched_core', 'supplementary_unmatched'
+  mappingStatus         String
+  reviewNotes           String?
+  sourceId              String
+  source                SourceRegistry  @relation(fields: [sourceId], references: [id])
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  @@map("organ_action_records")
+}
+
+model RemedyMapping {
+  id                 String         @id @default(uuid())
+  remedyId           String
+  remedy             RemedyIdentity @relation(fields: [remedyId], references: [id], onDelete: Cascade)
+  mappingType        String         // 'remedy_to_state', 'remedy_to_organ', 'remedy_to_requirement'
+  targetConceptId    String
+  targetConceptName  String
+  evidenceClass      String         // 'Class_I_Verified', 'Class_II_Historical_Source'
+  confidenceScore    Float          @default(1.0)
+  approvalStatus     String         // 'practitioner_approved', 'pending_review'
+  mappingRationale   String
+  sourceId           String
+  source             SourceRegistry @relation(fields: [sourceId], references: [id])
+  createdAt          DateTime       @default(now())
+
+  @@map("remedy_mappings")
+}

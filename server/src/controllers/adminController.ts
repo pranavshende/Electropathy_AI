@@ -9,6 +9,12 @@ import { AuthenticatedRequest } from '../middlewares/authMiddleware.js';
 import { adminChatService } from '../services/adminChatService.js';
 import { patientContextService } from '../services/patientContextService.js';
 import { knowledgeService } from '../services/knowledgeService.js';
+import { stage1DualTableService } from '../services/stage1DualTableService.js';
+import { stage2MappingMatrixService } from '../services/stage2MappingMatrixService.js';
+import { stage3PatientAssessmentService, PatientAssessmentInput } from '../services/stage3PatientAssessmentService.js';
+import { stage4DiseaseStateResolverService } from '../services/stage4DiseaseStateResolverService.js';
+import { stage5ConvergenceEngine } from '../services/stage5ConvergenceEngine.js';
+import { stage6ProtocolOptimizerService } from '../services/stage6ProtocolOptimizerService.js';
 
 export class AdminController {
   /**
@@ -485,6 +491,101 @@ export class AdminController {
       res.status(200).json({ success: true, ...result });
     } catch (error: any) {
       res.status(500).json({ success: false, message: 'Failed to retrieve knowledge chunks' });
+    }
+  }
+
+  /**
+   * Stage 3-6 Convergence & 4-Bottle Protocol Evaluation
+   * POST /api/admin/protocol/evaluate
+   */
+  async evaluateProtocol(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { patientInput, freeTextQuery, fullName, age, gender, severity, temperament } = req.body;
+
+      const structuredInput: PatientAssessmentInput = patientInput || {
+        fullName: fullName || 'Clinical Case',
+        age: age ? parseInt(age) : 40,
+        gender: gender || 'other',
+        contactNumber: req.body.contactNumber || 'N/A',
+        chiefComplaints: [
+          {
+            complaint: freeTextQuery || 'Clinical evaluation of electropathy state and organ actions',
+            severity: severity ? parseFloat(severity) : 6.0
+          }
+        ],
+        presentIllnessDescription: freeTextQuery || '',
+        temperament: temperament || 'Lymphatic'
+      };
+
+      // Stage 3: Multi-dimensional patient intake, lab extraction & Safety Gate
+      const assessment = stage3PatientAssessmentService.assessPatient(structuredInput);
+
+      // Stage 4: Disease-state, pathological mechanism & organ axis resolution
+      const resolution = stage4DiseaseStateResolverService.resolveDiseaseStates(assessment);
+
+      // Stage 5: Dual-Table State-Organ Convergence Engine (Categories A, B, C, D)
+      const convergence = stage5ConvergenceEngine.evaluateConvergence(resolution);
+
+      // Stage 6: Count Cesare Mattei 4-Bottle Protocol Optimizer (Option A & Option B)
+      const protocol = stage6ProtocolOptimizerService.optimizeProtocol(convergence, assessment);
+
+      if (req.user) {
+        await auditService.log(req.user.id, 'EVALUATE_ELECTROPATHY_PROTOCOL', assessment.assessmentId, {
+          patientName: assessment.demographics.fullName,
+          primaryState: resolution.primaryDiseaseState.stateName,
+          safetyPassed: assessment.safetyGate.passed
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        assessment,
+        resolution,
+        convergence,
+        protocol
+      });
+    } catch (error: any) {
+      console.error('[PROTOCOL EVALUATION ERROR]', error);
+      res.status(500).json({ success: false, message: error.message || 'Failed to evaluate electropathy protocol' });
+    }
+  }
+
+  /**
+   * State-Organ Mapping Matrix & Taxonomies
+   * GET /api/admin/protocol/matrix
+   */
+  async getMappingMatrix(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const stats = stage2MappingMatrixService.getMatrixStats();
+      const organs = stage2MappingMatrixService.getOrganTaxonomy();
+      const states = stage2MappingMatrixService.getDiseaseStateTaxonomy();
+
+      res.status(200).json({
+        success: true,
+        stats,
+        organCount: organs.length,
+        stateCount: states.length,
+        organs,
+        states
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: 'Failed to retrieve mapping matrix' });
+    }
+  }
+
+  /**
+   * Dual-Table Core vs SPG Knowledge Statistics
+   * GET /api/admin/protocol/dual-table-stats
+   */
+  async getDualTableStats(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const audit = stage1DualTableService.getAuditSummary();
+      res.status(200).json({
+        success: true,
+        ...audit
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: 'Failed to retrieve dual-table statistics' });
     }
   }
 }

@@ -27,4 +27,9 @@ router.get('/patients/search', (req, res) => adminController.searchPatients(req,
 router.get('/patients/:id/summary', (req, res) => adminController.getPatientFullSummary(req, res));
 router.get('/knowledge', (req, res) => adminController.getKnowledge(req, res));
 
+// v2026 Convergence Engine & 4-Bottle Protocol Endpoints
+router.post('/protocol/evaluate', (req, res) => adminController.evaluateProtocol(req, res));
+router.get('/protocol/matrix', (req, res) => adminController.getMappingMatrix(req, res));
+router.get('/protocol/dual-table-stats', (req, res) => adminController.getDualTableStats(req, res));
+
 export default router;

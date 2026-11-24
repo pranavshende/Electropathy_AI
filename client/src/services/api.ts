@@ -350,6 +350,33 @@ class ApiService {
     return res.json();
   }
 
+  // --- v2026 Dual-Table Convergence & 4-Bottle Protocols ---
+
+  async evaluateProtocol(data: { freeTextQuery?: string; patientInput?: any; severity?: number }) {
+    const res = await fetch(`${API_BASE_URL}/admin/protocol/evaluate`, {
+      method: 'POST',
+      headers: this.getAdminHeaders(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  }
+
+  async getMappingMatrix() {
+    const res = await fetch(`${API_BASE_URL}/admin/protocol/matrix`, {
+      method: 'GET',
+      headers: this.getAdminHeaders(),
+    });
+    return res.json();
+  }
+
+  async getDualTableStats() {
+    const res = await fetch(`${API_BASE_URL}/admin/protocol/dual-table-stats`, {
+      method: 'GET',
+      headers: this.getAdminHeaders(),
+    });
+    return res.json();
+  }
+
   // --- Patient AI Consultation ---
 
   async sendPatientChatMessage(conversationId: string, content: string, preferredLang?: string) {

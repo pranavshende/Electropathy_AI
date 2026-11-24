@@ -26,6 +26,12 @@ app.use('/api/patients', patientRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Compatibility aliases for direct client routing
+app.use('/auth', authRoutes);
+app.use('/patients', patientRoutes);
+app.use('/conversations', conversationRoutes);
+app.use('/admin', adminRoutes);
+
 
 // Health check endpoint
 app.get('/health', (req, res) => {

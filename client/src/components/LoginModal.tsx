@@ -306,13 +306,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
   };
 
   return (
-    <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 20px 80px' }}>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
-        gap: '36px',
-        alignItems: 'start'
-      }}>
+    <div className="hero-container-responsive">
+      <div className="hero-grid-responsive">
         {/* ======================================================== */}
         {/* LEFT COLUMN: NEXT ERA ADVANCEMENTS & DARK FEATURE CARD   */}
         {/* ======================================================== */}

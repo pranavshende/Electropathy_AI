@@ -1,6 +1,6 @@
 import React from 'react';
 import { User } from '../types';
-import { Activity, User as UserIcon, LogOut, Globe, FolderOpen, MessageSquare, CheckCircle, Sparkles, Shield, ArrowUpRight } from 'lucide-react';
+import { Activity, User as UserIcon, LogOut, FolderOpen, MessageSquare, Sparkles, Shield, ArrowUpRight } from 'lucide-react';
 import { formatDisplayPhone } from '../utils/phone';
 
 interface NavbarProps {
@@ -22,157 +22,271 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   return (
     <>
-      <header className="sticky top-0 z-50 px-3 py-2.5 sm:px-6">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 rounded-full border border-white/80 bg-white/75 px-4 shadow-[0_8px_30px_rgb(14,165,233,0.08)] backdrop-blur-xl sm:px-6">
-          {/* Brand Logo & Clinical Badge */}
+      <header className="nav-header">
+        <div className="nav-capsule">
+          {/* 1. Brand Logo & Clinical Engine Badge (Left) */}
           <div 
             onClick={() => onTabChange('chat')}
-            className="flex cursor-pointer items-center gap-3 transition-opacity hover:opacity-90"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              cursor: 'pointer',
+              flexShrink: 0,
+              userSelect: 'none'
+            }}
           >
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-tr from-sky-500 via-cyan-400 to-teal-400 text-white shadow-md shadow-sky-500/25 ring-2 ring-white">
-              <Activity className="h-5 w-5" />
-              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500" />
+            <div className="nav-logo-icon">
+              <Activity size={18} />
+              <span style={{
+                position: 'absolute',
+                bottom: '-1px',
+                right: '-1px',
+                width: '9px',
+                height: '9px',
+                borderRadius: '50%',
+                backgroundColor: '#10B981',
+                border: '1.5px solid #FFFFFF'
+              }} />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold tracking-tight text-slate-900 text-base sm:text-lg">
-                  Electropathy<span className="bg-gradient-to-r from-sky-600 to-cyan-500 bg-clip-text text-transparent">AI</span>
-                </span>
-                <span className="hidden sm:inline-flex items-center rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-700 ring-1 ring-sky-500/20">
-                  v2026 Engine
-                </span>
-              </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="nav-logo-text">
+                Electropathy<span style={{
+                  background: 'linear-gradient(135deg, #0284C7 0%, #00A896 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}>AI</span>
+              </span>
+
+              <span className="nav-badge-pill">
+                v2026 Engine
+              </span>
             </div>
           </div>
 
-          {/* Navigation Pills (Inspired by modern med-tech header) */}
+          {/* 2. Center Navigation Pills (Desktop only) */}
           {user ? (
-            <nav className="hidden md:flex items-center gap-1 rounded-full bg-slate-100/80 p-1 ring-1 ring-slate-200/60">
+            <nav className="hide-on-mobile" style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              backgroundColor: 'rgba(241, 245, 249, 0.9)',
+              padding: '3px',
+              borderRadius: '999px',
+              border: '1px solid rgba(226, 232, 240, 0.8)'
+            }}>
               <button
+                type="button"
                 onClick={() => onTabChange('chat')}
-                className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
-                  activeTab === 'chat'
-                    ? 'bg-white text-sky-700 shadow-sm ring-1 ring-slate-200/80'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                className="medical-pill-btn"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  borderRadius: '999px',
+                  padding: '6px 14px',
+                  fontSize: '0.76rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  border: 'none',
+                  backgroundColor: activeTab === 'chat' ? '#090D16' : 'transparent',
+                  color: activeTab === 'chat' ? '#FFFFFF' : '#475569',
+                  boxShadow: activeTab === 'chat' ? '0 2px 8px rgba(9, 13, 22, 0.2)' : 'none',
+                  transition: 'all 0.18s ease'
+                }}
               >
-                <MessageSquare className="h-3.5 w-3.5" />
+                <MessageSquare size={14} color={activeTab === 'chat' ? '#38BDF8' : '#64748B'} />
                 <span>AI Consultations</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => onTabChange('records')}
-                className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
-                  activeTab === 'records'
-                    ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/80'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                className="medical-pill-btn"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  borderRadius: '999px',
+                  padding: '6px 14px',
+                  fontSize: '0.76rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  border: 'none',
+                  backgroundColor: activeTab === 'records' ? '#090D16' : 'transparent',
+                  color: activeTab === 'records' ? '#FFFFFF' : '#475569',
+                  boxShadow: activeTab === 'records' ? '0 2px 8px rgba(9, 13, 22, 0.2)' : 'none',
+                  transition: 'all 0.18s ease'
+                }}
               >
-                <FolderOpen className="h-3.5 w-3.5" />
+                <FolderOpen size={14} color={activeTab === 'records' ? '#38BDF8' : '#64748B'} />
                 <span>Health Records</span>
               </button>
             </nav>
           ) : (
-            <div className="hidden lg:flex items-center gap-2 text-xs font-semibold text-slate-600">
-              <span className="flex items-center gap-1.5 rounded-full bg-slate-100/70 px-3.5 py-1.5 ring-1 ring-slate-200/50">
-                <Sparkles className="h-3.5 w-3.5 text-sky-500" />
+            <div 
+              className="hide-on-mobile"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                borderRadius: '999px',
+                backgroundColor: 'rgba(240, 249, 255, 0.9)',
+                border: '1px solid #BAE6FD',
+                padding: '5px 12px',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                color: '#0369A1'
+              }}>
+                <Sparkles size={12} color="#0284C7" />
                 <span>Dual-Table Materia Medica</span>
-              </span>
-              <span className="flex items-center gap-1.5 rounded-full bg-slate-100/70 px-3.5 py-1.5 ring-1 ring-slate-200/50">
-                <Shield className="h-3.5 w-3.5 text-teal-500" />
+              </div>
+
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                borderRadius: '999px',
+                backgroundColor: 'rgba(236, 253, 245, 0.9)',
+                border: '1px solid #A7F3D0',
+                padding: '5px 12px',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                color: '#065F46'
+              }}>
+                <Shield size={12} color="#059669" />
                 <span>4-Bottle Mattei Optimizer</span>
-              </span>
+              </div>
             </div>
           )}
 
-          {/* Right Action Elements: Language Selector & User Profile */}
-          <div className="flex items-center gap-2">
-            {/* Language Switcher Pill */}
-            <div className="flex items-center rounded-full bg-slate-100/90 p-0.5 ring-1 ring-slate-200/70">
-              <button
-                onClick={() => onLanguageChange('en')}
-                className={`rounded-full px-2.5 py-1 text-[11px] font-bold transition-all ${
-                  currentLang === 'en' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => onLanguageChange('hi')}
-                className={`rounded-full px-2.5 py-1 text-[11px] font-bold transition-all ${
-                  currentLang === 'hi' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                हिं
-              </button>
-              <button
-                onClick={() => onLanguageChange('mr')}
-                className={`rounded-full px-2.5 py-1 text-[11px] font-bold transition-all ${
-                  currentLang === 'mr' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                मरा
-              </button>
+          {/* 3. Right Action Elements: Language Selector & User Profile / Access */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+            {/* Language Switcher Capsule */}
+            <div className="nav-lang-switcher">
+              {(['en', 'hi', 'mr'] as const).map(lang => {
+                const isSelected = currentLang === lang;
+                const label = lang === 'en' ? 'EN' : lang === 'hi' ? 'हिं' : 'मरा';
+                return (
+                  <button
+                    key={lang}
+                    type="button"
+                    onClick={() => onLanguageChange(lang)}
+                    className={`nav-lang-btn ${isSelected ? 'active' : ''}`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* User Profile Pill or Status Pill */}
+            {/* User Profile Pill or Access Portal Button */}
             {user ? (
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 rounded-full border border-slate-200/80 bg-slate-50/80 py-1 pl-1 pr-3">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-sky-600 to-cyan-500 text-xs font-bold text-white shadow-xs">
-                    {user.fullName ? user.fullName[0]?.toUpperCase() : <UserIcon className="h-3.5 w-3.5" />}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  borderRadius: '999px',
+                  border: '1px solid rgba(203, 213, 225, 0.8)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  padding: '3px 10px 3px 4px',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                }}>
+                  <div style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #0284C7 0%, #00F2FE 100%)',
+                    fontSize: '0.75rem',
+                    fontWeight: 800,
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {user.fullName ? user.fullName[0]?.toUpperCase() : <UserIcon size={14} />}
                   </div>
-                  <div className="hidden sm:block text-left leading-tight">
-                    <div className="text-xs font-bold text-slate-800">
+                  <div className="hide-on-mobile" style={{ textAlign: 'left', lineHeight: 1.15 }}>
+                    <div style={{ fontSize: '0.74rem', fontWeight: 800, color: '#090D16' }}>
                       {user.fullName || formatDisplayPhone(user.mobileNumber)}
                     </div>
-                    <div className="text-[10px] font-medium text-emerald-600">
+                    <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#059669' }}>
                       Verified Patient
                     </div>
                   </div>
                 </div>
 
                 <button
+                  type="button"
                   onClick={onLogout}
                   title="Sign out"
-                  className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-800"
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    border: '1px solid rgba(203, 213, 225, 0.8)',
+                    backgroundColor: '#FFFFFF',
+                    color: '#64748B',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.backgroundColor = '#FEE2E2';
+                    e.currentTarget.style.color = '#EF4444';
+                    e.currentTarget.style.borderColor = '#FCA5A5';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.backgroundColor = '#FFFFFF';
+                    e.currentTarget.style.color = '#64748B';
+                    e.currentTarget.style.borderColor = 'rgba(203, 213, 225, 0.8)';
+                  }}
                 >
-                  <LogOut className="h-3.5 w-3.5" />
+                  <LogOut size={14} />
                 </button>
               </div>
             ) : (
               <a
                 href="#login"
-                className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-1.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-slate-800 hover:shadow-md"
+                className="nav-access-portal-btn"
               >
-                <span>Access Portal</span>
-                <ArrowUpRight className="h-3.5 w-3.5 text-cyan-400" />
+                <span className="full-text">Access Portal</span>
+                <span className="short-text">Portal</span>
+                <ArrowUpRight size={13} color="#00F2FE" />
               </a>
             )}
           </div>
         </div>
       </header>
 
-      {/* Dynamic Mobile Bottom Navigation Bar (Visible on mobile when logged in) */}
+      {/* Dynamic Mobile Bottom Floating Capsule Dock (Visible on mobile when logged in) */}
       {user && (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-slate-200/80 bg-white/95 px-6 py-2.5 backdrop-blur-lg md:hidden justify-around">
+        <nav className="hide-on-desktop mobile-bottom-dock">
           <button
+            type="button"
             onClick={() => onTabChange('chat')}
-            className={`flex flex-col items-center gap-1 text-[11px] font-bold ${
-              activeTab === 'chat' ? 'text-sky-600' : 'text-slate-500'
-            }`}
+            className={`mobile-bottom-tab-btn ${activeTab === 'chat' ? 'active' : ''}`}
           >
-            <MessageSquare className="h-5 w-5" />
+            <MessageSquare size={16} color={activeTab === 'chat' ? '#38BDF8' : '#64748B'} />
             <span>Consultations</span>
           </button>
 
           <button
+            type="button"
             onClick={() => onTabChange('records')}
-            className={`flex flex-col items-center gap-1 text-[11px] font-bold ${
-              activeTab === 'records' ? 'text-sky-600' : 'text-slate-500'
-            }`}
+            className={`mobile-bottom-tab-btn ${activeTab === 'records' ? 'active' : ''}`}
           >
-            <FolderOpen className="h-5 w-5" />
+            <FolderOpen size={16} color={activeTab === 'records' ? '#38BDF8' : '#64748B'} />
             <span>Health Records</span>
           </button>
         </nav>

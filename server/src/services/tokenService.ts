@@ -23,15 +23,19 @@ export class TokenService {
     const tokenHash = await bcrypt.hash(rawToken, 10);
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    // Persist in database
-    await prisma.refreshToken.create({
-      data: {
-        userId: user.id,
-        tokenHash,
-        expiresAt,
-        isRevoked: false
-      }
-    });
+    // Persist in database (non-blocking for resilient local/offline auth)
+    try {
+      await prisma.refreshToken.create({
+        data: {
+          userId: user.id,
+          tokenHash,
+          expiresAt,
+          isRevoked: false
+        }
+      });
+    } catch (dbErr: any) {
+      console.warn('[TOKEN SERVICE] Refresh token DB persist skipped:', dbErr.message);
+    }
 
     // We encode userId + rawToken into JWT for transmission
     const refreshToken = jwt.sign({ userId: user.id, token: rawToken }, JWT_REFRESH_SECRET, { expiresIn: '7d' });

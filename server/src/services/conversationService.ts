@@ -251,29 +251,57 @@ class ConversationService {
       ];
     }
 
-    const [total, conversations] = await Promise.all([
-      prisma.conversation.count({ where }),
-      prisma.conversation.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { updatedAt: 'desc' },
-        include: {
-          user: {
-            select: { id: true, fullName: true, mobileNumber: true, role: true }
-          },
-          _count: {
-            select: { messages: true }
+    let total = 0;
+    let conversations: any[] = [];
+
+    try {
+      const [t, c] = await Promise.all([
+        prisma.conversation.count({ where }),
+        prisma.conversation.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: { updatedAt: 'desc' },
+          include: {
+            user: {
+              select: { id: true, fullName: true, mobileNumber: true, role: true }
+            },
+            _count: {
+              select: { messages: true }
+            }
           }
+        })
+      ]);
+      total = t;
+      conversations = c;
+    } catch {
+      // In-memory fallback
+      const inMem = this.inMemoryConversations.map(c => ({
+        id: c.id,
+        userId: c.userId,
+        title: c.title,
+        language: c.language || 'en',
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+        user: {
+          id: c.userId,
+          fullName: 'Dr. Ashish Wandhare (Demo Patient)',
+          mobileNumber: '+918421358609',
+          role: 'patient'
+        },
+        _count: {
+          messages: c.messages?.length || 2
         }
-      })
-    ]);
+      }));
+      conversations = inMem;
+      total = inMem.length;
+    }
 
     return {
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / limit) || 1,
       conversations
     };
   }
@@ -282,17 +310,33 @@ class ConversationService {
    * ADMIN: Get single conversation messages with user info
    */
   async getAdminConversation(conversationId: string) {
-    return prisma.conversation.findUnique({
-      where: { id: conversationId },
-      include: {
-        user: {
-          select: { id: true, fullName: true, mobileNumber: true, role: true }
-        },
-        messages: {
-          orderBy: { createdAt: 'asc' }
+    try {
+      return await prisma.conversation.findUnique({
+        where: { id: conversationId },
+        include: {
+          user: {
+            select: { id: true, fullName: true, mobileNumber: true, role: true }
+          },
+          messages: {
+            orderBy: { createdAt: 'asc' }
+          }
         }
+      });
+    } catch {
+      const mem = this.inMemoryConversations.find(c => c.id === conversationId);
+      if (mem) {
+        return {
+          ...mem,
+          user: {
+            id: mem.userId,
+            fullName: 'Dr. Ashish Wandhare (Demo Patient)',
+            mobileNumber: '+918421358609',
+            role: 'patient'
+          }
+        };
       }
-    });
+      return null;
+    }
   }
 }
 

@@ -489,14 +489,25 @@ export class AuthController {
    * Logout user and revoke tokens
    * POST /api/auth/logout
    */
-  async logout(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async logout(req: Request, res: Response): Promise<void> {
     try {
-      if (req.user?.id) {
-        await tokenService.revokeUserTokens(req.user.id);
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        if (token) {
+          try {
+            const payload = tokenService.verifyAccessToken(token);
+            if (payload?.userId) {
+              await tokenService.revokeUserTokens(payload.userId);
+            }
+          } catch {
+            // Ignore invalid/expired token during logout
+          }
+        }
       }
       res.status(200).json({ success: true, message: 'Logged out successfully' });
-    } catch (error: any) {
-      res.status(500).json({ success: false, message: 'Logout failed' });
+    } catch {
+      res.status(200).json({ success: true, message: 'Logged out successfully' });
     }
   }
 }

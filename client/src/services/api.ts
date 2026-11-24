@@ -90,11 +90,19 @@ class ApiService {
   }
 
   async getMe(): Promise<{ success: boolean; user: User }> {
-    const res = await fetch(`${API_BASE_URL}/auth/me`, {
-      method: 'GET',
-      headers: this.getHeaders(),
-    });
-    return res.json();
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/me`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+      if (res.status === 401) {
+        localStorage.removeItem('electropathy_token');
+        localStorage.removeItem('electropathy_refresh_token');
+      }
+      return res.json();
+    } catch {
+      return { success: false, user: null as any };
+    }
   }
 
   async logout(): Promise<void> {

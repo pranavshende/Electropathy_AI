@@ -282,19 +282,29 @@ I am your clinical assistant grounded in **PostgreSQL live patient records** and
           </div>
         </div>
 
-        {/* Knowledge Base Browser Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* Knowledge Base Browser Toggle (Floating Capsule) */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          backgroundColor: 'rgba(241, 245, 249, 0.8)',
+          padding: '4px',
+          borderRadius: '999px',
+          border: '1px solid rgba(203, 213, 225, 0.6)'
+        }}>
           <button
             onClick={() => setActiveTab('chat')}
+            className="medical-pill-btn"
             style={{
-              padding: '6px 14px',
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 600,
+              padding: '6px 16px',
+              borderRadius: '999px',
+              fontSize: 12,
+              fontWeight: 800,
               cursor: 'pointer',
               border: 'none',
-              backgroundColor: activeTab === 'chat' ? '#0F4C81' : '#F1F5F9',
+              backgroundColor: activeTab === 'chat' ? '#090D16' : 'transparent',
               color: activeTab === 'chat' ? '#FFFFFF' : '#475569',
+              boxShadow: activeTab === 'chat' ? '0 2px 6px rgba(9, 13, 22, 0.2)' : 'none',
               transition: 'all 0.2s ease'
             }}
           >
@@ -305,22 +315,24 @@ I am your clinical assistant grounded in **PostgreSQL live patient records** and
               setActiveTab('knowledge');
               if (knowledgeList.length === 0) loadKnowledgeChunks();
             }}
+            className="medical-pill-btn"
             style={{
-              padding: '6px 14px',
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 600,
+              padding: '6px 16px',
+              borderRadius: '999px',
+              fontSize: 12,
+              fontWeight: 800,
               cursor: 'pointer',
               border: 'none',
-              backgroundColor: activeTab === 'knowledge' ? '#0F4C81' : '#F1F5F9',
+              backgroundColor: activeTab === 'knowledge' ? '#090D16' : 'transparent',
               color: activeTab === 'knowledge' ? '#FFFFFF' : '#475569',
               display: 'flex',
               alignItems: 'center',
               gap: 6,
+              boxShadow: activeTab === 'knowledge' ? '0 2px 6px rgba(9, 13, 22, 0.2)' : 'none',
               transition: 'all 0.2s ease'
             }}
           >
-            <BookOpen size={15} />
+            <BookOpen size={14} color={activeTab === 'knowledge' ? '#38BDF8' : '#64748B'} />
             Doctor's Dataset ({knowledgeList.length || '8'})
           </button>
         </div>
@@ -544,16 +556,19 @@ I am your clinical assistant grounded in **PostgreSQL live patient records** and
         /* Main Chat & Patient Context View */
         <div style={{ display: 'flex', flex: 1, gap: 12, overflow: 'hidden' }}>
           {/* Left/Main Column: Chat Interface */}
-          <div style={{ 
-            flex: 3, 
-            display: 'flex', 
-            flexDirection: 'column', 
-            backgroundColor: '#FFFFFF', 
-            borderRadius: 12, 
-            border: '1px solid #E2E8F0',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-            overflow: 'hidden'
-          }}>
+          <div 
+            className="medical-glass-card"
+            style={{ 
+              flex: 3, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              backgroundColor: '#FFFFFF', 
+              borderRadius: '20px', 
+              border: '1px solid rgba(186, 230, 253, 0.6)',
+              boxShadow: '0 4px 20px rgba(15, 23, 42, 0.04)',
+              overflow: 'hidden'
+            }}
+          >
             {/* Patient Context Bar (Top of Chat) */}
             <div style={{ 
               padding: '10px 16px', 

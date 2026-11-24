@@ -306,426 +306,94 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
   };
 
   return (
-    <div className="auth-split-wrapper">
-      {/* ======================================================== */}
-      {/* LEFT COLUMN: DYNAMIC HERO, FEATURES & TRUST              */}
-      {/* ======================================================== */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {portal === 'patient' ? (
-          <>
-            {/* Eyebrow Pill */}
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '4px 10px',
-              backgroundColor: '#E0F5F2',
-              borderRadius: '999px',
-              width: 'fit-content'
-            }}>
-              <span style={{ width: '12px', height: '3px', backgroundColor: '#00A896', borderRadius: '2px' }} />
-              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#028090', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                Personal Patient Health Portal
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* ======================================================== */}
+        {/* LEFT COLUMN: NEXT ERA ADVANCEMENTS & DARK FEATURE CARD   */}
+        {/* ======================================================== */}
+        <div className="lg:col-span-7 flex flex-col gap-6">
+          {/* Eyebrow Pill */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-50/80 px-3.5 py-1.5 text-xs font-bold text-sky-800 backdrop-blur-md w-fit">
+            <span className="flex h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
+            <span>AI-Driven Precision • Count Cesare Mattei System</span>
+          </div>
+
+          {/* Editorial Display Headline */}
+          <div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.08]">
+              Next Era Of Medical <br />
+              <span className="bg-gradient-to-r from-sky-600 via-cyan-500 to-teal-500 bg-clip-text text-transparent">
+                Advancements
               </span>
-            </div>
+            </h1>
+            <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed max-w-xl">
+              AI-driven diagnostics and personalized plant electropathy converge. Explore a future where cellular polarity balancing, organ-specific botanicals, and real-time clinical safety gates take center stage.
+            </p>
+          </div>
 
-            {/* Heading & Subtitle */}
-            <div>
-              <h1 style={{
-                fontSize: '1.95rem',
-                lineHeight: 1.15,
-                fontWeight: 800,
-                color: '#0F172A',
-                letterSpacing: '-0.025em',
-                marginBottom: '6px'
-              }}>
-                Your Personal Health & <br />
-                <span style={{
-                  background: 'linear-gradient(135deg, #00A896 0%, #0F4C81 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}>
-                  Electropathy Care
-                </span>
-              </h1>
-              <p style={{ fontSize: '0.85rem', color: '#64748B', lineHeight: 1.45, maxWidth: '480px' }}>
-                A confidential, private health portal to consult with our AI assistant, track symptom progressions, and review your doctor's prescriptions anytime in complete privacy.
+          {/* Social Proof & Live Telemetry Pill */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center -space-x-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-sky-500 to-cyan-400 text-white font-bold text-xs ring-2 ring-white">AW</div>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-500 to-teal-400 text-white font-bold text-xs ring-2 ring-white">CM</div>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 text-white font-bold text-xs ring-2 ring-white">EP</div>
+            </div>
+            <div className="rounded-full border border-slate-200/80 bg-white/80 px-3.5 py-1 text-xs font-bold text-slate-700 shadow-xs backdrop-blur-sm">
+              <span className="text-sky-600 font-extrabold">1.5K+</span> Verified Clinical Consultations
+            </div>
+          </div>
+
+          {/* The High-Contrast Precision Dark Feature Card (Inspired by Image 1) */}
+          <div className="rounded-3xl border border-white/10 bg-slate-950 p-6 sm:p-8 text-white shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-sky-500/10 blur-3xl pointer-events-none" />
+            <div className="relative z-10">
+              <div className="text-[11px] font-bold tracking-widest uppercase text-cyan-400 mb-2">
+                Precision Tailoring For Optimal Healing
+              </div>
+              <h3 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white mb-3 leading-snug">
+                ARE YOU READY TO REDEFINE YOUR HEALTH JOURNEY?
+              </h3>
+              <p className="text-sm text-slate-300 leading-relaxed max-w-lg mb-6">
+                Experience the fusion of 38 Core Remedy-States, 60 SPG Botanical Organ Actions, and dynamic 4-bottle protocol tailoring as we chart a course into the future of natural medicine.
               </p>
-            </div>
 
-            {/* 4 Feature Items (2x2 Grid) */}
-            <div className="auth-features-grid">
-              <div className="auth-hero-feature" style={{ padding: '8px 10px', gap: '8px' }}>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  backgroundColor: '#E0F5F2',
-                  color: '#00A896',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <Brain size={16} />
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.8rem', color: '#0F172A', lineHeight: 1.2 }}>
-                    AI Consultation & Chat
-                  </div>
-                  <div style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.3, marginTop: '2px' }}>
-                    Discuss symptoms & follow up anytime
-                  </div>
-                </div>
-              </div>
+              {/* Interactive Pill Badges with ↗ (Direct inspiration from Image 1) */}
+              <div className="flex flex-wrap gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setPortal('admin')}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold text-slate-100 backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/30 cursor-pointer"
+                >
+                  <span>Dual-Table Pharmacopoeia (PDF Verified)</span>
+                  <span className="text-cyan-400">↗</span>
+                </button>
 
-              <div className="auth-hero-feature" style={{ padding: '8px 10px', gap: '8px' }}>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  backgroundColor: '#EBF3FA',
-                  color: '#0F4C81',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <ClipboardList size={16} />
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.8rem', color: '#0F172A', lineHeight: 1.2 }}>
-                    My Health Records
-                  </div>
-                  <div style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.3, marginTop: '2px' }}>
-                    Access your personal intake & charts
-                  </div>
-                </div>
-              </div>
+                <button
+                  type="button"
+                  onClick={() => setPortal('admin')}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold text-slate-100 backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/30 cursor-pointer"
+                >
+                  <span>4-Bottle Mattei Optimizer</span>
+                  <span className="text-cyan-400">↗</span>
+                </button>
 
-              <div className="auth-hero-feature" style={{ padding: '8px 10px', gap: '8px' }}>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  backgroundColor: '#FEF3C7',
-                  color: '#D97706',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <FolderLock size={16} />
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.8rem', color: '#0F172A', lineHeight: 1.2 }}>
-                    100% Private Isolation
-                  </div>
-                  <div style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.3, marginTop: '2px' }}>
-                    Encrypted & restricted to your mobile
-                  </div>
-                </div>
-              </div>
-
-              <div className="auth-hero-feature" style={{ padding: '8px 10px', gap: '8px' }}>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  backgroundColor: '#F3E8FF',
-                  color: '#7C3AED',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <ShieldCheck size={16} />
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.8rem', color: '#0F172A', lineHeight: 1.2 }}>
-                    Natural Electropathy
-                  </div>
-                  <div style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.3, marginTop: '2px' }}>
-                    Safe, plant-based medicinal remedies
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => switchMode('password_login')}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold text-slate-100 backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/30 cursor-pointer"
+                >
+                  <span>Clinical Safety Gate (7 Red Flags)</span>
+                  <span className="text-cyan-400">↗</span>
+                </button>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Bottom Trust Badges (Single Row) */}
-            <div className="auth-trust-badges">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '6px',
-                  backgroundColor: '#F1F5F9',
-                  color: '#0F4C81',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <Phone size={14} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.65rem', color: '#64748B', textTransform: 'uppercase' }}>Confidential</div>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0F172A', lineHeight: 1.1 }}>Phone Verified</div>
-                  <div style={{ fontSize: '0.65rem', color: '#94A3B8' }}>Single Identity</div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '6px',
-                  backgroundColor: '#F1F5F9',
-                  color: '#00A896',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <BookOpen size={14} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.65rem', color: '#64748B', textTransform: 'uppercase' }}>Evidence-Based</div>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0F172A', lineHeight: 1.1 }}>Electropathy</div>
-                  <div style={{ fontSize: '0.65rem', color: '#94A3B8' }}>Verified Herbal Care</div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '6px',
-                  backgroundColor: '#F1F5F9',
-                  color: '#10B981',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <ShieldCheck size={14} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.65rem', color: '#64748B', textTransform: 'uppercase' }}>Protected</div>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0F172A', lineHeight: 1.1 }}>Your Data</div>
-                  <div style={{ fontSize: '0.65rem', color: '#94A3B8' }}>Strictly Isolated</div>
-                </div>
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Eyebrow Pill - Admin */}
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '4px 10px',
-              backgroundColor: '#EBF3FA',
-              borderRadius: '999px',
-              width: 'fit-content'
-            }}>
-              <span style={{ width: '12px', height: '3px', backgroundColor: '#0F4C81', borderRadius: '2px' }} />
-              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#0F4C81', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                Clinical Administration & Governance
-              </span>
-            </div>
-
-            {/* Heading & Subtitle - Admin */}
-            <div>
-              <h1 style={{
-                fontSize: '1.95rem',
-                lineHeight: 1.15,
-                fontWeight: 800,
-                color: '#0F172A',
-                letterSpacing: '-0.025em',
-                marginBottom: '6px'
-              }}>
-                Centralized Practice & <br />
-                <span style={{
-                  background: 'linear-gradient(135deg, #0F4C81 0%, #0284C7 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}>
-                  Governance Console
-                </span>
-              </h1>
-              <p style={{ fontSize: '0.85rem', color: '#64748B', lineHeight: 1.45, maxWidth: '480px' }}>
-                Supervise all registered patients, conduct clinical intakes, oversee AI diagnostic suggestions, and monitor system security telemetry in real-time.
-              </p>
-            </div>
-
-            {/* 4 Feature Items (2x2 Grid) - Admin */}
-            <div className="auth-features-grid">
-              <div className="auth-hero-feature" style={{ padding: '8px 10px', gap: '8px' }}>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  backgroundColor: '#EBF3FA',
-                  color: '#0F4C81',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <UsersIcon size={16} />
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.8rem', color: '#0F172A', lineHeight: 1.2 }}>
-                    Patient Directory
-                  </div>
-                  <div style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.3, marginTop: '2px' }}>
-                    Oversee all registered patient accounts
-                  </div>
-                </div>
-              </div>
-
-              <div className="auth-hero-feature" style={{ padding: '8px 10px', gap: '8px' }}>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  backgroundColor: '#E0F5F2',
-                  color: '#00A896',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <ClipboardList size={16} />
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.8rem', color: '#0F172A', lineHeight: 1.2 }}>
-                    + New Patient Intake
-                  </div>
-                  <div style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.3, marginTop: '2px' }}>
-                    Conduct multi-step diagnostic forms
-                  </div>
-                </div>
-              </div>
-
-              <div className="auth-hero-feature" style={{ padding: '8px 10px', gap: '8px' }}>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  backgroundColor: '#F3E8FF',
-                  color: '#7C3AED',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <BarChart3 size={16} />
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.8rem', color: '#0F172A', lineHeight: 1.2 }}>
-                    Activity Telemetry
-                  </div>
-                  <div style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.3, marginTop: '2px' }}>
-                    Live audit trails & security metrics
-                  </div>
-                </div>
-              </div>
-
-              <div className="auth-hero-feature" style={{ padding: '8px 10px', gap: '8px' }}>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  backgroundColor: '#FEF3C7',
-                  color: '#D97706',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <ShieldCheck size={16} />
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.8rem', color: '#0F172A', lineHeight: 1.2 }}>
-                    Role-Based Access
-                  </div>
-                  <div style={{ fontSize: '0.7rem', color: '#64748B', lineHeight: 1.3, marginTop: '2px' }}>
-                    Strict isolation & authorization
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Trust Badges (Single Row) - Admin */}
-            <div className="auth-trust-badges">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '6px',
-                  backgroundColor: '#F1F5F9',
-                  color: '#0F4C81',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <UsersIcon size={14} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.65rem', color: '#64748B', textTransform: 'uppercase' }}>Roster Oversight</div>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0F172A', lineHeight: 1.1 }}>All Patients</div>
-                  <div style={{ fontSize: '0.65rem', color: '#94A3B8' }}>Full Visibility</div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '6px',
-                  backgroundColor: '#F1F5F9',
-                  color: '#00A896',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <ClipboardList size={14} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.65rem', color: '#64748B', textTransform: 'uppercase' }}>Clinical Intake</div>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0F172A', lineHeight: 1.1 }}>Diagnostic Tool</div>
-                  <div style={{ fontSize: '0.65rem', color: '#94A3B8' }}>Structured Forms</div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '6px',
-                  backgroundColor: '#F1F5F9',
-                  color: '#10B981',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <ShieldCheck size={14} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.65rem', color: '#64748B', textTransform: 'uppercase' }}>Full Audit</div>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0F172A', lineHeight: 1.1 }}>Event Logs</div>
-                  <div style={{ fontSize: '0.65rem', color: '#94A3B8' }}>Security Tracing</div>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
+            {/* ======================================================== */}
+      {/* RIGHT COLUMN: ELEVATED FROSTED GLASS AUTH CARD            */}
       {/* ======================================================== */}
-      {/* RIGHT COLUMN: ELEVATED AUTH CARD (COMPACT VIEWPORT FIT)  */}
-      {/* ======================================================== */}
-      <div className="auth-card-elevated" style={{ padding: '20px 22px' }}>
+      <div className="lg:col-span-5 rounded-3xl border border-white/80 bg-white/85 p-6 sm:p-8 shadow-xl shadow-sky-500/5 backdrop-blur-xl ring-1 ring-slate-900/5">
         
         {/* ======================================================== */}
         {/* PERSONA SWITCHER: PATIENT LOGIN vs ADMIN PORTAL          */}
@@ -1735,6 +1403,74 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onSuccess, onAdminSucces
           <span>End-to-End Encrypted Session • ElectropathyAI Strict Persona Isolation</span>
         </div>
       </div>
-    </div>
+      </div>
+
+      {/* ======================================================== */}
+      {/* LOWER SECTION: 3 FOUNDATION PATHWAY CARDS                */}
+      {/* ======================================================== */}
+      <div className="mt-16 pt-12 border-t border-slate-200/80">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-widest text-sky-600 mb-1 flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Count Cesare Mattei Principles & Modern AI</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+              YOUR PATH TO BALANCED POLARITY & CELLULAR HEALING
+            </h2>
+          </div>
+          <p className="text-sm text-slate-600 max-w-md">
+            A comprehensive clinical knowledge base and state-organ convergence engine designed to restore physiological equilibrium naturally.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Card 1 */}
+          <div className="rounded-3xl border border-white/80 bg-white/80 p-6 shadow-sm hover:shadow-md transition-all backdrop-blur-md ring-1 ring-slate-900/5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 mb-4 ring-1 ring-sky-500/20">
+              <Brain className="h-6 w-6" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900 mb-2">Dual-Table Pharmacopoeia</h3>
+            <p className="text-xs text-slate-600 leading-relaxed mb-4">
+              Integrates 38 Core Remedy-States with 60 SPG Botanical Organ Actions without forced table conflation.
+            </p>
+            <div className="text-[11px] font-bold text-sky-600 flex items-center gap-1">
+              <span>98 Distinct Documented Formulations</span>
+              <span>→</span>
+            </div>
+          </div>
+
+          {/* Card 2 */}
+          <div className="rounded-3xl border border-white/80 bg-white/80 p-6 shadow-sm hover:shadow-md transition-all backdrop-blur-md ring-1 ring-slate-900/5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-600 mb-4 ring-1 ring-cyan-500/20">
+              <Activity className="h-6 w-6" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900 mb-2">State–Organ Convergence</h3>
+            <p className="text-xs text-slate-600 leading-relaxed mb-4">
+              Cross-references symptoms across 8 body systems, 12 pathological mechanisms, and cellular tissue affinities.
+            </p>
+            <div className="text-[11px] font-bold text-cyan-600 flex items-center gap-1">
+              <span>Category A, B, C Evidence Tiers</span>
+              <span>→</span>
+            </div>
+          </div>
+
+          {/* Card 3 */}
+          <div className="rounded-3xl border border-white/80 bg-white/80 p-6 shadow-sm hover:shadow-md transition-all backdrop-blur-md ring-1 ring-slate-900/5">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-50 text-teal-600 mb-4 ring-1 ring-teal-500/20">
+              <Sparkles className="h-6 w-6" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900 mb-2">4-Bottle Protocol Dynamics</h3>
+            <p className="text-xs text-slate-600 leading-relaxed mb-4">
+              Generates balanced Option A and Option B formulations with exact dilution dynamics and electric polarity matching.
+            </p>
+            <div className="text-[11px] font-bold text-teal-600 flex items-center gap-1">
+              <span>D1–D3 Acute & D6–D30 Recovery</span>
+              <span>→</span>
+            </div>
+          </div>
+        </div>
+      </div>
+</div>
   );
 };

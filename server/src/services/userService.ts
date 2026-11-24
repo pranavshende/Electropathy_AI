@@ -52,7 +52,7 @@ class UserService {
         mobileNumber: '+919999999999',
         fullName: 'Dr. Ashish Wandhare (Admin)',
         email: 'admin@electropathy.ai',
-        userType: 'doctor',
+        userType: 'practitioner',
         preferredLang: 'en',
         role: 'admin',
         isActive: true,

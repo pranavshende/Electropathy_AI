@@ -266,12 +266,12 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({
   }
 
   const steps = [
-    { num: 1, title: 'Demographics', icon: UserIcon },
-    { num: 2, title: 'Chief Complaints', icon: AlertCircle },
-    { num: 3, title: 'Present Illness', icon: Stethoscope },
-    { num: 4, title: 'Medical History', icon: HeartPulse },
-    { num: 5, title: 'Lifestyle & Vitals', icon: Activity },
-    { num: 6, title: 'Electropathy Assessment', icon: ClipboardList }
+    { num: 1, label: '01', title: 'Demographics', icon: UserIcon },
+    { num: 2, label: '02', title: 'Chief Complaints', icon: AlertCircle },
+    { num: 3, label: '03', title: 'Present Illness', icon: Stethoscope },
+    { num: 4, label: '04', title: 'Medical History', icon: HeartPulse },
+    { num: 5, label: '05', title: 'Lifestyle & Vitals', icon: Activity },
+    { num: 6, label: '06', title: 'Electropathy Assessment', icon: ClipboardList }
   ];
 
   const wizardTitle = title || (initialCase ? 'Edit Patient Clinical History' : 'Clinical Patient History Intake');
@@ -280,50 +280,71 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({
     : 'Standardized Electropathy Case Formulation & Diagnosis Support';
 
   return (
-    <div style={{
-      maxWidth: '860px',
-      margin: '16px auto',
-      backgroundColor: '#FFFFFF',
-      borderRadius: 'var(--radius-lg)',
-      boxShadow: 'var(--shadow-md)',
-      border: '1px solid #E2E8F0',
-      overflow: 'hidden'
-    }}>
-      {/* Wizard Header */}
+    <div 
+      className="medical-glass-card"
+      style={{
+        maxWidth: '920px',
+        margin: '20px auto',
+        backgroundColor: '#FFFFFF',
+        borderRadius: '24px',
+        boxShadow: '0 20px 45px -15px rgba(15, 23, 42, 0.1), 0 0 25px rgba(56, 189, 248, 0.08)',
+        border: '1px solid rgba(186, 230, 253, 0.6)',
+        overflow: 'hidden'
+      }}
+    >
+      {/* Wizard Header: Deep Obsidian Contrast Card */}
       <div style={{
-        padding: '16px 20px',
-        backgroundColor: '#0F4C81',
+        padding: '20px 24px',
+        backgroundColor: '#090D16',
         color: '#FFFFFF',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '10px'
+        gap: '12px',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
       }}>
         <div>
-          <h2 style={{ color: '#FFFFFF', fontSize: '1.2rem', marginBottom: '2px' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            color: '#38BDF8',
+            fontSize: '0.68rem',
+            fontWeight: 800,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            marginBottom: '4px'
+          }}>
+            <Activity size={12} color="#00F2FE" />
+            <span>PRECISION TAILORING FOR OPTIMAL HEALING</span>
+          </div>
+          <h2 style={{ color: '#FFFFFF', fontSize: '1.3rem', fontWeight: 900, margin: 0, letterSpacing: '-0.02em' }}>
             {wizardTitle}
           </h2>
-          <p style={{ color: '#93C5FD', fontSize: '0.85rem' }}>
+          <p style={{ color: '#94A3B8', fontSize: '0.8rem', marginTop: '3px' }}>
             {wizardSubtitle}
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.15)',
-            padding: '6px 14px',
-            borderRadius: '20px',
-            fontSize: '0.85rem',
-            fontWeight: 700
+            backgroundColor: 'rgba(56, 189, 248, 0.12)',
+            border: '1px solid rgba(56, 189, 248, 0.3)',
+            color: '#38BDF8',
+            padding: '5px 14px',
+            borderRadius: '999px',
+            fontSize: '0.76rem',
+            fontWeight: 800,
+            letterSpacing: '0.04em'
           }}>
-            Step {currentStep} of 6
+            STEP {String(currentStep).padStart(2, '0')} / 06
           </div>
           {onCancel && (
             <button
               onClick={onCancel}
               style={{
-                background: 'rgba(255, 255, 255, 0.15)',
-                border: 'none',
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
                 color: '#FFFFFF',
                 width: '32px',
                 height: '32px',
@@ -337,7 +358,7 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({
               title="Close"
               aria-label="Close"
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           )}
         </div>
@@ -348,8 +369,8 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({
         className="hide-scrollbar"
         style={{
           display: 'flex',
-          borderBottom: '1px solid #E2E8F0',
-          backgroundColor: '#F8FAFC',
+          borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
+          backgroundColor: 'rgba(248, 250, 252, 0.7)',
           overflowX: 'auto',
           WebkitOverflowScrolling: 'touch'
         }}
@@ -364,22 +385,31 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({
               onClick={() => setCurrentStep(s.num)}
               style={{
                 flex: 1,
-                minWidth: '130px',
-                padding: '14px 10px',
+                minWidth: '135px',
+                padding: '12px 10px',
                 border: 'none',
                 background: isActive ? '#FFFFFF' : 'transparent',
-                borderBottom: isActive ? '3px solid #00A896' : '3px solid transparent',
+                borderBottom: isActive ? '3px solid #0284C7' : '3px solid transparent',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                color: isActive ? '#0F4C81' : isPassed ? '#10B981' : '#64748B',
-                fontWeight: isActive ? 700 : 500,
-                fontSize: '0.825rem'
+                color: isActive ? '#090D16' : isPassed ? '#059669' : '#64748B',
+                fontWeight: isActive ? 800 : 600,
+                fontSize: '0.8rem',
+                transition: 'all 0.15s ease'
               }}
             >
-              <Icon size={16} />
+              <span style={{
+                fontSize: '0.7rem',
+                fontWeight: 900,
+                opacity: isActive ? 1 : 0.6,
+                color: isActive ? '#0284C7' : 'inherit'
+              }}>
+                {s.label}
+              </span>
+              <Icon size={15} color={isActive ? '#0284C7' : isPassed ? '#059669' : '#94A3B8'} />
               <span>{s.title}</span>
             </button>
           );
@@ -706,21 +736,31 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({
 
       {/* Footer Navigation Buttons */}
       <div style={{
-        padding: '14px 18px',
-        backgroundColor: '#F8FAFC',
-        borderTop: '1px solid #E2E8F0',
+        padding: '16px 24px',
+        backgroundColor: 'rgba(248, 250, 252, 0.8)',
+        borderTop: '1px solid rgba(226, 232, 240, 0.8)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         flexWrap: 'wrap',
-        gap: '10px'
+        gap: '12px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {onCancel && (
             <button
               type="button"
               onClick={onCancel}
-              className="btn btn-secondary"
+              className="medical-pill-btn"
+              style={{
+                padding: '8px 16px',
+                borderRadius: '999px',
+                border: '1px solid #CBD5E1',
+                backgroundColor: '#FFFFFF',
+                color: '#64748B',
+                fontWeight: 700,
+                fontSize: '0.8rem',
+                cursor: 'pointer'
+              }}
             >
               Cancel
             </button>
@@ -728,11 +768,25 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({
           <button
             type="button"
             onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
-            className="btn btn-secondary"
+            className="medical-pill-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 16px',
+              borderRadius: '999px',
+              border: '1px solid #CBD5E1',
+              backgroundColor: '#FFFFFF',
+              color: '#334155',
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              cursor: currentStep === 1 ? 'not-allowed' : 'pointer',
+              opacity: currentStep === 1 ? 0.5 : 1
+            }}
             disabled={currentStep === 1}
           >
-            <ArrowLeft size={16} />
-            Previous Step
+            <ArrowLeft size={14} />
+            <span>Previous Step</span>
           </button>
         </div>
 
@@ -746,22 +800,49 @@ export const PatientIntakeWizard: React.FC<PatientIntakeWizardProps> = ({
               }
               setCurrentStep(prev => prev + 1);
             }}
-            className="btn btn-primary"
+            className="medical-pill-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 22px',
+              borderRadius: '999px',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              backgroundColor: '#090D16',
+              color: '#FFFFFF',
+              fontWeight: 800,
+              fontSize: '0.84rem',
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(9, 13, 22, 0.25)'
+            }}
           >
             <span>Next: {steps[currentStep]?.title}</span>
-            <ArrowRight size={16} />
+            <ArrowRight size={15} color="#38BDF8" />
           </button>
         ) : (
           <button
             type="button"
             onClick={handleSubmit}
-            className="btn btn-accent"
+            className="medical-pill-cyan"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 24px',
+              fontSize: '0.86rem',
+              fontWeight: 800,
+              border: 'none',
+              cursor: submitting ? 'not-allowed' : 'pointer',
+              opacity: submitting ? 0.7 : 1
+            }}
             disabled={submitting}
           >
-            <Save size={18} />
-            {submitting 
-              ? (initialCase ? 'Updating Case Record...' : 'Saving Case Record...') 
-              : (submitButtonText || (initialCase ? 'Update Patient Case History' : 'Complete & Record Intake'))}
+            <Save size={16} />
+            <span>
+              {submitting 
+                ? (initialCase ? 'Updating Case Record...' : 'Saving Case Record...') 
+                : (submitButtonText || (initialCase ? 'Update Patient Case History ↗' : 'Complete & Record Intake ↗'))}
+            </span>
           </button>
         )}
       </div>

@@ -47,37 +47,50 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
   );
 
   return (
-    <div style={{ maxWidth: '1080px', margin: '16px auto', padding: '0 12px 60px' }}>
-      {/* Header & Search */}
+    <div style={{ maxWidth: '1180px', margin: '20px auto', padding: '0 16px 80px' }}>
+      {/* Editorial Header & Search */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '20px',
+        alignItems: 'flex-end',
+        marginBottom: '24px',
         flexWrap: 'wrap',
-        gap: '14px'
+        gap: '16px'
       }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-              {isPractitioner ? 'Recorded Patient Histories' : 'My Health Records'}
-            </h2>
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              backgroundColor: '#DEF7EC',
-              color: '#059669',
-              fontSize: '0.7rem',
-              fontWeight: 700,
-              padding: '2px 8px',
-              borderRadius: '999px'
-            }}>
-              <ShieldCheck size={11} />
-              <span>Isolated & Private</span>
-            </span>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '3px 12px',
+            backgroundColor: 'rgba(235, 248, 255, 0.9)',
+            border: '1px solid rgba(186, 230, 253, 0.8)',
+            borderRadius: '999px',
+            color: '#0284C7',
+            fontSize: '0.68rem',
+            fontWeight: 800,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            marginBottom: '8px'
+          }}>
+            <span>01</span>
+            <span>•</span>
+            <ShieldCheck size={12} />
+            <span>Isolated & Private Vault</span>
           </div>
-          <p style={{ color: '#64748B', fontSize: '0.82rem', marginTop: '4px' }}>
+
+          <h2 style={{
+            fontSize: '1.85rem',
+            fontWeight: 900,
+            color: '#090D16',
+            letterSpacing: '-0.03em',
+            margin: 0,
+            lineHeight: 1.15
+          }}>
+            {isPractitioner ? 'RECORDED PATIENT HISTORIES' : 'MY HEALTH RECORDS'}
+          </h2>
+
+          <p style={{ color: '#64748B', fontSize: '0.84rem', marginTop: '6px' }}>
             {isPractitioner 
               ? `${cases.length} Total Clinical Records Recorded Under Your Practice`
               : user 
@@ -86,14 +99,24 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', flex: '1 1 360px', justifyContent: 'flex-end' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', flex: '1 1 380px', justifyContent: 'flex-end' }}>
           <div style={{ position: 'relative', width: '280px', maxWidth: '100%', flex: '1 1 200px' }}>
-            <Search size={18} style={{ position: 'absolute', left: '12px', top: '12px', color: '#94A3B8' }} />
+            <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
             <input
               type="text"
-              className="input-field"
-              placeholder="Search complaint, date, details..."
-              style={{ paddingLeft: '38px', width: '100%' }}
+              placeholder="Search complaint, patient, date..."
+              style={{
+                width: '100%',
+                padding: '9px 14px 9px 38px',
+                borderRadius: '999px',
+                border: '1px solid rgba(203, 213, 225, 0.8)',
+                backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                backdropFilter: 'blur(10px)',
+                fontSize: '0.82rem',
+                outline: 'none',
+                color: '#0F172A',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+              }}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -104,20 +127,25 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
               setEditingCase(null);
               setShowWizardModal(true);
             }}
-            className="btn btn-primary"
+            className="medical-pill-btn"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '9px 16px',
-              fontSize: '0.85rem',
-              fontWeight: 700,
+              padding: '10px 18px',
+              fontSize: '0.82rem',
+              fontWeight: 800,
               whiteSpace: 'nowrap',
-              background: 'linear-gradient(135deg, #0F4C81 0%, #00A896 100%)'
+              backgroundColor: '#090D16',
+              color: '#FFFFFF',
+              borderRadius: '999px',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(9, 13, 22, 0.2)'
             }}
           >
-            <Plus size={16} />
-            <span>+ Add History</span>
+            <Plus size={15} color="#38BDF8" />
+            <span>Add Patient Record ↗</span>
           </button>
         </div>
       </div>
@@ -145,92 +173,109 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
           </p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {filteredCases.map((c) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {filteredCases.map((c, index) => (
             <div
               key={c.id}
               onClick={() => setSelectedCase(c)}
+              className="medical-glass-card"
               style={{
-                backgroundColor: '#FFFFFF',
-                borderRadius: 'var(--radius-md)',
-                padding: '16px 18px',
-                border: '1px solid #E2E8F0',
+                borderRadius: '20px',
+                padding: '18px 22px',
+                border: '1px solid rgba(226, 232, 240, 0.8)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: '12px',
+                gap: '16px',
                 cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                boxShadow: 'var(--shadow-sm)',
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                boxShadow: '0 4px 16px rgba(15, 23, 42, 0.03)',
                 flexWrap: 'wrap'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#00A896';
-                e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+                e.currentTarget.style.borderColor = '#0284C7';
+                e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(2, 132, 199, 0.12)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#E2E8F0';
-                e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                e.currentTarget.style.borderColor = 'rgba(226, 232, 240, 0.8)';
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(15, 23, 42, 0.03)';
+                e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: '1 1 240px', minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: '1 1 260px', minWidth: 0 }}>
+                {/* Numbered Brand Badge */}
                 <div style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '10px',
-                  backgroundColor: '#EBF3FA',
-                  color: '#0F4C81',
+                  fontSize: '0.82rem',
+                  fontWeight: 900,
+                  color: '#94A3B8',
+                  letterSpacing: '0.05em',
+                  width: '24px'
+                }}>
+                  {String(index + 1).padStart(2, '0')}
+                </div>
+
+                <div style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '14px',
+                  background: 'linear-gradient(135deg, #090D16 0%, #0F172A 100%)',
+                  color: '#38BDF8',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontWeight: 700,
-                  fontSize: '1rem',
-                  flexShrink: 0
+                  fontWeight: 800,
+                  fontSize: '1.1rem',
+                  border: '1px solid rgba(56, 189, 248, 0.25)',
+                  flexShrink: 0,
+                  boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)'
                 }}>
                   {c.patientName[0]?.toUpperCase()}
                 </div>
 
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '1rem', fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '1.05rem', fontWeight: 800, color: '#090D16', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {c.patientName}
                     </span>
-                    <span style={{ fontSize: '0.78rem', color: '#64748B' }}>
-                      ({c.age} yrs, {c.gender})
+                    <span style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 600 }}>
+                      ({c.age} yrs • {c.gender})
                     </span>
                     <span style={{
                       fontSize: '0.68rem',
-                      fontWeight: 700,
-                      backgroundColor: '#E0F5F2',
-                      color: '#00A896',
-                      padding: '2px 7px',
-                      borderRadius: '12px',
-                      textTransform: 'uppercase'
+                      fontWeight: 800,
+                      backgroundColor: '#ECFDF5',
+                      border: '1px solid #A7F3D0',
+                      color: '#059669',
+                      padding: '2px 8px',
+                      borderRadius: '999px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.04em'
                     }}>
                       {c.status}
                     </span>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '12px', fontSize: '0.82rem', color: '#475569', flexWrap: 'wrap' }}>
-                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '300px' }}>
-                      <strong>Complaint:</strong> {c.chiefComplaints[0]?.complaint || 'N/A'}
+                  <div style={{ display: 'flex', gap: '14px', fontSize: '0.82rem', color: '#475569', flexWrap: 'wrap' }}>
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '320px' }}>
+                      <strong style={{ color: '#090D16' }}>Chief Complaint:</strong> {c.chiefComplaints[0]?.complaint || 'N/A'}
                     </span>
                     {c.city && (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#64748B', fontSize: '0.76rem' }}>
-                        <MapPin size={13} /> {c.city}
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#64748B', fontSize: '0.76rem' }}>
+                        <MapPin size={13} color="#0284C7" /> {c.city}
                       </span>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0, marginLeft: 'auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0, marginLeft: 'auto' }}>
                 <div style={{ textAlign: 'right', fontSize: '0.72rem', color: '#94A3B8' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
-                    <Calendar size={12} />
-                    {new Date(c.createdAt).toLocaleDateString()}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end', fontWeight: 600, color: '#64748B' }}>
+                    <Calendar size={12} color="#94A3B8" />
+                    {new Date(c.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
                   </div>
-                  <div>ID: {c.id.slice(0, 8)}</div>
+                  <div>ID: <code>{c.id.slice(0, 8)}</code></div>
                 </div>
 
                 <button
@@ -240,27 +285,28 @@ export const CaseHistoryList: React.FC<CaseHistoryListProps> = ({ user }) => {
                     setEditingCase(c);
                     setShowWizardModal(true);
                   }}
+                  className="medical-pill-btn"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '4px',
-                    backgroundColor: '#F0FDFA',
-                    border: '1px solid #5EEAD4',
-                    borderRadius: '6px',
-                    padding: '5px 10px',
+                    gap: '5px',
+                    backgroundColor: 'rgba(235, 248, 255, 0.9)',
+                    border: '1px solid #BAE6FD',
+                    borderRadius: '999px',
+                    padding: '6px 14px',
                     fontSize: '0.74rem',
-                    color: '#0F766E',
+                    color: '#0284C7',
                     cursor: 'pointer',
-                    fontWeight: 700,
+                    fontWeight: 800,
                     transition: 'all 0.15s ease'
                   }}
                   title="Edit Case History"
                 >
                   <Edit3 size={13} />
-                  <span>Edit</span>
+                  <span>Edit ↗</span>
                 </button>
 
-                <ChevronRight size={18} color="#CBD5E1" />
+                <ChevronRight size={18} color="#94A3B8" />
               </div>
             </div>
           ))}

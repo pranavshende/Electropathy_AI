@@ -479,15 +479,14 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
 
   return (
     <div 
-      className="chat-view-container"
+      className="chat-view-container medical-glass-card"
       style={{
         width: '100%',
         maxWidth: '1360px',
         margin: '0 auto',
-        backgroundColor: '#FFFFFF',
-        borderRadius: '16px',
-        border: '1px solid #E2E8F0',
-        boxShadow: '0 10px 30px -10px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(0,0,0,0.04)',
+        borderRadius: '24px',
+        border: '1px solid rgba(186, 230, 253, 0.5)',
+        boxShadow: '0 20px 45px -15px rgba(15, 23, 42, 0.08), 0 0 25px rgba(56, 189, 248, 0.1)',
         height: '100%',
         minHeight: 0,
         flex: 1,
@@ -500,43 +499,54 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
       {/* ======================================================== */}
       <div style={{
         width: isMobile ? '100%' : '330px',
-        borderRight: isMobile ? 'none' : '1px solid #E2E8F0',
-        backgroundColor: '#F8FAFC',
+        borderRight: isMobile ? 'none' : '1px solid rgba(226, 232, 240, 0.8)',
+        backgroundColor: 'rgba(248, 250, 252, 0.7)',
+        backdropFilter: 'blur(16px)',
         display: (!isMobile || mobileScreen === 'list') ? 'flex' : 'none',
         flexDirection: 'column',
         flexShrink: 0
       }}>
         {/* Sidebar Header */}
-        <div style={{ flexShrink: 0, padding: '14px 16px', borderBottom: '1px solid #E2E8F0' }}>
+        <div style={{ flexShrink: 0, padding: '16px', borderBottom: '1px solid rgba(226, 232, 240, 0.8)' }}>
           <button
             onClick={handleStartNewConsultation}
+            className="medical-pill-btn"
             style={{
               width: '100%',
-              padding: '10px 16px',
-              fontSize: '0.88rem',
-              fontWeight: 700,
+              padding: '11px 18px',
+              fontSize: '0.86rem',
+              fontWeight: 800,
               color: '#FFFFFF',
-              background: 'linear-gradient(135deg, #0F4C81 0%, #00A896 100%)',
-              border: 'none',
-              borderRadius: '10px',
+              backgroundColor: '#090D16',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '999px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              boxShadow: '0 3px 10px rgba(0, 168, 150, 0.25)',
-              transition: 'all 0.2s ease'
+              boxShadow: '0 4px 14px rgba(9, 13, 22, 0.25)',
+              transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+              letterSpacing: '0.02em'
             }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = '0.94')}
-            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = '#0F172A';
+              e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+              e.currentTarget.style.boxShadow = '0 6px 18px rgba(2, 132, 199, 0.25)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = '#090D16';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+              e.currentTarget.style.boxShadow = '0 4px 14px rgba(9, 13, 22, 0.25)';
+            }}
           >
-            <Plus size={18} />
-            <span>New Consultation</span>
+            <Plus size={16} color="#38BDF8" />
+            <span>New Consultation ↗</span>
           </button>
 
           {/* Search Bar */}
           <div style={{ position: 'relative', marginTop: '12px' }}>
-            <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+            <Search size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
             <input
               type="text"
               placeholder="Search past consultations..."
@@ -544,24 +554,31 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
               onChange={e => setSearchQuery(e.target.value)}
               style={{
                 width: '100%',
-                padding: '6px 10px 6px 30px',
+                padding: '8px 12px 8px 34px',
                 fontSize: '0.8rem',
-                borderRadius: '8px',
-                border: '1px solid #E2E8F0',
-                backgroundColor: '#FFFFFF',
+                borderRadius: '999px',
+                border: '1px solid rgba(203, 213, 225, 0.8)',
+                backgroundColor: 'rgba(255, 255, 255, 0.85)',
                 color: '#0F172A',
                 outline: 'none',
-                transition: 'border-color 0.15s ease'
+                transition: 'all 0.2s ease',
+                backdropFilter: 'blur(8px)'
               }}
-              onFocus={e => (e.target.style.borderColor = '#00A896')}
-              onBlur={e => (e.target.style.borderColor = '#E2E8F0')}
+              onFocus={e => {
+                e.target.style.borderColor = '#0284C7';
+                e.target.style.boxShadow = '0 0 0 3px rgba(56, 189, 248, 0.15)';
+              }}
+              onBlur={e => {
+                e.target.style.borderColor = 'rgba(203, 213, 225, 0.8)';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
 
           {/* Directory Count Tag */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', fontSize: '0.72rem', color: '#64748B' }}>
-            <span style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Consultation History</span>
-            <span style={{ backgroundColor: '#E2E8F0', color: '#334155', padding: '1px 7px', borderRadius: '999px', fontWeight: 700 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', fontSize: '0.7rem', color: '#64748B' }}>
+            <span style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Consultation History</span>
+            <span style={{ backgroundColor: 'rgba(226, 232, 240, 0.7)', color: '#334155', padding: '1px 8px', borderRadius: '999px', fontWeight: 700 }}>
               {conversations.length}
             </span>
           </div>
@@ -596,16 +613,17 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
                     onClick={() => selectConversation(c.id)}
                     className="consultation-card"
                     style={{
-                      padding: '10px 12px',
-                      borderRadius: '10px',
-                      backgroundColor: isActive ? '#EBF3FA' : '#FFFFFF',
-                      border: isActive ? '1px solid #BAE6FD' : '1px solid #E2E8F0',
-                      borderLeft: isActive ? '3.5px solid #0284C7' : '1px solid #E2E8F0',
+                      padding: '12px 14px',
+                      borderRadius: '14px',
+                      backgroundColor: isActive ? 'rgba(235, 248, 255, 0.95)' : 'rgba(255, 255, 255, 0.75)',
+                      border: isActive ? '1.5px solid #0284C7' : '1px solid rgba(226, 232, 240, 0.8)',
+                      boxShadow: isActive ? '0 4px 12px rgba(2, 132, 199, 0.12)' : '0 1px 3px rgba(0,0,0,0.02)',
                       cursor: 'pointer',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '4px',
-                      position: 'relative'
+                      gap: '5px',
+                      position: 'relative',
+                      transition: 'all 0.18s ease'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
@@ -732,31 +750,33 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
         {/* Chat Header Bar */}
         <div style={{
           flexShrink: 0,
-          padding: isMobile ? '10px 14px' : '12px 20px',
-          borderBottom: '1px solid #E2E8F0',
+          padding: isMobile ? '12px 14px' : '14px 24px',
+          borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '8px',
-          backgroundColor: '#FFFFFF',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
+          gap: '12px',
+          backgroundColor: 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(16px)',
+          boxShadow: '0 2px 10px rgba(15, 23, 42, 0.02)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
             {isMobile && (
               <button
                 type="button"
                 onClick={() => setMobileScreen('list')}
+                className="medical-pill-btn"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '4px',
-                  backgroundColor: '#F1F5F9',
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
                   border: '1px solid #CBD5E1',
-                  borderRadius: '8px',
-                  padding: '6px 10px',
+                  borderRadius: '999px',
+                  padding: '6px 12px',
                   fontSize: '0.78rem',
                   fontWeight: 700,
-                  color: '#0F4C81',
+                  color: '#0F172A',
                   cursor: 'pointer',
                   flexShrink: 0
                 }}
@@ -767,16 +787,17 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
             )}
 
             <div style={{ minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <h2 style={{
-                  fontSize: isMobile ? '0.98rem' : '1.15rem',
+                  fontSize: isMobile ? '1rem' : '1.2rem',
                   fontWeight: 800,
                   color: '#0F172A',
                   margin: 0,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  maxWidth: isMobile ? '200px' : '520px'
+                  maxWidth: isMobile ? '200px' : '520px',
+                  letterSpacing: '-0.02em'
                 }}>
                   {activeConv ? activeConv.title : 'Electropathy AI Consultation'}
                 </h2>
@@ -784,22 +805,25 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
                   <span style={{
                     display: isMobile ? 'none' : 'inline-flex',
                     alignItems: 'center',
-                    gap: '4px',
-                    padding: '2px 8px',
-                    backgroundColor: '#DEF7EC',
+                    gap: '5px',
+                    padding: '3px 10px',
+                    backgroundColor: '#ECFDF5',
+                    border: '1px solid #A7F3D0',
                     color: '#059669',
                     borderRadius: '999px',
                     fontSize: '0.68rem',
-                    fontWeight: 700
+                    fontWeight: 700,
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase'
                   }}>
-                    <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'pulseGlow 2s infinite' }} />
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'pulseGlow 2s infinite' }} />
                     Active Session
                   </span>
                 )}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.72rem', color: '#64748B', marginTop: '2px' }}>
-                <span className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#00A896', fontWeight: 600 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.72rem', color: '#64748B', marginTop: '3px' }}>
+                <span className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#0284C7', fontWeight: 700 }}>
                   <Database size={12} />
                   <span>PostgreSQL Cloud Sync</span>
                 </span>
@@ -808,7 +832,7 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
                 {user && (
                   <>
                     <span className="hide-on-mobile">•</span>
-                    <span className="hide-on-mobile" style={{ color: '#334155', fontWeight: 600 }}>
+                    <span className="hide-on-mobile" style={{ color: '#0F172A', fontWeight: 600 }}>
                       ID: {formatDisplayPhone(user.mobileNumber)}
                     </span>
                   </>
@@ -821,34 +845,37 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <button
                 onClick={handleEditPatientHistory}
+                className="medical-pill-btn"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '5px',
-                  padding: '4px 10px',
-                  backgroundColor: '#EBF3FA',
-                  border: '1px solid #BAE6FD',
-                  borderRadius: '6px',
-                  fontSize: '0.72rem',
-                  color: '#0F4C81',
+                  gap: '6px',
+                  padding: '6px 14px',
+                  backgroundColor: '#090D16',
+                  color: '#FFFFFF',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  borderRadius: '999px',
+                  fontSize: '0.74rem',
                   cursor: 'pointer',
-                  fontWeight: 700
+                  fontWeight: 700,
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
                 }}
                 title="View / Edit Clinical History"
               >
-                <FileText size={12} />
-                <span>Patient History</span>
+                <FileText size={13} color="#38BDF8" />
+                <span>Patient History ↗</span>
               </button>
               <button
                 onClick={handleCopyConvId}
+                className="medical-pill-btn"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '5px',
-                  padding: '4px 8px',
-                  backgroundColor: '#F1F5F9',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '6px',
+                  padding: '6px 12px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  border: '1px solid #CBD5E1',
+                  borderRadius: '999px',
                   fontSize: '0.72rem',
                   color: '#475569',
                   cursor: 'pointer',
@@ -884,77 +911,179 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
               <div style={{ fontWeight: 600 }}>Retrieving consultation record from database...</div>
             </div>
           ) : !activeConv || activeConv.messages.length === 0 ? (
-            /* Empty State: Clinical Consultation Starters */
+            /* Empty State: Inspired by High-Tech Medical Editorial UI */
             <div style={{
               margin: 'auto',
-              maxWidth: '680px',
+              maxWidth: '780px',
               width: '100%',
-              padding: '24px 20px',
+              padding: '24px 16px',
               textAlign: 'center'
             }}>
+              {/* Top Editorial Eyebrow */}
               <div style={{
-                width: '52px',
-                height: '52px',
-                borderRadius: '16px',
-                background: 'linear-gradient(135deg, #0F4C81 0%, #00A896 100%)',
-                color: '#FFFFFF',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 14px',
-                boxShadow: '0 8px 20px rgba(0, 168, 150, 0.25)'
+                gap: '6px',
+                padding: '4px 14px',
+                backgroundColor: 'rgba(235, 248, 255, 0.9)',
+                border: '1px solid rgba(186, 230, 253, 0.8)',
+                borderRadius: '999px',
+                color: '#0284C7',
+                fontSize: '0.72rem',
+                fontWeight: 800,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                marginBottom: '14px'
               }}>
-                <Bot size={28} />
+                <Sparkles size={13} color="#0284C7" />
+                <span>Next Era Of Medical Advancements</span>
               </div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
-                Electropathy Clinical Consultation
-              </h3>
-              <p style={{ fontSize: '0.84rem', color: '#64748B', lineHeight: 1.45, maxWidth: '520px', margin: '0 auto 16px' }}>
-                Inquire about Count Cesare Mattei’s complex remedies, constitutional temperaments, dilutions (D1–D6), or external fluid applications.
+
+              <h2 style={{
+                fontSize: isMobile ? '1.5rem' : '2.1rem',
+                fontWeight: 900,
+                color: '#090D16',
+                lineHeight: 1.15,
+                letterSpacing: '-0.03em',
+                marginBottom: '10px'
+              }}>
+                PRECISION TAILORING FOR <br />
+                <span style={{ color: '#0284C7' }}>OPTIMAL HEALING</span>
+              </h2>
+
+              <p style={{
+                fontSize: '0.86rem',
+                color: '#475569',
+                lineHeight: 1.5,
+                maxWidth: '560px',
+                margin: '0 auto 20px'
+              }}>
+                Explore Count Cesare Mattei’s complex pharmacopoeia, constitutional temperaments (Lymphatic, Sanguine, Mixed), and verified State–Organ convergence protocols.
               </p>
 
-              <div style={{ marginBottom: '22px', display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                <button
-                  onClick={handleStartNewConsultation}
-                  style={{
-                    padding: '10px 22px',
-                    fontSize: '0.88rem',
-                    fontWeight: 700,
+              {/* Signature Obsidian Feature Card with Action Badges */}
+              <div
+                className="medical-dark-feature-card"
+                style={{
+                  padding: '24px 22px',
+                  borderRadius: '20px',
+                  textAlign: 'left',
+                  marginBottom: '22px',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+              >
+                <div style={{ position: 'relative', zIndex: 2 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <Activity size={18} color="#00F2FE" />
+                    <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#38BDF8', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                      Clinical Intelligence System
+                    </span>
+                  </div>
+                  <h3 style={{
                     color: '#FFFFFF',
-                    background: 'linear-gradient(135deg, #0F4C81 0%, #00A896 100%)',
-                    border: 'none',
-                    borderRadius: '10px',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    boxShadow: '0 4px 14px rgba(0, 168, 150, 0.3)',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = '0.94')}
-                  onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-                >
-                  <Plus size={18} />
-                  <span>Start New Consultation (Add / Edit History)</span>
-                </button>
+                    fontSize: isMobile ? '1.15rem' : '1.35rem',
+                    fontWeight: 900,
+                    letterSpacing: '-0.02em',
+                    marginBottom: '8px',
+                    lineHeight: 1.2
+                  }}>
+                    ARE YOU READY TO EXPLORE CLINICAL ELECTROPATHY?
+                  </h3>
+                  <p style={{ color: '#94A3B8', fontSize: '0.8rem', lineHeight: 1.45, maxWidth: '580px', marginBottom: '16px' }}>
+                    Access 98 documented remedies across 12 Mattei groups, D1–D3 vs D6–D30 dilution selection, and real-time contraindication screening.
+                  </p>
+
+                  {/* Action Badges with ↗ */}
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={handleStartNewConsultation}
+                      className="medical-pill-cyan"
+                      style={{
+                        padding: '8px 18px',
+                        fontSize: '0.78rem',
+                        fontWeight: 800,
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <Plus size={14} />
+                      <span>Start New Case Intake ↗</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePromptClick('What is the recommended S1 / L1 protocol for acute lymphatic congestion?')}
+                      style={{
+                        padding: '7px 14px',
+                        fontSize: '0.74rem',
+                        fontWeight: 700,
+                        color: '#F8FAFC',
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.16)',
+                        borderRadius: '999px',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <span>Lymphatic S1/L1 Protocol ↗</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePromptClick('Explain the dilution rules for acute inflammatory states vs degenerative conditions.')}
+                      style={{
+                        padding: '7px 14px',
+                        fontSize: '0.74rem',
+                        fontWeight: 700,
+                        color: '#F8FAFC',
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.16)',
+                        borderRadius: '999px',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <span>Dilution Rules (D1–D30) ↗</span>
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* 4 Interactive Starter Prompt Cards */}
               <div style={{ 
                 display: 'grid', 
                 gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', 
-                gap: '10px', 
+                gap: '12px', 
                 textAlign: 'left' 
               }}>
                 <div
                   className="quick-starter-card"
                   onClick={() => handlePromptClick('What is the recommended S1 / L1 protocol for acute lymphatic congestion?')}
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(226, 232, 240, 0.8)',
+                    borderRadius: '16px',
+                    padding: '14px 16px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '1rem' }}>🌿</span>
-                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A' }}>Lymphatic Congestion</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '1.1rem' }}>🌿</span>
+                      <span style={{ fontSize: '0.84rem', fontWeight: 800, color: '#090D16' }}>Lymphatic Congestion</span>
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: '#0284C7', fontWeight: 700 }}>↗</span>
                   </div>
-                  <div style={{ fontSize: '0.74rem', color: '#64748B', lineHeight: 1.35 }}>
+                  <div style={{ fontSize: '0.75rem', color: '#64748B', lineHeight: 1.4 }}>
                     Evaluate Scrofoloso-1 and Lymphatico-1 dilution protocols for glandular swelling.
                   </div>
                 </div>
@@ -962,12 +1091,24 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
                 <div
                   className="quick-starter-card"
                   onClick={() => handlePromptClick('How to evaluate Lymphatic vs Sanguine temperament for chronic skin eruptions?')}
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(226, 232, 240, 0.8)',
+                    borderRadius: '16px',
+                    padding: '14px 16px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '1rem' }}>🩺</span>
-                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A' }}>Temperament Assessment</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '1.1rem' }}>🩺</span>
+                      <span style={{ fontSize: '0.84rem', fontWeight: 800, color: '#090D16' }}>Temperament Assessment</span>
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: '#0284C7', fontWeight: 700 }}>↗</span>
                   </div>
-                  <div style={{ fontSize: '0.74rem', color: '#64748B', lineHeight: 1.35 }}>
+                  <div style={{ fontSize: '0.75rem', color: '#64748B', lineHeight: 1.4 }}>
                     Differentiate constitution traits to select between S5, C5, and Ver1 remedies.
                   </div>
                 </div>
@@ -975,12 +1116,24 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
                 <div
                   className="quick-starter-card"
                   onClick={() => handlePromptClick('What is the Febrifugo-1 (F1) and A2 protocol for acute fever?')}
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(226, 232, 240, 0.8)',
+                    borderRadius: '16px',
+                    padding: '14px 16px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '1rem' }}>⚡</span>
-                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A' }}>Fever & Inflammation</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '1.1rem' }}>⚡</span>
+                      <span style={{ fontSize: '0.84rem', fontWeight: 800, color: '#090D16' }}>Fever & Inflammation</span>
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: '#0284C7', fontWeight: 700 }}>↗</span>
                   </div>
-                  <div style={{ fontSize: '0.74rem', color: '#64748B', lineHeight: 1.35 }}>
+                  <div style={{ fontSize: '0.75rem', color: '#64748B', lineHeight: 1.4 }}>
                     Review thermal vasomotor regulation and frequent sip dosing in pyrexia.
                   </div>
                 </div>
@@ -988,12 +1141,24 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
                 <div
                   className="quick-starter-card"
                   onClick={() => handlePromptClick('Explain the dilution rules for acute inflammatory states vs degenerative conditions.')}
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(226, 232, 240, 0.8)',
+                    borderRadius: '16px',
+                    padding: '14px 16px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '1rem' }}>💧</span>
-                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A' }}>Dilution Matrix (D1–D6)</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '1.1rem' }}>💧</span>
+                      <span style={{ fontSize: '0.84rem', fontWeight: 800, color: '#090D16' }}>Dilution Matrix (D1–D6)</span>
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: '#0284C7', fontWeight: 700 }}>↗</span>
                   </div>
-                  <div style={{ fontSize: '0.74rem', color: '#64748B', lineHeight: 1.35 }}>
+                  <div style={{ fontSize: '0.75rem', color: '#64748B', lineHeight: 1.4 }}>
                     Negative potency guidelines for hyper-reactivity vs positive stimulating doses.
                   </div>
                 </div>
@@ -1220,9 +1385,10 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
         {/* Input Console Area */}
         <div style={{
           flexShrink: 0,
-          padding: isMobile ? '8px 10px 10px' : '10px 20px 12px',
-          borderTop: '1px solid #E2E8F0',
-          backgroundColor: '#FFFFFF'
+          padding: isMobile ? '10px 12px 14px' : '14px 24px 18px',
+          borderTop: '1px solid rgba(226, 232, 240, 0.8)',
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(16px)'
         }}>
           {/* Quick Consultation Chips Row */}
           <div 
@@ -1231,64 +1397,69 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
               display: 'flex',
               gap: '8px',
               overflowX: 'auto',
-              paddingBottom: '8px',
+              paddingBottom: '10px',
               WebkitOverflowScrolling: 'touch'
             }}
           >
-            <button
-              type="button"
-              className="prompt-chip"
-              onClick={() => handlePromptClick('Protocol for Lymphatic Congestion (S1, L1, NE)')}
-            >
-              <span>🌿</span>
-              <span>Lymphatic Protocol</span>
-            </button>
-            <button
-              type="button"
-              className="prompt-chip"
-              onClick={() => handlePromptClick('How to assess Lymphatic vs Sanguine Temperament?')}
-            >
-              <span>🩺</span>
-              <span>Temperament Assessment</span>
-            </button>
-            <button
-              type="button"
-              className="prompt-chip"
-              onClick={() => handlePromptClick('Fever Protocol: Febrifugo-1 (F1) and Angioitico-2 (A2)')}
-            >
-              <span>⚡</span>
-              <span>Fever & Inflammation</span>
-            </button>
-            <button
-              type="button"
-              className="prompt-chip"
-              onClick={() => handlePromptClick('Dilution Matrix rules for acute vs chronic conditions')}
-            >
-              <span>💧</span>
-              <span>Dilution Matrix</span>
-            </button>
-            <button
-              type="button"
-              className="prompt-chip"
-              onClick={() => handlePromptClick('Pettorale-1 (P1) protocol for bronchial and spasmodic cough')}
-            >
-              <span>🫁</span>
-              <span>Bronchial Cough</span>
-            </button>
+            {[
+              { icon: '🌿', title: 'Lymphatic S1/L1', query: 'Protocol for Lymphatic Congestion (S1, L1, NE)' },
+              { icon: '🩺', title: 'Temperament Assessment', query: 'How to assess Lymphatic vs Sanguine Temperament?' },
+              { icon: '⚡', title: 'Fever (F1 + A2)', query: 'Fever Protocol: Febrifugo-1 (F1) and Angioitico-2 (A2)' },
+              { icon: '💧', title: 'Dilution Matrix D1-D30', query: 'Dilution Matrix rules for acute vs chronic conditions' },
+              { icon: '🫁', title: 'Bronchial Cough (P1)', query: 'Pettorale-1 (P1) protocol for bronchial and spasmodic cough' }
+            ].map((chip, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className="medical-pill-btn"
+                onClick={() => handlePromptClick(chip.query)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 14px',
+                  backgroundColor: 'rgba(248, 250, 252, 0.95)',
+                  border: '1px solid rgba(203, 213, 225, 0.8)',
+                  borderRadius: '999px',
+                  fontSize: '0.74rem',
+                  fontWeight: 700,
+                  color: '#334155',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = '#090D16';
+                  e.currentTarget.style.color = '#FFFFFF';
+                  e.currentTarget.style.borderColor = '#090D16';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = 'rgba(248, 250, 252, 0.95)';
+                  e.currentTarget.style.color = '#334155';
+                  e.currentTarget.style.borderColor = 'rgba(203, 213, 225, 0.8)';
+                }}
+              >
+                <span>{chip.icon}</span>
+                <span>{chip.title}</span>
+                <span style={{ fontSize: '0.7rem', opacity: 0.6 }}>↗</span>
+              </button>
+            ))}
           </div>
 
-          {/* Input Form Bar */}
+          {/* Input Form Bar (Floating Capsule) */}
           <form
             onSubmit={handleSendMessage}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '10px',
-              backgroundColor: '#F8FAFC',
-              border: '1.5px solid #CBD5E1',
-              borderRadius: '12px',
-              padding: '6px 8px 6px 14px',
-              transition: 'border-color 0.15s ease, box-shadow 0.15s ease'
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              border: '1.5px solid rgba(186, 230, 253, 0.8)',
+              borderRadius: '999px',
+              padding: '6px 8px 6px 18px',
+              boxShadow: '0 4px 16px rgba(14, 165, 233, 0.08)',
+              transition: 'all 0.2s ease'
             }}
           >
             <input
@@ -1304,33 +1475,35 @@ ${pCase.electropathyDetails?.notes ? `• **Clinical Impressions**: ${pCase.elec
                 background: 'transparent',
                 outline: 'none',
                 fontSize: '0.9rem',
-                color: '#0F172A'
+                color: '#0F172A',
+                fontWeight: 500
               }}
             />
 
-            <span style={{ fontSize: '0.7rem', color: '#94A3B8', paddingRight: '4px' }}>
-              Press ↵
+            <span style={{ fontSize: '0.7rem', color: '#94A3B8', paddingRight: '4px', fontWeight: 600 }}>
+              ↵ Enter
             </span>
 
             <button
               type="submit"
               disabled={!inputText.trim() || sending}
+              className="medical-pill-cyan"
               style={{
-                backgroundColor: !inputText.trim() || sending ? '#CBD5E1' : '#0F4C81',
-                background: !inputText.trim() || sending ? '#CBD5E1' : 'linear-gradient(135deg, #0F4C81 0%, #00A896 100%)',
-                color: '#FFFFFF',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '8px 14px',
+                width: '38px',
+                height: '38px',
+                borderRadius: '50%',
+                padding: 0,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: !inputText.trim() || sending ? 'not-allowed' : 'pointer',
-                boxShadow: !inputText.trim() || sending ? 'none' : '0 2px 6px rgba(0, 168, 150, 0.3)',
-                transition: 'all 0.15s ease'
+                opacity: !inputText.trim() || sending ? 0.5 : 1,
+                border: 'none',
+                flexShrink: 0,
+                boxShadow: !inputText.trim() || sending ? 'none' : '0 2px 10px rgba(0, 242, 254, 0.3)'
               }}
             >
-              {sending ? <Loader2 className="animate-spin" size={17} /> : <Send size={17} />}
+              {sending ? <Loader2 className="animate-spin" size={17} color="#090D16" /> : <Send size={16} color="#090D16" />}
             </button>
           </form>
 

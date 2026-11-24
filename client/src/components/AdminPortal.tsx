@@ -766,73 +766,94 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
       flexDirection: 'column',
       flex: 1
     }}>
-      {/* Top Banner (Dark Governance Console Bar) */}
-      <div style={{
-        flexShrink: 0,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '12px 18px',
-        backgroundColor: '#0B132B',
-        color: '#FFFFFF',
-        borderRadius: '12px',
-        marginBottom: isAIAssistantActive ? '10px' : '16px',
-        boxShadow: '0 4px 16px rgba(11, 19, 43, 0.25)',
-        flexWrap: 'wrap',
-        gap: '12px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+      {/* Top Banner (Dark Governance Command Bar) */}
+      <div 
+        className="medical-dark-feature-card"
+        style={{
+          flexShrink: 0,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '14px 22px',
+          backgroundColor: '#090D16',
+          color: '#FFFFFF',
+          borderRadius: '20px',
+          marginBottom: isAIAssistantActive ? '12px' : '18px',
+          boxShadow: '0 8px 30px rgba(9, 13, 22, 0.3)',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
           <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            backgroundColor: '#1C2541',
+            width: '42px',
+            height: '42px',
+            borderRadius: '12px',
+            backgroundColor: 'rgba(56, 189, 248, 0.12)',
             color: '#38BDF8',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            border: '1px solid rgba(56, 189, 248, 0.2)',
+            border: '1px solid rgba(56, 189, 248, 0.3)',
             flexShrink: 0
           }}>
-            <ShieldCheck size={22} />
+            <ShieldCheck size={22} color="#00F2FE" />
           </div>
           <div style={{ minWidth: 0 }}>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.3px', margin: 0, lineHeight: 1.2 }}>
-              Governance Console
-            </h2>
-            <div style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              Admin: <span style={{ color: '#E2E8F0', fontWeight: 600 }}>{adminUser.email || 'admin@electropathy.ai'}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#38BDF8', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                Governance & Intelligence Platform
+              </span>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '1px 7px',
+                borderRadius: '999px',
+                backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                color: '#34D399',
+                fontSize: '0.64rem',
+                fontWeight: 700
+              }}>
+                <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#10B981', animation: 'pulseGlow 2s infinite' }} />
+                Online
+              </span>
             </div>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.02em', margin: '2px 0 0', lineHeight: 1.2 }}>
+              CLINICAL GOVERNANCE CONSOLE
+            </h2>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginLeft: 'auto' }}>
           <button
             onClick={onBackToApp}
+            className="medical-pill-btn"
             style={{
-              padding: '7px 14px',
-              backgroundColor: '#FFFFFF',
-              color: '#0F172A',
+              padding: '8px 16px',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              color: '#FFFFFF',
               fontWeight: 700,
-              fontSize: '0.82rem',
-              borderRadius: '8px',
-              border: 'none',
+              fontSize: '0.8rem',
+              borderRadius: '999px',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
               cursor: 'pointer',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
               transition: 'all 0.15s ease'
             }}
           >
-            User Portal
+            User Portal ↗
           </button>
           <button
             onClick={handleAdminLogout}
+            className="medical-pill-btn"
             style={{
               backgroundColor: '#EF4444',
               color: '#FFFFFF',
               fontWeight: 700,
-              padding: '7px 14px',
-              fontSize: '0.82rem',
-              borderRadius: '8px',
+              padding: '8px 16px',
+              fontSize: '0.8rem',
+              borderRadius: '999px',
               border: 'none',
               cursor: 'pointer',
               display: 'flex',
@@ -847,23 +868,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
         </div>
       </div>
 
-      {/* Tabs Bar (Horizontally scrollable with smooth touch on mobile, sticky when scrolling long pages) */}
+      {/* Tabs Bar (Floating Pill Capsule Bar) */}
       <div 
         className="hide-scrollbar"
         style={{
           display: 'flex',
           gap: '8px',
-          marginBottom: isAIAssistantActive ? '10px' : '16px',
+          marginBottom: isAIAssistantActive ? '10px' : '18px',
           overflowX: 'auto',
           flexWrap: 'nowrap',
           flexShrink: 0,
           WebkitOverflowScrolling: 'touch',
-          paddingBottom: '4px',
+          padding: '6px',
           position: isAIAssistantActive ? 'static' : 'sticky',
           top: 0,
           zIndex: 20,
-          backgroundColor: '#F8FAFC',
-          paddingTop: isAIAssistantActive ? 0 : '4px'
+          backgroundColor: 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(16px)',
+          borderRadius: '999px',
+          border: '1px solid rgba(226, 232, 240, 0.8)',
+          boxShadow: '0 2px 10px rgba(15, 23, 42, 0.03)'
         }}
       >
         {[
@@ -880,25 +904,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
             <button
               key={t.key}
               onClick={() => setActiveTab(t.key as any)}
+              className="medical-pill-btn"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                padding: '8px 14px',
-                backgroundColor: isActive ? (t.key === 'ai-assistant' ? '#0F4C81' : '#0F172A') : '#FFFFFF',
-                color: isActive ? '#FFFFFF' : '#334155',
-                border: isActive ? (t.key === 'ai-assistant' ? '1px solid #0F4C81' : '1px solid #0F172A') : '1px solid #CBD5E1',
-                borderRadius: '8px',
-                fontSize: '0.82rem',
-                fontWeight: isActive ? 700 : 600,
+                padding: '8px 16px',
+                backgroundColor: isActive ? '#090D16' : 'transparent',
+                color: isActive ? '#FFFFFF' : '#475569',
+                border: isActive ? '1px solid #090D16' : '1px solid transparent',
+                borderRadius: '999px',
+                fontSize: '0.8rem',
+                fontWeight: isActive ? 800 : 600,
                 cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                boxShadow: isActive ? '0 2px 6px rgba(15,23,42,0.15)' : 'none',
+                transition: 'all 0.18s ease',
+                boxShadow: isActive ? '0 2px 8px rgba(9, 13, 22, 0.2)' : 'none',
                 whiteSpace: 'nowrap',
                 flexShrink: 0
               }}
             >
-              <Icon size={15} color={isActive ? '#FFFFFF' : (t.key === 'ai-assistant' ? '#0F4C81' : '#64748B')} />
+              <Icon size={14} color={isActive ? '#38BDF8' : '#64748B'} />
               <span>{t.label}</span>
             </button>
           );
@@ -924,88 +949,113 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToApp }) => {
             </div>
           ) : (
             <>
-              {/* 4 Metric Cards (Responsive auto-fit) */}
+              {/* 4 Metric Cards (Responsive auto-fit inspired by medilens Brand Identity) */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                gap: '14px'
+                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                gap: '16px'
               }}>
                 {/* Card 1: Total Registered Users */}
-                <div style={{
-                  backgroundColor: '#FFFFFF',
-                  padding: '20px 22px',
-                  borderRadius: '12px',
-                  border: '1px solid #E2E8F0',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Total Registered Users</span>
-                    <Users size={20} color="#0284C7" />
+                <div 
+                  className="medical-glass-card"
+                  style={{
+                    padding: '22px 24px',
+                    borderRadius: '20px',
+                    border: '1px solid rgba(226, 232, 240, 0.8)',
+                    boxShadow: '0 4px 16px rgba(15, 23, 42, 0.03)',
+                    position: 'relative'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '0.74rem', fontWeight: 900, color: '#94A3B8' }}>01</span>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569' }}>Registered Users</span>
+                    </div>
+                    <Users size={18} color="#0284C7" />
                   </div>
-                  <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.15 }}>
+                  <div style={{ fontSize: '2.4rem', fontWeight: 900, color: '#090D16', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
                     {overview.users.total}
                   </div>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#059669', marginTop: '8px' }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.74rem', fontWeight: 700, color: '#059669', marginTop: '10px', backgroundColor: '#ECFDF5', padding: '2px 8px', borderRadius: '999px', border: '1px solid #A7F3D0' }}>
+                    <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#10B981' }} />
                     {overview.users.active} Active • {overview.users.inactive} Inactive
                   </div>
                 </div>
 
                 {/* Card 2: Conversations & Chats */}
-                <div style={{
-                  backgroundColor: '#FFFFFF',
-                  padding: '20px 22px',
-                  borderRadius: '12px',
-                  border: '1px solid #E2E8F0',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Conversations & Chats</span>
-                    <MessageSquare size={20} color="#059669" />
+                <div 
+                  className="medical-glass-card"
+                  style={{
+                    padding: '22px 24px',
+                    borderRadius: '20px',
+                    border: '1px solid rgba(226, 232, 240, 0.8)',
+                    boxShadow: '0 4px 16px rgba(15, 23, 42, 0.03)',
+                    position: 'relative'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '0.74rem', fontWeight: 900, color: '#94A3B8' }}>02</span>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569' }}>Conversations & Chats</span>
+                    </div>
+                    <MessageSquare size={18} color="#059669" />
                   </div>
-                  <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.15 }}>
+                  <div style={{ fontSize: '2.4rem', fontWeight: 900, color: '#090D16', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
                     {overview.conversations.totalConversations}
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '8px' }}>
+                  <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '10px', fontWeight: 600 }}>
                     {overview.conversations.totalMessages} Messages in PostgreSQL
                   </div>
                 </div>
 
                 {/* Card 3: Clinical Patient Cases */}
-                <div style={{
-                  backgroundColor: '#FFFFFF',
-                  padding: '20px 22px',
-                  borderRadius: '12px',
-                  border: '1px solid #E2E8F0',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Clinical Patient Cases</span>
-                    <FileText size={20} color="#D97706" />
+                <div 
+                  className="medical-glass-card"
+                  style={{
+                    padding: '22px 24px',
+                    borderRadius: '20px',
+                    border: '1px solid rgba(226, 232, 240, 0.8)',
+                    boxShadow: '0 4px 16px rgba(15, 23, 42, 0.03)',
+                    position: 'relative'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '0.74rem', fontWeight: 900, color: '#94A3B8' }}>03</span>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569' }}>Clinical Patient Cases</span>
+                    </div>
+                    <FileText size={18} color="#D97706" />
                   </div>
-                  <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.15 }}>
+                  <div style={{ fontSize: '2.4rem', fontWeight: 900, color: '#090D16', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
                     {overview.patientCases.total}
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '8px' }}>
+                  <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '10px', fontWeight: 600 }}>
                     Recorded via Practitioner Intake Wizard
                   </div>
                 </div>
 
                 {/* Card 4: Knowledge Base (RAG) */}
-                <div style={{
-                  backgroundColor: '#FFFFFF',
-                  padding: '20px 22px',
-                  borderRadius: '12px',
-                  border: '1px solid #E2E8F0',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Knowledge Base (RAG)</span>
-                    <Layers size={20} color="#7C3AED" />
+                <div 
+                  className="medical-glass-card"
+                  style={{
+                    padding: '22px 24px',
+                    borderRadius: '20px',
+                    border: '1px solid rgba(226, 232, 240, 0.8)',
+                    boxShadow: '0 4px 16px rgba(15, 23, 42, 0.03)',
+                    position: 'relative'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '0.74rem', fontWeight: 900, color: '#94A3B8' }}>04</span>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#475569' }}>Knowledge Base (RAG)</span>
+                    </div>
+                    <Layers size={18} color="#7C3AED" />
                   </div>
-                  <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.15 }}>
+                  <div style={{ fontSize: '2.4rem', fontWeight: 900, color: '#090D16', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
                     {overview.knowledgeBase.totalDocuments} Docs
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '8px' }}>
+                  <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '10px', fontWeight: 600 }}>
                     {overview.knowledgeBase.totalChunks} Indexed Text Chunks
                   </div>
                 </div>
